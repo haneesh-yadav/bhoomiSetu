@@ -43,8 +43,7 @@ const PROP_ROWS = [
   { label: "Last Transfer", value: "01 December 2017"               },
 ];
 
-const CITIZEN_FEATURES   = ["View & manage my properties", "Initiate ownership transfers", "Track transfer status step-by-step", "Submit mutation / inheritance requests", "File dispute reports", "Download verified certificates"];
-const REGISTRAR_FEATURES = ["Pending approvals queue", "Review & approve/reject transfers", "Verify uploaded documents", "Resolve flagged disputes", "Full audit log access", "All-properties overview"];
+
 const HASHES             = ["0x3f9a1bc2...c4e5f6", "0xa1b2c3d4...ef0112", "0x7f8e9d0c...f6e523", "0x2c4d6e8f...5e6f78"];
 
 /* ══════════════════════════════════════════════════

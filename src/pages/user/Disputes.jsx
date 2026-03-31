@@ -522,7 +522,6 @@ const styles = `
 `;
 
 export default function Disputes() {
-  const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   const [activeTab,  setTab]       = useState("my");

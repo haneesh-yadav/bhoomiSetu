@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
   getPendingApprovals,
-  getCompletedApprovals,
   getRegistrarDisputes,
   getMutationRequests,
 } from "../../database/Transfers";

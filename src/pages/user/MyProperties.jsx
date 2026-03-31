@@ -492,7 +492,6 @@ const Cursor = () => (
    MY PROPERTIES COMPONENT
 ══════════════════════════════════════════════════ */
 export default function MyProperties() {
-  const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   const [search,       setSearch] = useState("");

@@ -534,7 +534,6 @@ const PAST_CERTS = [
 ];
 
 export default function Certificates() {
-  const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   const [selectedCert, setCert]   = useState(null);
