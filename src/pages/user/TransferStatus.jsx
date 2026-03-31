@@ -1045,8 +1045,7 @@ export default function TransferStatus() {
   const outgoing = user ? getTransfersByUser(user.id).filter(t => t.sellerId === user.id) : [];
   const incoming = user ? getIncomingTransfers(user.id) : [];
 
-  const completed = outgoing.filter(t => t.status === "Completed").length;
-  const pending   = outgoing.filter(t => t.status !== "Completed").length;
+
 
   /* ── Transfer timeline renderer ── */
   const renderTimeline = (transfer) => (

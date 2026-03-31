@@ -7,12 +7,7 @@ import Navbar1 from "../../components/Navbar1";
 /* ══════════════════════════════════════════════════
    DATA
 ══════════════════════════════════════════════════ */
-const FILTERS = [
-  { label: "All",          color: "#0D3D2B" },
-  { label: "Clear Title",  color: "#2EC4A0" },
-  { label: "Encumbered",   color: "#F07060" },
-  { label: "Disputed",     color: "#5B4FD4" },
-];
+
 
 const TYPE_META = {
   Residential:  { icon: "home",        bg: "#C8F135" },
@@ -492,10 +487,11 @@ const Cursor = () => (
    MY PROPERTIES COMPONENT
 ══════════════════════════════════════════════════ */
 export default function MyProperties() {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   const [search,       setSearch] = useState("");
-  const [activeFilter, setFilter] = useState("All");
+  const [activeFilter] = useState("All");
 
   const allProperties = user ? getPropertiesByOwner(user.id) : [];
 

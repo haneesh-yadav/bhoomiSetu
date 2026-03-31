@@ -559,8 +559,6 @@ export default function Disputes() {
     setSubmitted(true);
   };
 
-  const prop  = properties.find(p => p.id === selectedProp);
-  const dtype = DISPUTE_TYPES.find(d => d.id === dType);
 
   return (
     <>
