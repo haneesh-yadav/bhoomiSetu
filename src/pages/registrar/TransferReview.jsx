@@ -626,7 +626,6 @@ const styles = `
 `;
 
 export default function TransferReview() {
-  const navigate        = useNavigate();
   const { user, logout} = useAuth();
 
   const allApprovals = [...getPendingApprovals(), ...getCompletedApprovals()];

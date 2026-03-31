@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getPropertiesByOwner } from "../../database/Properties";
 import Navbar1 from "../../components/Navbar1";
