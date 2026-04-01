@@ -2,8 +2,8 @@ export const MOCK_USERS = [
   {
     id:       "USR-001",
     name:     "Haneesh Yadav",
-    email:    "haneesh@bhoomi.in",
-    password: "24BCE2609",
+    email:    "vit@bhoomi.in",
+    password: "vit",
     role:     "user",
     phone:    "9103355700",
     aadhaar:  "XXXX XXXX 4521",
