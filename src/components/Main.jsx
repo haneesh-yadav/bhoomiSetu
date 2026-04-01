@@ -1542,7 +1542,7 @@ export default function BhoomiSetuLanding() {
                   onChange={e => setSearchVal(e.target.value)}
                   placeholder="Enter Property ID, Survey No. or Owner Name..."
                 />
-                <button className="search-btn">Verify →</button>
+                <button className="search-btn" onClick={() => navigate("/login")}>Login →</button>
               </div>
             </div>
 
