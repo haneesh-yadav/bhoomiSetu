@@ -5,123 +5,96 @@ import { useNavigate } from "react-router-dom";
    DATA
 ══════════════════════════════════════════════════ */
 const FEATURES = [
-  { icon: "sync_alt",        title: "Transfer Workflow",        desc: "Seller initiates, buyer confirms, registrar approves. Every step logged, timestamped, and tied to uploaded documents.", color: "#C8F135", tag: "LEGAL PROCESS"    },
-  { icon: "history",         title: "Ownership Timeline",       desc: "Visual chain-of-custody showing every owner, transfer date, and transaction since the property's first registration.",   color: "#F07060", tag: "FULL HISTORY"      },
-  { icon: "gavel",           title: "Dispute Management",       desc: "Flag suspicious records, submit evidence, track resolution. Dispute status is visible to all involved parties.",          color: "#5B4FD4", tag: "ACCOUNTABILITY"   },
-  { icon: "account_tree",    title: "Mutation & Inheritance",   desc: "Legal heirs submit inheritance claims. Court orders and succession documents processed through an official workflow.",     color: "#2EC4A0", tag: "LEGAL SUCCESSION" },
-  { icon: "track_changes",   title: "Transfer Status Tracking", desc: "Both seller and buyer can track every stage of a transfer in real time — from initiation to final registrar approval.",    color: "#C8F135", tag: "TRANSPARENCY"     },
-  { icon: "link",            title: "Blockchain-Ready Ledger",  desc: "Every record carries a cryptographic hash. Designed for seamless blockchain integration and tamper-proof verification.",   color: "#F07060", tag: "FUTURE-PROOF"     },
+  { icon: "sync_alt",     title: "Transfer Workflow",        desc: "Seller initiates, buyer confirms, registrar approves. Every step logged, timestamped, and tied to uploaded documents.", color: "#2A7D4F", tag: "LEGAL PROCESS"    },
+  { icon: "history",      title: "Ownership Timeline",       desc: "Visual chain-of-custody showing every owner, transfer date, and transaction since the property's first registration.",   color: "#2EC4A0", tag: "FULL HISTORY"      },
+  { icon: "gavel",        title: "Dispute Management",       desc: "Flag suspicious records, submit evidence, track resolution. Dispute status is visible to all involved parties.",          color: "#e07a5f", tag: "ACCOUNTABILITY"   },
+  { icon: "account_tree", title: "Mutation & Inheritance",   desc: "Legal heirs submit inheritance claims. Court orders and succession documents processed through an official workflow.",     color: "#2A7D4F", tag: "LEGAL SUCCESSION" },
+  { icon: "track_changes",title: "Transfer Status Tracking", desc: "Both seller and buyer can track every stage of a transfer in real time — from initiation to final registrar approval.",    color: "#2EC4A0", tag: "TRANSPARENCY"     },
+  { icon: "link",         title: "Blockchain-Ready Ledger",  desc: "Every record carries a cryptographic hash. Designed for seamless blockchain integration and tamper-proof verification.",   color: "#e07a5f", tag: "FUTURE-PROOF"     },
 ];
 
 const STEPS = [
-  { num: "01", title: "Create Your Account",  desc: "Register as a property owner or citizen. Your identity is verified and linked to your registered properties.",                 color: "#C8F135" },
-  { num: "02", title: "View Your Properties", desc: "Log in to see all your registered land parcels, ownership history, and current status — all in one place.",                   color: "#F07060" },
-  { num: "03", title: "Initiate Transfer",    desc: "Submit a transfer request with required documents. The buyer confirms their side, and the request enters the registrar queue.", color: "#5B4FD4" },
-  { num: "04", title: "Registrar Approval",   desc: "The assigned registrar reviews all documents, verifies identities, then approves or requests clarification.",                  color: "#2EC4A0" },
-  { num: "05", title: "Ledger Updated",       desc: "Ownership officially updated. A new block is added to the property's immutable timeline with a cryptographic hash.",            color: "#C8F135" },
+  { num: "01", title: "Create Your Account",  desc: "Register as a property owner or citizen. Your identity is verified and linked to your registered properties.",                 color: "#2A7D4F" },
+  { num: "02", title: "View Your Properties", desc: "Log in to see all your registered land parcels, ownership history, and current status — all in one place.",                   color: "#2EC4A0" },
+  { num: "03", title: "Initiate Transfer",    desc: "Submit a transfer request with required documents. The buyer confirms their side, and the request enters the registrar queue.", color: "#e07a5f" },
+  { num: "04", title: "Registrar Approval",   desc: "The assigned registrar reviews all documents, verifies identities, then approves or requests clarification.",                  color: "#2A7D4F" },
+  { num: "05", title: "Ledger Updated",       desc: "Ownership officially updated. A new block is added to the property's immutable timeline with a cryptographic hash.",            color: "#2EC4A0" },
 ];
 
 const STATS = [
-  { value: "2.4M+",  label: "Properties Registered", color: "#C8F135" },
-  { value: "100%",  label: "Verification Accuracy",  color: "#F07060" },
-  { value: "28",     label: "States Covered",          color: "#5B4FD4" },
-  { value: "3 Days", label: "Avg. Transfer Time",      color: "#2EC4A0" },
+  { value: "2.4M+",  label: "Properties Registered", color: "#2A7D4F",  textColor: "#b8f0cc", bg: "#0f2318" },
+  { value: "100%",   label: "Verification Accuracy",  color: "#2EC4A0",  textColor: "#6effc2", bg: "#0f2420" },
+  { value: "28",     label: "States Covered",          color: "#e07a5f",  textColor: "#ffb380", bg: "#2a1a10" },
+  { value: "3 Days", label: "Avg. Transfer Time",      color: "#fff",     textColor: "#fff",    bg: "#1a1a1a" },
 ];
 
 const LEDGER_BLOCKS = [
-  { event: "Ownership Transfer",   sub: "Haneesh Yadav → Avishek Nandi",  date: "22 March 2026", hash: "0x3f9a...c4e5", color: "#C8F135", status: "VERIFIED"  },
-  { event: "Mutation Approved",    sub: "Survey #4521-B Updated",     date: "24 March 2026", hash: "0xa1b2...ef01", color: "#2EC4A0", status: "CONFIRMED" },
-  { event: "Initial Registration", sub: "Govt. Records → Haneesh Yadav", date: "08 December 2006", hash: "0x7f8e...f6e5", color: "#5B4FD4", status: "GENESIS"   },
+  { event: "Ownership Transfer",   sub: "Haneesh Yadav → Avishek Nandi",    date: "22 March 2026",    hash: "0x3f9a...c4e5", color: "#2A7D4F", status: "VERIFIED"  },
+  { event: "Mutation Approved",    sub: "Survey #4521-B Updated",            date: "24 March 2026",    hash: "0xa1b2...ef01", color: "#2EC4A0", status: "CONFIRMED" },
+  { event: "Initial Registration", sub: "Govt. Records → Haneesh Yadav",     date: "08 December 2006", hash: "0x7f8e...f6e5", color: "#e07a5f", status: "GENESIS"   },
 ];
 
 const PROP_ROWS = [
-  { label: "Current Owner", value: "Haneesh Yadav",        bold: true  },
-  { label: "Survey Number", value: "2609/A, Block G"               },
-  { label: "Area",          value: "2,400 sq.ft."                  },
-  { label: "District",      value: "Gurgaon, Haryana"            },
-  { label: "Status",        value: "Clear Title",         badge: true },
-  { label: "Last Transfer", value: "01 December 2017"               },
+  { label: "Current Owner", value: "Haneesh Yadav",     bold: true  },
+  { label: "Survey Number", value: "2609/A, Block G"              },
+  { label: "Area",          value: "2,400 sq.ft."                 },
+  { label: "District",      value: "Gurgaon, Haryana"           },
+  { label: "Status",        value: "Clear Title",        badge: true },
+  { label: "Last Transfer", value: "01 December 2017"              },
 ];
 
-
-const HASHES             = ["0x3f9a1bc2...c4e5f6", "0xa1b2c3d4...ef0112", "0x7f8e9d0c...f6e523", "0x2c4d6e8f...5e6f78"];
+const HASHES = ["0x3f9a1bc2...c4e5f6", "0xa1b2c3d4...ef0112", "0x7f8e9d0c...f6e523", "0x2c4d6e8f...5e6f78"];
 
 /* ══════════════════════════════════════════════════
-   CSS STYLES
+   CSS — Matches UserDashboard + Header design system
 ══════════════════════════════════════════════════ */
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Poppins:wght@400;500;600;700&display=swap');
-  @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Sharp');
 
-  /* ── Reset ── */
-  *, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #e8e4db; }
+  ::-webkit-scrollbar-thumb { background: #c0bdb5; border-radius: 4px; }
+
+  .mi {
+    font-family: 'Material Icons Sharp';
+    font-style: normal; font-weight: normal; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    user-select: none;
   }
 
-  html {
-    scroll-behavior: smooth;
-  }
-
-  ::-webkit-scrollbar {
-    width: 5px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: #EFEFEB;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #0D3D2B;
-    border-radius: 4px;
-  }
-
-  /* ── Animations ── */
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(22px); }
+    from { opacity: 0; transform: translateY(16px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-
-  @keyframes float1 {
-    0%,100% { transform: translateY(0) rotate(-6deg); }
-    50%     { transform: translateY(-14px) rotate(-6deg); }
-  }
-
-  @keyframes float2 {
-    0%,100% { transform: translateY(0) rotate(10deg); }
-    50%     { transform: translateY(-10px) rotate(10deg); }
-  }
-
-  @keyframes float3 {
-    0%,100% { transform: translateY(0); }
-    50%     { transform: translateY(-8px); }
-  }
-
   @keyframes hashfade {
     0%   { opacity: 0; transform: translateY(5px); }
     15%  { opacity: 1; transform: translateY(0); }
     85%  { opacity: 1; }
     100% { opacity: 0; }
   }
-
-  /* ── Page ── */
-  .main-page {
-    font-family: 'Bricolage Grotesque', sans-serif;
-    background: #EFEFEB;
-    color: #0D3D2B;
-    min-height: 100vh;
+  @keyframes pulse {
+    0%,100% { opacity: 1; } 50% { opacity: 0.3; }
+  }
+  @keyframes float1 {
+    0%,100% { transform: translateY(0) rotate(-4deg); }
+    50%     { transform: translateY(-12px) rotate(-4deg); }
+  }
+  @keyframes float2 {
+    0%,100% { transform: translateY(0) rotate(8deg); }
+    50%     { transform: translateY(-9px) rotate(8deg); }
   }
 
-  .main-grid-bg {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background-image:
-      linear-gradient(rgba(13,61,43,0.07) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(13,61,43,0.07) 1px, transparent 1px);
-    background-size: 40px 40px;
+  /* ── Root ── */
+  .mp {
+    font-family: 'Poppins', sans-serif;
+    background: #dcdcdc;
+    color: #1a1a1a;
+    min-height: 100vh;
   }
 
   .section-inner {
@@ -129,1333 +102,1032 @@ const styles = `
     margin: 0 auto;
   }
 
-  /* ── Material Icon helper ── */
-  .mi {
-    font-family: 'Material Icons';
-    font-style: normal;
-    font-weight: normal;
-    line-height: 1;
-    letter-spacing: normal;
-    text-transform: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
-  }
-
-  /* ── Selection Box ── */
-  .sel-box {
-    position: relative;
-    display: inline-block;
-  }
-
-  .sel-box-inner {
-    border: 2px dashed var(--sel-color);
-    border-radius: 4px;
-    padding: 5px 10px;
-  }
-
-  .sel-handle {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background: #fff;
-    border: 2px solid var(--sel-color);
-    border-radius: 1px;
-    display: block;
-  }
-
-  .sel-tl { top: -4px;    left: -4px;  }
-  .sel-tr { top: -4px;    right: -4px; }
-  .sel-bl { bottom: -4px; left: -4px;  }
-  .sel-br { bottom: -4px; right: -4px; }
-
-  .sel-tag {
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    color: #0D3D2B;
-  }
-
-  /* ── HERO ── */
-  .hero-section {
+  /* ════════════════════════════
+     HERO
+  ════════════════════════════ */
+  .mp-hero {
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 80px 2.5rem 4rem;
-    position: relative;
-    overflow: hidden;
+    background: linear-gradient(160deg, #1a1a1a 0%, #2c2c2c 55%, #0f2318 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 90px 2rem 4rem;
+    position: relative; overflow: hidden;
   }
 
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-    max-width: 840px;
+  /* subtle dot-grid overlay */
+  .mp-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle, rgba(42,125,79,0.12) 1px, transparent 1px);
+    background-size: 36px 36px;
+    pointer-events: none;
+  }
+
+  .mp-hero-float {
+    position: absolute; z-index: 1;
+  }
+  .mp-hero-float-1 { top: 14%; right: 8%;  animation: float1 4.5s ease-in-out infinite; }
+  .mp-hero-float-2 { top: 22%; left: 6%;   animation: float2 5.5s ease-in-out infinite; }
+  .mp-hero-float-3 { bottom: 28%; right: 9%; animation: float1 6s ease-in-out infinite; }
+  .mp-hero-float-4 { bottom: 32%; left: 5%;  animation: float2 5s ease-in-out infinite; }
+
+  .mp-hero-chip {
+    padding: 5px 14px;
+    border-radius: 20px;
+    background: rgba(42,125,79,0.18);
+    border: 1.5px solid rgba(42,125,79,0.4);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; color: #8FD4A8;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .mp-hero-chip-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #2A7D4F;
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+
+  .mp-hero-content {
+    position: relative; z-index: 2;
+    text-align: center; max-width: 820px;
     animation: fadeUp 0.65s ease both;
   }
 
-  .hero-h1-line1 {
-    font-size: clamp(3rem,8.5vw,6.8rem);
+  .mp-hero-h1 {
+    font-size: clamp(2.8rem, 8vw, 6.2rem);
     font-weight: 800;
     line-height: 1.0;
     letter-spacing: -0.04em;
-    margin-bottom: 0.2rem;
-    color: #0D3D2B;
-    margin-top: 1.5rem;
-  }
-
-  .hero-h1-line2 {
-    font-size: clamp(3rem,8.5vw,6.8rem);
-    font-weight: 800;
-    line-height: 1.0;
-    letter-spacing: -0.04em;
-    margin-bottom: 1.75rem;
-    color: #0D3D2B;
-  }
-
-  .hero-highlight {
-    background: #C8F135;
-    border: 3px solid #0D3D2B;
-    border-radius: 14px;
-    padding: 2px 18px;
-    display: inline-block;
-  }
-
-  .hero-subtitle {
-    font-size: clamp(0.95rem,2vw,1.15rem);
-    color: rgba(13,61,43,0.62);
-    max-width: 560px;
-    margin: 0 auto 2.5rem;
-    line-height: 1.72;
-    font-weight: 500;
-  }
-
-  /* Floating hero decorations */
-  .hero-float   { position: absolute; z-index: 1; }
-  .hero-float-1 { top: 12%;    right: 7%;  animation: float1 4s   ease-in-out infinite; }
-  .hero-float-2 { top: 20%;    left: 6%;   animation: float2 5s   ease-in-out infinite; }
-  .hero-float-3 { bottom: 25%; right: 8%;  animation: float3 5.5s ease-in-out infinite; }
-  .hero-float-4 { bottom: 30%; left: 5%;   animation: float1 6s   ease-in-out infinite; }
-  .hero-float-5 { top: 58%;    right: 3%;  opacity: 0.45; }
-  .hero-star-1  { position: absolute; z-index: 1; top: 32%;    left: 13%;  color: #5B4FD4; font-size: 1.4rem; opacity: 0.55; }
-  .hero-star-2  { position: absolute; z-index: 1; bottom: 38%; right: 16%; color: #F07060; font-size: 0.9rem; opacity: 0.5; }
-
-  .hero-chain-box {
-    width: 88px;
-    height: 88px;
-    border: 2.5px solid #0D3D2B;
-    border-radius: 12px;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 4px 4px 0 #0D3D2B;
-  }
-
-  .hero-chain-box .mi {
-    font-size: 2.4rem;
-    color: #0D3D2B;
-  }
-
-  .hero-hash-chip {
-    padding: 7px 13px;
-    border: 2.5px solid #0D3D2B;
-    border-radius: 8px;
-    background: #5B4FD4;
-    font-size: 0.68rem;
-    font-weight: 800;
     color: #fff;
-    font-family: monospace;
-    box-shadow: 3px 3px 0 #0D3D2B;
+    margin: 1rem 0 0.25rem;
   }
 
-  .cursor-tilt { transform: rotate(15deg); }
+  .mp-hero-h1-accent {
+    background: linear-gradient(90deg, #2A7D4F, #8FD4A8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
-  /* Browser chrome */
-  .browser-chrome {
-    border: 2.5px solid #0D3D2B;
-    border-radius: 16px;
+  .mp-hero-sub {
+    font-size: clamp(0.88rem, 2vw, 1.05rem);
+    color: rgba(255,255,255,0.5);
+    max-width: 520px;
+    margin: 1.2rem auto 2.2rem;
+    line-height: 1.75;
+    font-weight: 400;
+  }
+
+  /* Browser card */
+  .mp-browser {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
     overflow: hidden;
-    background: #fff;
-    max-width: 600px;
+    max-width: 580px;
     margin: 0 auto 1.5rem;
+    backdrop-filter: blur(10px);
   }
 
-  .browser-tabs {
-    border-bottom: 2.5px solid #0D3D2B;
-    display: flex;
-    align-items: flex-end;
-    padding: 8px 12px 0;
-    gap: 6px;
-    background: #F0F0EC;
+  .mp-browser-bar {
+    background: rgba(255,255,255,0.06);
+    border-bottom: 1.5px solid rgba(255,255,255,0.08);
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 8px;
   }
 
-  .browser-tab-1 {
-    width: 80px;
-    height: 28px;
-    background: #2EC4A0;
-    border-radius: 8px 8px 0 0;
-    border: 2px solid #0D3D2B;
-    border-bottom: none;
+  .mp-browser-dot {
+    width: 8px; height: 8px; border-radius: 50%;
   }
 
-  .browser-tab-2 {
-    width: 60px;
-    height: 22px;
-    background: #5B4FD4;
-    border-radius: 8px 8px 0 0;
-    border: 2px solid #0D3D2B;
-    border-bottom: none;
-    opacity: 0.7;
-  }
-
-  .browser-urlbar {
+  .mp-browser-url {
     flex: 1;
-    display: flex;
-    gap: 6px;
-    padding-bottom: 4px;
-    margin-left: 8px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 7px;
+    padding: 4px 10px;
+    font-size: 10.5px; font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    font-family: 'DM Mono', monospace;
+    margin: 0 8px;
   }
 
-  .browser-url {
+  .mp-search-row {
+    padding: 14px 14px;
+    display: flex; gap: 10px;
+  }
+
+  .mp-search-input {
     flex: 1;
-    height: 22px;
-    background: #C8F135;
-    border-radius: 6px;
-    border: 2px solid #0D3D2B;
-    display: flex;
-    align-items: center;
-    padding-left: 8px;
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px; font-weight: 500;
+    font-family: 'Poppins', sans-serif;
+    color: #fff; outline: none;
+    transition: border-color 0.2s;
   }
+  .mp-search-input:focus { border-color: rgba(42,125,79,0.6); }
+  .mp-search-input::placeholder { color: rgba(255,255,255,0.28); }
 
-  .browser-url span {
-    font-size: 0.58rem;
-    font-weight: 800;
-    color: #0D3D2B;
-    font-family: monospace;
-  }
-
-  .browser-go {
-    width: 58px;
-    height: 22px;
-    background: #F07060;
-    border-radius: 6px;
-    border: 2px solid #0D3D2B;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .browser-go span {
-    font-size: 0.58rem;
-    font-weight: 800;
-    color: #0D3D2B;
-  }
-
-  .browser-menu {
-    width: 26px;
-    height: 22px;
-    border: 2px solid #0D3D2B;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .browser-menu .mi {
-    font-size: 1rem;
-    color: #0D3D2B;
-  }
-
-  /* Search row */
-  .search-row {
-    padding: 1rem 1.25rem;
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-  }
-
-  .search-input {
-    flex: 1;
-    padding: 0.7rem 1rem;
-    border: 2px solid #0D3D2B;
-    border-radius: 8px;
-    background: #F8F8F4;
-    font-size: 0.88rem;
-    font-family: inherit;
-    font-weight: 500;
-    outline: none;
-    color: #0D3D2B;
-    transition: background 0.2s;
-  }
-
-  .search-input:focus {
-    background: #fff;
-  }
-
-  .search-input::placeholder {
-    color: rgba(13,61,43,0.38);
-  }
-
-  .search-btn {
-    padding: 0.7rem 1.4rem;
-    border-radius: 8px;
-    border: 2.5px solid #0D3D2B;
-    background: #C8F135;
-    color: #0D3D2B;
-    font-size: 0.875rem;
-    font-weight: 800;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.18s;
+  .mp-search-btn {
+    background: #2A7D4F; color: #fff;
+    border: none; border-radius: 12px;
+    padding: 10px 18px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: background 0.15s;
     white-space: nowrap;
   }
+  .mp-search-btn:hover { background: #1f6040; }
 
-  .search-btn:hover {
-    background: #0D3D2B;
-    color: #C8F135;
+  /* Live hash bar */
+  .mp-hash-bar {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 7px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
   }
-
-  /* Hash bar */
-  .hash-bar {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem 1.1rem;
-    border: 2.5px solid #0D3D2B;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 3px 3px 0 #0D3D2B;
-  }
-
-  .hash-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+  .mp-hash-dot {
+    width: 7px; height: 7px; border-radius: 50%;
     background: #2EC4A0;
-    box-shadow: 0 0 0 3px rgba(46,196,160,0.25);
-    flex-shrink: 0;
+    box-shadow: 0 0 0 3px rgba(46,196,160,0.2);
   }
-
-  .hash-label {
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    color: rgba(13,61,43,0.45);
+  .mp-hash-label {
+    font-size: 9.5px; font-weight: 700;
+    letter-spacing: 0.1em; color: rgba(255,255,255,0.35);
   }
-
-  .hash-value {
-    font-size: 0.7rem;
+  .mp-hash-value {
     font-family: 'DM Mono', monospace;
-    color: #5B4FD4;
-    font-weight: 500;
+    font-size: 11px; color: #8FD4A8;
     animation: hashfade 2.2s ease infinite;
   }
 
-  /* ── STATS ── */
-  .stats-bar {
-    border-top: 2.5px solid #0D3D2B;
-    border-bottom: 2.5px solid #0D3D2B;
+  /* Floating decorative chips */
+  .mp-float-chip {
+    padding: 8px 14px;
+    background: rgba(26,26,26,0.85);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    font-size: 11px; font-weight: 600;
+    color: #fff;
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .mp-float-icon {
+    width: 24px; height: 24px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mp-float-icon .mi { font-size: 13px; color: #fff; }
+
+  /* ════════════════════════════
+     STATS
+  ════════════════════════════ */
+  .mp-stats {
     display: grid;
-    grid-template-columns: repeat(4,1fr);
-    background: #fff;
-    position: relative;
-    z-index: 2;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    background: #1a1a1a;
+    border-top: 1.5px solid rgba(255,255,255,0.08);
+    border-bottom: 1.5px solid rgba(255,255,255,0.08);
   }
 
-  .stat-cell {
+  .mp-stat {
     padding: 2rem 1.5rem;
     text-align: center;
+    position: relative; overflow: hidden;
     transition: transform 0.2s;
+    cursor: default;
   }
-
-  .stat-cell:not(:last-child) {
-    border-right: 2.5px solid #0D3D2B;
+  .mp-stat:not(:last-child) {
+    border-right: 1.5px solid rgba(255,255,255,0.08);
   }
+  .mp-stat:hover { transform: translateY(-3px); }
 
-  .stat-cell:hover {
-    transform: translateY(-3px);
-  }
-
-  .stat-value {
-    display: inline-block;
-    border: 2.5px solid #0D3D2B;
-    border-radius: 10px;
-    padding: 3px 16px;
-    font-size: 2rem;
-    font-weight: 800;
+  .mp-stat-value {
+    font-size: 2rem; font-weight: 800;
     letter-spacing: -0.03em;
-    margin-bottom: 0.5rem;
-    color: #0D3D2B;
+    margin-bottom: 0.4rem;
   }
-
-  .stat-label {
-    font-size: 0.73rem;
-    font-weight: 700;
+  .mp-stat-label {
+    font-size: 10.5px; font-weight: 600;
     letter-spacing: 0.06em;
-    color: rgba(13,61,43,0.5);
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+  }
+  .mp-stat-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 9.5px; font-weight: 700;
+    padding: 2px 9px; border-radius: 20px;
+    margin-top: 0.4rem; width: fit-content; margin-left: auto; margin-right: auto;
   }
 
-  /* ── FEATURES ── */
-  .features-section {
-    padding: 6rem 2.5rem;
-    position: relative;
-    z-index: 2;
+  /* ════════════════════════════
+     FEATURES
+  ════════════════════════════ */
+  .mp-features {
+    padding: 5rem 2rem;
+    background: #dcdcdc;
+    position: relative; z-index: 2;
   }
 
-  .section-header {
-    margin-bottom: 3.5rem;
+  .mp-section-label {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: #f0f0f0;
+    border: 1.5px solid #d0d0d0;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; color: #666;
   }
 
-  .section-title {
-    font-size: clamp(2rem,5vw,3.5rem);
+  .mp-section-title {
+    font-size: clamp(1.8rem, 4.5vw, 3.2rem);
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.1;
-    margin-top: 1rem;
+    margin: 1rem 0 0.75rem;
+    color: #1a1a1a;
+  }
+  .mp-section-title span { color: #2A7D4F; }
+
+  .mp-section-sub {
+    font-size: 0.9rem;
+    color: rgba(26,26,26,0.5);
+    line-height: 1.7;
+    max-width: 520px;
   }
 
-  .features-grid {
+  .mp-features-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .mp-features-grid {
     display: grid;
-    grid-template-columns: repeat(3,1fr);
-    border: 2.5px solid #0D3D2B;
-    border-radius: 16px;
-    overflow: hidden;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
   }
 
-  .feat-card {
-    padding: 2rem;
+  .mp-feat-card {
     background: #fff;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 20px;
+    padding: 1.5rem;
     transition: transform 0.2s, box-shadow 0.2s;
   }
-
-  .feat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 5px 5px 0 #0D3D2B;
+  .mp-feat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.1);
   }
 
-  .feat-card:nth-child(-n+3)     { border-bottom: 2.5px solid #0D3D2B; }
-  .feat-card:not(:nth-child(3n)) { border-right:  2.5px solid #0D3D2B; }
-
-  .feat-icon {
-    width: 48px;
-    height: 48px;
-    border: 2.5px solid #0D3D2B;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
+  .mp-feat-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 0.85rem;
   }
+  .mp-feat-icon .mi { font-size: 1.4rem; color: #fff; }
 
-  .feat-icon .mi {
-    font-size: 1.5rem;
-    color: #0D3D2B;
-  }
-
-  .feat-tag {
+  .mp-feat-tag {
     display: inline-block;
-    border: 1.5px solid #0D3D2B;
-    border-radius: 4px;
-    padding: 1px 8px;
-    font-size: 0.6rem;
-    font-weight: 800;
+    border-radius: 6px;
+    padding: 2px 9px;
+    font-size: 9px; font-weight: 800;
     letter-spacing: 0.1em;
-    margin-bottom: 0.75rem;
-    color: #0D3D2B;
+    margin-bottom: 0.6rem;
+    color: #fff;
   }
 
-  .feat-title {
-    font-weight: 800;
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-    color: #0D3D2B;
+  .mp-feat-title {
+    font-weight: 800; font-size: 0.95rem;
+    margin-bottom: 0.45rem; color: #1a1a1a;
   }
 
-  .feat-desc {
-    font-size: 0.84rem;
-    color: rgba(13,61,43,0.58);
+  .mp-feat-desc {
+    font-size: 0.81rem;
+    color: rgba(26,26,26,0.5);
     line-height: 1.65;
   }
 
-  /* ── HOW IT WORKS ── */
-  .how-section {
-    border-top: 2.5px solid #0D3D2B;
-    border-bottom: 2.5px solid #0D3D2B;
-    background: #0D3D2B;
-    padding: 6rem 2.5rem;
-    position: relative;
-    z-index: 2;
+  /* ════════════════════════════
+     HOW IT WORKS
+  ════════════════════════════ */
+  .mp-how {
+    background: #1a1a1a;
+    padding: 5rem 2rem;
+    position: relative; z-index: 2;
   }
 
-  .how-header {
-    margin-bottom: 3.5rem;
-  }
-
-  .how-tag {
-    display: inline-block;
-    background: #C8F135;
-    border: 2px solid rgba(255,255,255,0.15);
-    border-radius: 4px;
-    padding: 2px 10px;
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    color: #0D3D2B;
+  .mp-how-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(42,125,79,0.15);
+    border: 1.5px solid rgba(42,125,79,0.3);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; color: #8FD4A8;
     margin-bottom: 1rem;
   }
 
-  .how-title {
-    font-size: clamp(2rem,5vw,3.5rem);
+  .mp-how-title {
+    font-size: clamp(1.8rem, 4.5vw, 3rem);
     font-weight: 800;
     letter-spacing: -0.03em;
-    color: #fff;
-    line-height: 1.1;
+    line-height: 1.1; color: #fff;
+    margin-bottom: 2.5rem;
   }
+  .mp-how-title span { color: #2A7D4F; }
 
-  .how-grid {
+  .mp-how-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    gap: 3rem;
     align-items: start;
   }
 
-  .steps-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
+  .mp-steps-list {
+    display: flex; flex-direction: column; gap: 6px;
   }
 
-  .step-row {
-    display: flex;
-    gap: 1rem;
-    padding: 1.25rem;
-    border-radius: 12px;
+  .mp-step-row {
+    display: flex; gap: 1rem;
+    padding: 1rem 1.1rem;
+    border-radius: 16px;
     cursor: pointer;
     transition: all 0.2s;
-    border: 2px solid rgba(255,255,255,0.1);
+    border: 1.5px solid rgba(255,255,255,0.07);
   }
+  .mp-step-row:hover { background: rgba(255,255,255,0.04); }
 
-  .step-row:hover {
-    background: rgba(255,255,255,0.07);
-  }
-
-  .step-num {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    border: 2px solid rgba(255,255,255,0.15);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.62rem;
-    font-weight: 800;
+  .mp-step-num {
+    width: 34px; height: 34px; min-width: 34px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800;
     font-family: 'DM Mono', monospace;
     transition: all 0.2s;
   }
 
-  .step-title {
-    font-weight: 800;
-    font-size: 0.95rem;
-    color: #fff;
-    margin-bottom: 0.3rem;
+  .mp-step-title {
+    font-weight: 700; font-size: 0.9rem;
+    color: #fff; margin-bottom: 0.25rem;
   }
-
-  .step-desc {
-    font-size: 0.82rem;
-    color: rgba(255,255,255,0.48);
+  .mp-step-desc {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.4);
     line-height: 1.6;
   }
 
   /* Ledger chrome */
-  .ledger-chrome {
-    border: 2.5px solid #0D3D2B;
-    border-radius: 16px;
+  .mp-ledger {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
     overflow: hidden;
-    background: #fff;
   }
 
-  .ledger-tab-1 {
-    width: 80px;
-    height: 28px;
-    background: #C8F135;
-    border-radius: 8px 8px 0 0;
-    border: 2px solid #0D3D2B;
-    border-bottom: none;
+  .mp-ledger-topbar {
+    background: rgba(255,255,255,0.05);
+    border-bottom: 1.5px solid rgba(255,255,255,0.08);
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 6px;
   }
 
-  .ledger-tab-2 {
-    width: 60px;
-    height: 22px;
-    background: #5B4FD4;
-    border-radius: 8px 8px 0 0;
-    border: 2px solid #0D3D2B;
-    border-bottom: none;
-    opacity: 0.7;
-  }
-
-  .ledger-body {
-    padding: 1.25rem;
-  }
-
-  .ledger-meta {
-    font-size: 0.62rem;
-    font-weight: 800;
+  .mp-ledger-meta {
+    font-size: 9.5px; font-weight: 700;
     letter-spacing: 0.1em;
-    color: rgba(13,61,43,0.38);
-    margin-bottom: 1rem;
+    color: rgba(255,255,255,0.3);
+    padding: 1rem 1.25rem 0.6rem;
   }
 
-  .ledger-connector {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 3px 0 3px 14px;
-  }
+  .mp-ledger-body { padding: 0 1.25rem 1.25rem; }
 
-  .ledger-conn-line {
-    width: 2px;
-    height: 14px;
-    background: rgba(13,61,43,0.12);
+  .mp-ledger-connector {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 0 4px 12px;
+  }
+  .mp-ledger-conn-line {
+    width: 2px; height: 12px;
+    background: rgba(255,255,255,0.1);
     border-radius: 2px;
   }
-
-  .ledger-conn-text {
-    font-size: 0.58rem;
-    color: rgba(13,61,43,0.28);
-    font-family: monospace;
-  }
-
-  .ledger-block {
-    border-radius: 10px;
-    padding: 0.85rem 1rem;
-  }
-
-  .ledger-blk-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.35rem;
-  }
-
-  .ledger-blk-event {
-    font-weight: 800;
-    font-size: 0.82rem;
-    color: #0D3D2B;
-  }
-
-  .ledger-blk-badge {
-    border: 1.5px solid #0D3D2B;
-    border-radius: 4px;
-    padding: 1px 7px;
-    font-size: 0.58rem;
-    font-weight: 800;
-    color: #0D3D2B;
-  }
-
-  .ledger-blk-sub {
-    font-size: 0.7rem;
-    color: rgba(13,61,43,0.52);
-    margin-bottom: 0.35rem;
-  }
-
-  .ledger-blk-hash {
+  .mp-ledger-conn-text {
+    font-size: 9px; color: rgba(255,255,255,0.2);
     font-family: 'DM Mono', monospace;
-    font-size: 0.64rem;
-    color: #5B4FD4;
   }
 
-  /* ── VERIFY ── */
-  .verify-section {
-    padding: 6rem 2.5rem;
-    position: relative;
-    z-index: 2;
+  .mp-ledger-block {
+    border-radius: 12px;
+    padding: 0.8rem 1rem;
+    border: 1.5px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+    transition: background 0.2s;
+  }
+  .mp-ledger-block:hover { background: rgba(255,255,255,0.05); }
+
+  .mp-ledger-blk-top {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 0.3rem;
+  }
+  .mp-ledger-blk-event {
+    font-weight: 700; font-size: 0.8rem; color: #fff;
+  }
+  .mp-ledger-blk-badge {
+    border-radius: 6px; padding: 2px 8px;
+    font-size: 9px; font-weight: 800; color: #fff;
+  }
+  .mp-ledger-blk-sub {
+    font-size: 0.68rem; color: rgba(255,255,255,0.4);
+    margin-bottom: 0.3rem;
+  }
+  .mp-ledger-blk-hash {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem; color: #8FD4A8;
   }
 
-  .verify-grid {
+  /* ════════════════════════════
+     VERIFY / PROPERTY DETAIL
+  ════════════════════════════ */
+  .mp-verify {
+    padding: 5rem 2rem;
+    background: #dcdcdc;
+    position: relative; z-index: 2;
+  }
+
+  .mp-verify-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 5rem;
+    gap: 4rem;
     align-items: center;
   }
 
-  .verify-title {
-    font-size: clamp(2rem,4vw,3rem);
+  .mp-verify-title {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.1;
-    margin: 1rem 0;
+    margin: 1rem 0; color: #1a1a1a;
   }
+  .mp-verify-title span { color: #2A7D4F; }
 
-  .verify-desc {
-    font-size: 0.95rem;
-    color: rgba(13,61,43,0.6);
+  .mp-verify-desc {
+    font-size: 0.9rem;
+    color: rgba(26,26,26,0.55);
     line-height: 1.72;
-    margin-bottom: 2rem;
+    margin-bottom: 1.75rem;
   }
 
-  .verify-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
+  .mp-verify-list {
+    display: flex; flex-direction: column; gap: 0.65rem;
   }
 
-  .verify-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  .mp-verify-item {
+    display: flex; align-items: center; gap: 0.7rem;
   }
 
-  .verify-check {
-    width: 22px;
-    height: 22px;
-    background: #C8F135;
-    border: 2px solid #0D3D2B;
-    border-radius: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .mp-verify-check {
+    width: 20px; height: 20px;
+    background: #1a1a1a;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
+  .mp-verify-check .mi { font-size: 12px; color: #2A7D4F; }
 
-  .verify-check .mi {
-    font-size: 0.85rem;
-    color: #0D3D2B;
-    font-weight: 800;
+  .mp-verify-text {
+    font-size: 0.87rem; font-weight: 600; color: #1a1a1a;
   }
 
-  .verify-text {
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
+  .mp-prop-wrap { position: relative; }
 
-  .prop-wrap {
-    position: relative;
-  }
-
-  .prop-cursor {
-    position: absolute;
-    top: -18px;
-    right: 18px;
-    z-index: 3;
-  }
-
-  .prop-card {
-    border: 2.5px solid #0D3D2B;
-    border-radius: 16px;
+  .mp-prop-card {
     background: #fff;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 24px;
     overflow: hidden;
-    box-shadow: 6px 6px 0 #0D3D2B;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
   }
 
-  .prop-header {
-    background: #C8F135;
-    border-bottom: 2.5px solid #0D3D2B;
-    padding: 0.85rem 1.25rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .mp-prop-header {
+    background: #1a1a1a;
+    padding: 1rem 1.25rem;
+    display: flex; justify-content: space-between; align-items: center;
   }
 
-  .prop-id {
-    font-weight: 800;
-    font-size: 0.82rem;
+  .mp-prop-id {
+    font-weight: 700; font-size: 0.8rem; color: #fff;
+    font-family: 'DM Mono', monospace;
   }
 
-  .prop-verified {
-    background: #2EC4A0;
-    border: 1.5px solid #0D3D2B;
-    border-radius: 5px;
-    padding: 2px 10px;
-    font-size: 0.62rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    gap: 3px;
+  .mp-prop-verified {
+    background: rgba(46,196,160,0.15);
+    border: 1.5px solid rgba(46,196,160,0.3);
+    border-radius: 8px;
+    padding: 3px 10px;
+    font-size: 10px; font-weight: 700;
+    color: #2EC4A0;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .mp-prop-verified .mi { font-size: 12px; }
+
+  .mp-prop-body { padding: 1.25rem; }
+
+  .mp-prop-row {
+    display: flex; justify-content: space-between;
+    padding: 0.58rem 0;
+  }
+  .mp-prop-row:not(:last-child) {
+    border-bottom: 1px solid rgba(26,26,26,0.08);
   }
 
-  .prop-verified .mi {
-    font-size: 0.75rem;
+  .mp-prop-label {
+    font-size: 0.74rem; color: rgba(26,26,26,0.45); font-weight: 500;
+  }
+  .mp-prop-value {
+    font-size: 0.8rem; font-weight: 700; color: #1a1a1a;
+  }
+  .mp-prop-bold { font-weight: 800; }
+  .mp-prop-badge {
+    background: rgba(42,125,79,0.1);
+    border: 1.5px solid rgba(42,125,79,0.25);
+    border-radius: 6px; padding: 1px 8px;
+    font-size: 10px; font-weight: 700; color: #2A7D4F;
   }
 
-  .prop-body {
-    padding: 1.25rem;
-  }
-
-  .prop-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.6rem 0;
-  }
-
-  .prop-row:not(:last-child) {
-    border-bottom: 1px solid rgba(13,61,43,0.09);
-  }
-
-  .prop-row-label {
-    font-size: 0.76rem;
-    color: rgba(13,61,43,0.48);
-    font-weight: 600;
-  }
-
-  .prop-row-value {
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: #0D3D2B;
-  }
-
-  .prop-row-bold {
-    font-weight: 800;
-  }
-
-  .prop-row-badge {
-    background: #C8F135;
-    border: 1.5px solid #0D3D2B;
-    border-radius: 4px;
-    padding: 1px 8px;
-    font-size: 0.7rem;
-    font-weight: 800;
-  }
-
-  .prop-hash-box {
+  .mp-prop-hash {
     margin-top: 1rem;
     padding: 0.65rem;
-    background: #F0F0EC;
-    border: 1.5px solid rgba(13,61,43,0.13);
-    border-radius: 8px;
+    background: #f8f8f8;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 12px;
   }
-
-  .prop-hash-lbl {
-    font-size: 0.58rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    color: rgba(13,61,43,0.38);
+  .mp-prop-hash-lbl {
+    font-size: 9px; font-weight: 800;
+    letter-spacing: 0.1em; color: rgba(26,26,26,0.35);
     margin-bottom: 3px;
   }
-
-  .prop-hash-val {
+  .mp-prop-hash-val {
     font-family: 'DM Mono', monospace;
-    font-size: 0.66rem;
-    color: #5B4FD4;
+    font-size: 0.64rem; color: #2A7D4F;
   }
 
-  /* ── DASHBOARDS ── */
-  .dashboards-section {
-    border-top: 2.5px solid #0D3D2B;
-    background: #fff;
-    padding: 6rem 2.5rem;
-    position: relative;
-    z-index: 2;
+  /* ════════════════════════════
+     DASHBOARDS
+  ════════════════════════════ */
+  .mp-dashboards {
+    background: #1a1a1a;
+    padding: 5rem 2rem;
+    position: relative; z-index: 2;
   }
 
-  .dashboards-header {
-    text-align: center;
-    margin-bottom: 3.5rem;
+  .mp-dash-header {
+    text-align: center; margin-bottom: 2.5rem;
+  }
+  .mp-dash-title {
+    font-size: clamp(1.8rem, 4.5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.03em; color: #fff; margin-top: 0.75rem;
+  }
+  .mp-dash-title span { color: #2A7D4F; }
+  .mp-dash-sub {
+    font-size: 0.9rem; color: rgba(255,255,255,0.4);
+    margin-top: 0.5rem;
   }
 
-  .dashboards-grid {
+  .mp-dash-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    gap: 14px;
   }
 
-  .dash-card {
-    border: 2.5px solid #0D3D2B;
-    border-radius: 16px;
+  .mp-dash-card {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
     overflow: hidden;
+    transition: border-color 0.2s;
   }
+  .mp-dash-card:hover { border-color: rgba(255,255,255,0.2); }
 
-  .dash-card-citizen   { box-shadow: 5px 5px 0 #F07060; }
-  .dash-card-registrar { box-shadow: 5px 5px 0 #5B4FD4; }
-
-  .dash-head {
-    border-bottom: 2.5px solid #0D3D2B;
+  .mp-dash-head {
     padding: 1.25rem 1.5rem;
+    border-bottom: 1.5px solid rgba(255,255,255,0.08);
   }
 
-  .dash-head-citizen   { background: #F07060; }
-  .dash-head-registrar { background: #5B4FD4; }
-
-  .dash-icon {
-    margin-bottom: 0.4rem;
+  .mp-dash-head-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 0.7rem;
   }
+  .mp-dash-head-icon .mi { font-size: 1.4rem; color: #fff; }
 
-  .dash-icon .mi {
-    font-size: 2rem;
-    color: #fff;
+  .mp-dash-name {
+    font-weight: 800; font-size: 1.2rem; color: #fff;
   }
-
-  .dash-name {
-    font-weight: 800;
-    font-size: 1.3rem;
-    color: #fff;
-  }
-
-  .dash-sub {
-    font-size: 0.78rem;
+  .mp-dash-sub-txt {
+    font-size: 0.78rem; color: rgba(255,255,255,0.45);
     margin-top: 0.2rem;
-    color: rgba(255,255,255,0.7);
   }
 
-  .dash-body {
-    padding: 1.5rem;
-    background: #fff;
+  .mp-dash-body { padding: 1.25rem 1.5rem; }
+
+  .mp-dash-item {
+    display: flex; gap: 0.7rem;
+    padding: 0.5rem 0;
+    align-items: center;
+  }
+  .mp-dash-item:not(:last-of-type) {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
   }
 
-  .dash-item {
-    display: flex;
-    gap: 0.75rem;
-    padding: 0.55rem 0;
+  .mp-dash-arrow { font-weight: 800; font-size: 0.75rem; flex-shrink: 0; }
+  .mp-dash-item-text { font-size: 0.83rem; font-weight: 500; color: rgba(255,255,255,0.75); }
+
+  .mp-dash-btn {
+    margin-top: 1.1rem; width: 100%;
+    padding: 0.7rem;
+    border: none; border-radius: 13px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: opacity 0.18s;
   }
+  .mp-dash-btn:hover { opacity: 0.88; }
 
-  .dash-item:not(:last-of-type) {
-    border-bottom: 1px solid rgba(13,61,43,0.08);
-  }
-
-  .dash-arrow-green  { color: #2EC4A0; font-weight: 800; }
-  .dash-arrow-purple { color: #5B4FD4; font-weight: 800; }
-
-  .dash-item-text {
-    font-size: 0.85rem;
-    font-weight: 600;
-  }
-
-  .dash-btn {
-    margin-top: 1.25rem;
-    width: 100%;
-    padding: 0.75rem;
-    border: 2.5px solid #0D3D2B;
-    border-radius: 10px;
-    font-size: 0.875rem;
-    font-weight: 800;
-    cursor: pointer;
-    font-family: inherit;
-    transition: opacity 0.18s;
-  }
-
-  .dash-btn:hover {
-    opacity: 0.88;
-  }
-
-  .dash-btn-citizen   { background: #F07060; color: #fff; }
-  .dash-btn-registrar { background: #5B4FD4; color: #fff; }
-
-  /* ── CTA ── */
-  .cta-section {
-    border-top: 2.5px solid #0D3D2B;
-    padding: 6rem 2.5rem 5rem;
+  /* ════════════════════════════
+     CTA
+  ════════════════════════════ */
+  .mp-cta {
+    padding: 6rem 2rem 5rem;
+    background: #dcdcdc;
     text-align: center;
-    position: relative;
-    z-index: 2;
-    overflow: hidden;
+    position: relative; overflow: hidden; z-index: 2;
   }
 
-  .cta-bg-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
+  .mp-cta-bg-text {
+    position: absolute; top: 50%; left: 50%;
     transform: translate(-50%,-50%);
-    font-size: 18vw;
-    font-weight: 800;
-    color: rgba(13,61,43,0.04);
+    font-size: 18vw; font-weight: 800;
+    color: rgba(26,26,26,0.04);
     letter-spacing: -0.05em;
-    white-space: nowrap;
-    user-select: none;
-    pointer-events: none;
+    white-space: nowrap; user-select: none; pointer-events: none;
   }
 
-  .cta-inner {
-    position: relative;
-    z-index: 1;
-    max-width: 700px;
-    margin: 0 auto;
+  .mp-cta-inner {
+    position: relative; z-index: 1;
+    max-width: 680px; margin: 0 auto;
   }
 
-  .cta-title {
-    font-size: clamp(2.5rem,6vw,4.5rem);
+  .mp-cta-title {
+    font-size: clamp(2.2rem, 6vw, 4rem);
     font-weight: 800;
     letter-spacing: -0.04em;
-    line-height: 1.05;
-    margin: 1.5rem 0 1.25rem;
+    line-height: 1.05; color: #1a1a1a;
+    margin: 1.25rem 0 1rem;
   }
-
-  .cta-highlight {
-    background: #C8F135;
-    border: 3px solid #0D3D2B;
-    border-radius: 12px;
-    padding: 0 14px;
+  .mp-cta-title span {
+    background: #1a1a1a; color: #fff;
+    border-radius: 14px; padding: 0 14px;
     display: inline-block;
   }
 
-  .cta-desc {
-    font-size: 1rem;
-    color: rgba(13,61,43,0.58);
-    line-height: 1.72;
-    margin-bottom: 2.5rem;
+  .mp-cta-desc {
+    font-size: 0.95rem;
+    color: rgba(26,26,26,0.55);
+    line-height: 1.72; margin-bottom: 2.25rem;
   }
 
-  .cta-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
+  .mp-cta-actions {
+    display: flex; gap: 12px;
+    justify-content: center; flex-wrap: wrap;
   }
 
-  .cta-btn {
-    padding: 0.9rem 2.2rem;
-    border-radius: 12px;
-    border: 2.5px solid #0D3D2B;
-    font-size: 1rem;
-    font-weight: 800;
-    cursor: pointer;
-    font-family: inherit;
-    box-shadow: 4px 4px 0 #0D3D2B;
-    transition: background 0.18s;
+  .mp-cta-btn {
+    padding: 0.85rem 2rem;
+    border-radius: 13px; border: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.18s;
   }
-
-  .cta-primary {
-    background: #C8F135;
-    color: #0D3D2B;
+  .mp-cta-primary {
+    background: #1a1a1a; color: #fff;
   }
-
-  .cta-primary:hover {
-    background: #a8d41a;
+  .mp-cta-primary:hover { background: #2c2c2c; }
+  .mp-cta-secondary {
+    background: #fff; color: #1a1a1a;
+    border: 1.5px solid #d0d0d0;
   }
+  .mp-cta-secondary:hover { border-color: #aaa; }
 
-  .cta-secondary {
-    background: transparent;
-    color: #0D3D2B;
-  }
-
-  .cta-secondary:hover {
-    background: #F0F0EC;
-  }
-
-  /* ── FOOTER ── */
-  .main-footer {
-    position: relative;
-    z-index: 2;
-    background: #0D3D2B;
+  /* ════════════════════════════
+     FOOTER
+  ════════════════════════════ */
+  .mp-footer {
+    background: #161616;
     font-family: 'Poppins', sans-serif;
     overflow: hidden;
-    /* Flat top — no wave, no margin, no curve */
-    border-top: 1px solid rgba(255,255,255,0.08);
+    position: relative; z-index: 2;
   }
 
-  /* Outer wrapper: brand col on left, bordered box on right */
-  .footer-body {
-    padding: 2.5rem 2.5rem 0;
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: stretch;
-    gap: 2rem;
+  .mp-footer-body {
+    padding: 0 0 0;
+    max-width: 100%; margin: 0 auto;
+    display: flex; align-items: stretch; gap: 0;
   }
 
-  /* Brand column — sits freely on the left, no border */
-  .footer-brand-col {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    flex: 0 0 300px;
-    padding-right: 1rem;
-    padding-bottom: 2.5rem;
+  .mp-footer-brand {
+    display: none;
   }
 
-  .footer-logo-row {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    margin-bottom: 0.25rem;
+  .mp-footer-logo-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 0.2rem;
   }
 
-  .footer-logo-img {
-    width: 38px;
-    height: 38px;
-    border-radius: 8px;
-    object-fit: contain;
-    flex-shrink: 0;
+  .mp-footer-logo-icon {
+    width: 32px; height: 32px;
   }
 
-  .footer-name {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #fff;
+  .mp-footer-brand-name {
+    font-size: 1.1rem; font-weight: 800; color: #fff;
     letter-spacing: -0.01em;
-    line-height: 1;
-    font-family: 'Poppins', sans-serif;
   }
 
-  .footer-tagline {
-    font-size: 0.85rem;
-    color: rgba(255,255,255,0.5);
-    font-weight: 400;
-    line-height: 1.65;
-    max-width: 240px;
-    font-family: 'Poppins', sans-serif;
+  .mp-footer-tagline {
+    font-size: 0.82rem; color: rgba(255,255,255,0.4);
+    line-height: 1.65; max-width: 220px;
   }
 
-  .footer-builders {
-    font-size: 0.72rem;
-    color: rgba(255,255,255,0.25);
-    font-weight: 400;
-    margin-top: auto;
-    padding-top: 2rem;
-    font-family: 'Poppins', sans-serif;
+  .mp-footer-copyright {
+    font-size: 0.68rem; color: rgba(255,255,255,0.2);
+    margin-top: auto; padding-top: 1.5rem;
+    letter-spacing: 0.04em;
   }
 
-  /* The bordered rectangle that holds the 3 link columns */
-  .footer-cols-box {
+  .mp-footer-cols {
     flex: 1;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    border: 1.5px solid rgba(255,255,255,0.18);
+    display: flex;
     overflow: hidden;
+    margin: 2rem 2rem 2rem;
+    position: relative;
   }
 
-  /* Each link column */
-  .footer-col {
+  .mp-footer-cols-row {
+    display: contents;
+  }
+
+  .mp-footer-col-border-bottom {
+    border-bottom: 1.5px solid rgba(255,255,255,0.18);
+  }
+
+  .mp-footer-col {
+    flex: 1;
+    display: flex; flex-direction: column; gap: 0;
+    padding: 3rem 2rem 2.5rem;
+    align-self: flex-start;
+  }
+  .mp-footer-col:not(:last-child) {
+    border-right: 1.5px solid rgba(255,255,255,0.18);
+  }
+
+  .mp-footer-social-icons {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 0.5rem;
+  }
+
+  .mp-footer-social-btn {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: rgba(255,255,255,0.5);
+    transition: border-color 0.18s, background 0.18s, color 0.18s;
+  }
+  .mp-footer-social-btn:hover {
+    border-color: #2EC4A0;
+    background: rgba(46,196,160,0.08);
+    color: #2EC4A0;
+  }
+  .mp-footer-col:not(:last-child) {
+    border-right: 1.5px solid rgba(255,255,255,0.08);
+  }
+
+  .mp-footer-col-heading {
+    font-size: 0.85rem; font-weight: 700; color: rgba(255,255,255,0.9);
+    margin-bottom: 1.25rem;
+  }
+
+  .mp-footer-col-link {
+    font-size: 0.82rem; color: rgba(255,255,255,0.4);
+    cursor: pointer; padding: 0.4rem 0;
+    display: flex; align-items: center; gap: 4px;
+    transition: color 0.18s;
+  }
+  .mp-footer-col-link:hover { color: #8FD4A8; }
+
+
+  .mp-footer-right-panel {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 0;
-    padding: 2rem 2rem 2.5rem;
+    border-left: 1.5px solid rgba(255,255,255,0.18);
+    align-self: stretch;
   }
 
-  .footer-col:not(:last-child) {
-    border-right: 1px solid rgba(255,255,255,0.15);
+  .mp-footer-col-connect {
+    border-left: none !important;
+    border-bottom: 1.5px solid rgba(255,255,255,0.18);
+    align-self: auto !important;
+    flex: 0 !important;
   }
 
-  .footer-col-heading {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: rgba(255,255,255,0.9);
-    letter-spacing: 0.01em;
-    margin-bottom: 1.25rem;
-    font-family: 'Poppins', sans-serif;
+  .mp-footer-col-legal {
+    border-left: none !important;
+    align-self: auto !important;
+    flex: 1 !important;
+    border-bottom: 1.5px solid rgba(255,255,255,0.18);
   }
 
-  .footer-col-link {
-    font-size: 0.82rem;
-    color: rgba(255,255,255,0.45);
-    font-weight: 400;
-    cursor: pointer;
-    transition: color 0.18s;
-    white-space: nowrap;
-    padding: 0.38rem 0;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-family: 'Poppins', sans-serif;
-    text-decoration: none;
-  }
-
-  .footer-col-link:hover {
-    color: #C8F135;
-  }
-
-  .footer-col-link .ext-arrow {
-    font-size: 0.7rem;
-    opacity: 0.55;
-  }
-
-  /* Privacy choices badge */
-  .footer-privacy-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.82rem;
-    color: rgba(255,255,255,0.45);
-    font-weight: 400;
-    cursor: pointer;
-    padding: 0.38rem 0;
-    transition: color 0.18s;
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .footer-privacy-badge:hover {
-    color: rgba(255,255,255,0.7);
-  }
-
-  .footer-privacy-icon {
-    display: inline-flex;
-    align-items: center;
-    background: #1a73e8;
-    border-radius: 4px;
-    padding: 2px 5px;
-    font-size: 0.6rem;
+  .mp-footer-bg {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: flex; align-items: center; gap: 0.25em;
+    font-size: 9vw;
     font-weight: 800;
-    color: #fff;
-    flex-shrink: 0;
-    gap: 2px;
-  }
-
-  .footer-privacy-x {
-    background: #e53935;
-    border-radius: 3px;
-    padding: 1px 3px;
-    font-size: 0.55rem;
-  }
-
-  /* Large watermark text — sits BELOW the footer-body, inside the footer */
-  .footer-bg-word {
-    display: block;
-    text-align: center;
-    font-size: clamp(4rem, 14vw, 11rem);
-    font-weight: 800;
-    color: rgba(255,255,255,0.05);
+    color: #ffffff;
     letter-spacing: -0.03em;
     white-space: nowrap;
-    user-select: none;
-    pointer-events: none;
-    font-family: 'Poppins', sans-serif;
-    line-height: 0.85;
+    user-select: none; pointer-events: none;
+    line-height: 1;
+    padding: 0 0 0.4rem 1.5rem;
     overflow: hidden;
-    padding-bottom: 0.5rem;
+    max-width: 100%;
   }
 
-  /* Footer responsive */
-  @media (max-width: 900px) {
-    .footer-body {
-      flex-direction: column;
-      gap: 2rem;
-    }
-
-    .footer-brand-col {
-      flex: none;
-      padding-right: 0;
-      padding-bottom: 0;
-    }
-
-    .footer-cols-box {
-      grid-template-columns: 1fr 1fr 1fr;
-    }
+  .mp-footer-wm-logo {
+    height: 0.8em;
+    width: auto;
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
   }
 
-  @media (max-width: 600px) {
-    .footer-body {
-      padding: 2rem 1.25rem 0;
-    }
-
-    .footer-cols-box {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .footer-col:last-child {
-      border-right: none;
-      border-top: 1px solid rgba(255,255,255,0.15);
-      grid-column: 1 / -1;
-    }
+  .mp-footer-copyright-bottom {
+    font-size: 0.68rem; color: rgba(255,255,255,0.7);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2rem;
   }
 
-  /* ── RESPONSIVE ── */
-
-  /* Tablet — ≤ 1024px */
+  /* ════════════════════════════
+     RESPONSIVE
+  ════════════════════════════ */
   @media (max-width: 1024px) {
-    .hero-section    { padding: 80px 1.5rem 3rem; }
-    .features-grid   { grid-template-columns: repeat(2,1fr); }
+    .mp-features-grid { grid-template-columns: repeat(2, 1fr); }
+    .mp-how-grid      { grid-template-columns: 1fr; gap: 2.5rem; }
+    .mp-verify-grid   { grid-template-columns: 1fr; gap: 2.5rem; }
+    .mp-dash-grid     { grid-template-columns: 1fr 1fr; }
 
-    .feat-card:nth-child(-n+3)     { border-bottom: none; }
-    .feat-card:not(:nth-child(3n)) { border-right: none; }
-    .feat-card:nth-child(odd)      { border-right: 2.5px solid #0D3D2B; }
-    .feat-card:nth-child(-n+4)     { border-bottom: 2.5px solid #0D3D2B; }
-
-    .how-grid        { grid-template-columns: 1fr; gap: 2.5rem; }
-    .verify-grid     { grid-template-columns: 1fr; gap: 3rem; }
-    .dashboards-grid { grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-
-    .features-section,
-    .how-section,
-    .verify-section,
-    .dashboards-section,
-    .cta-section     { padding: 4rem 1.5rem; }
+    /* Footer — tablet: 2-col wrap */
+    .mp-footer-cols {
+      flex-wrap: wrap;
+      margin: 2rem 1rem 1rem;
+      overflow: visible;
+    }
+    .mp-footer-cols-row {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    .mp-footer-col {
+      flex: 1 1 30%;
+      min-width: 150px;
+      padding: 2rem 1.25rem;
+      align-self: auto;
+    }
+    .mp-footer-col:not(:last-child) { border-right: none; border-bottom: 1.5px solid rgba(255,255,255,0.1); }
+    .mp-footer-col-border-bottom { border-bottom: 1.5px solid rgba(255,255,255,0.1); }
+    .mp-footer-right-panel {
+      width: 100%; flex: none;
+      flex-direction: row; flex-wrap: wrap;
+      border-left: none;
+      border-top: 1.5px solid rgba(255,255,255,0.18);
+      align-self: auto;
+    }
+    .mp-footer-col-connect {
+      flex: 1 1 50% !important;
+      border-bottom: none !important;
+      border-right: 1.5px solid rgba(255,255,255,0.18) !important;
+    }
+    .mp-footer-col-legal { flex: 1 1 50% !important; border-bottom: none !important; }
+    .mp-footer-bg {
+      position: relative;
+      bottom: auto; left: auto; right: auto;
+      font-size: clamp(2rem, 6vw, 4rem);
+      padding: 1.5rem 0 1rem 1.25rem;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
+    }
   }
 
-  /* Mobile — ≤ 768px */
   @media (max-width: 768px) {
-    .hero-section    { padding: 100px 1.25rem 2.5rem; min-height: auto; }
+    .mp-hero          { padding: 100px 1.25rem 3rem; min-height: auto; }
+    .mp-hero-float-1, .mp-hero-float-2, .mp-hero-float-3, .mp-hero-float-4 { display: none; }
+    .mp-stats         { grid-template-columns: repeat(2, 1fr); }
+    .mp-stat:nth-child(2)   { border-right: none; }
+    .mp-stat:nth-child(-n+2){ border-bottom: 1.5px solid rgba(255,255,255,0.08); }
+    .mp-features-grid { grid-template-columns: 1fr; }
+    .mp-features, .mp-verify, .mp-how, .mp-dashboards, .mp-cta { padding: 3rem 1.25rem; }
+    .mp-dash-grid     { grid-template-columns: 1fr; }
+    .mp-verify-grid   { grid-template-columns: 1fr; }
+    .mp-cta-actions   { flex-direction: column; align-items: center; }
+    .mp-cta-btn       { width: 100%; max-width: 360px; }
 
-    .hero-h1-line1,
-    .hero-h1-line2   { font-size: clamp(2.4rem,10vw,4rem); }
+    /* Footer — mobile landscape: 2-col grid */
+    .mp-footer-body { flex-direction: column; }
+    .mp-footer-cols {
+      flex-direction: column;
+      margin: 1rem 0.75rem;
+      overflow: visible;
+    }
+    .mp-footer-cols-row {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .mp-footer-col {
+      flex: 1 1 48%;
+      min-width: 130px;
+      padding: 1.5rem 1rem;
+      align-self: auto;
+      border-right: none !important;
+      border-bottom: 1.5px solid rgba(255,255,255,0.1) !important;
+    }
+    .mp-footer-right-panel {
+      width: 100%; flex: none;
+      flex-direction: row; flex-wrap: wrap;
+      border-left: none;
+      border-top: 1.5px solid rgba(255,255,255,0.18);
+      align-self: auto;
+    }
+    .mp-footer-col-connect {
+      flex: 1 1 50% !important;
+      border-bottom: none !important;
+      border-right: 1.5px solid rgba(255,255,255,0.18) !important;
+    }
+    .mp-footer-col-legal {
+      flex: 1 1 50% !important;
+      border-bottom: none !important;
+    }
+    .mp-footer-copyright-bottom { margin-top: 1rem; white-space: normal; }
 
-    .hero-float-1,
-    .hero-float-2,
-    .hero-float-3,
-    .hero-float-4,
-    .hero-float-5    { display: none; }
-    .hero-star-1,
-    .hero-star-2     { display: none; }
-
-    .search-row      { flex-direction: column; gap: 0.6rem; }
-    .search-btn      { width: 100%; }
-
-    .stats-bar       { grid-template-columns: repeat(2,1fr); }
-    .stat-cell:nth-child(2)              { border-right: none; }
-    .stat-cell:nth-child(1),
-    .stat-cell:nth-child(2)              { border-bottom: 2.5px solid #0D3D2B; }
-
-    .features-grid   { grid-template-columns: 1fr; }
-    .feat-card:nth-child(odd)            { border-right: none; }
-    .feat-card:nth-child(-n+4)           { border-bottom: none; }
-    .feat-card:not(:last-child)          { border-bottom: 2.5px solid #0D3D2B; }
-
-    .how-section     { padding: 3rem 1.25rem; }
-    .how-grid        { grid-template-columns: 1fr; gap: 2rem; }
-
-    .verify-section  { padding: 3rem 1.25rem; }
-    .verify-grid     { grid-template-columns: 1fr; gap: 2rem; }
-
-    .dashboards-section { padding: 3rem 1.25rem; }
-    .dashboards-grid    { grid-template-columns: 1fr; }
-
-    .cta-section     { padding: 3rem 1.25rem; }
-    .cta-actions     { flex-direction: column; align-items: center; }
-    .cta-btn         { width: 100%; max-width: 360px; }
-
-    .section-inner   { padding: 0; }
-
-    .features-section,
-    .dashboards-section { padding: 3rem 1.25rem; }
-
-    /* footer responsive handled in footer block above */
+    /* Watermark — flow in document on mobile */
+    .mp-footer-bg {
+      position: relative;
+      bottom: auto; left: auto; right: auto;
+      font-size: clamp(1.8rem, 8vw, 3.5rem);
+      padding: 1.25rem 0 1rem 1rem;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
+      border-top: 1.5px solid rgba(255,255,255,0.1);
+    }
+    .mp-footer-wm-logo { height: 0.75em; }
   }
 
-  /* Small mobile — ≤ 480px */
   @media (max-width: 480px) {
-    .hero-h1-line1,
-    .hero-h1-line2   { font-size: clamp(2rem,12vw,3rem); }
-    .hash-bar        { flex-wrap: wrap; justify-content: center; }
-    .stat-value      { font-size: 1.5rem; }
-    .browser-chrome  { border-radius: 12px; }
-    .cta-bg-text     { display: none; }
+    .mp-hero-h1 { font-size: clamp(2rem, 12vw, 3rem); }
+    .mp-section-inner { padding: 0; }
+
+    /* Footer — small mobile: single column */
+    .mp-footer-cols { margin: 0.75rem 0.5rem; }
+    .mp-footer-col {
+      flex: 1 1 100% !important;
+      min-width: 100%;
+    }
+    .mp-footer-right-panel { flex-direction: column; }
+    .mp-footer-col-connect {
+      flex: none !important;
+      border-right: none !important;
+      border-bottom: 1.5px solid rgba(255,255,255,0.18) !important;
+    }
+    .mp-footer-col-legal { flex: none !important; }
+    .mp-footer-bg {
+      font-size: clamp(1.5rem, 7vw, 2.5rem);
+      padding: 1rem 0 0.75rem 0.75rem;
+    }
+    .mp-footer-wm-logo { height: 0.7em; }
   }
 `;
 
 /* ══════════════════════════════════════════════════
-   REUSABLE COMPONENTS
+   HELPERS
 ══════════════════════════════════════════════════ */
-const MIcon = ({ name, className = "" }) => (
-  <span className={`mi ${className}`}>{name}</span>
-);
-
-const SelectionBox = ({ children, color = "#5B4FD4" }) => (
-  <div className="sel-box" style={{ "--sel-color": color }}>
-    <div className="sel-box-inner">{children}</div>
-    <span className="sel-handle sel-tl" />
-    <span className="sel-handle sel-tr" />
-    <span className="sel-handle sel-bl" />
-    <span className="sel-handle sel-br" />
-  </div>
-);
-
-const Cursor = ({ className = "" }) => (
-  <svg width="28" height="32" viewBox="0 0 28 32" fill="none" className={className}>
-    <path d="M4 2L4 24L10 18L14 28L17 27L13 17L22 17L4 2Z" fill="white" stroke="#0D3D2B" strokeWidth="2.5" strokeLinejoin="round" />
-  </svg>
+const MI = ({ name, style }) => (
+  <span className="mi" style={style}>{name}</span>
 );
 
 /* ══════════════════════════════════════════════════
@@ -1482,109 +1154,137 @@ export default function BhoomiSetuLanding() {
     <>
       <style>{styles}</style>
 
-      <div className="main-page">
-        <div className="main-grid-bg" />
+      <div className="mp">
 
         {/* ══ HERO ══ */}
-        <section className="hero-section">
+        <section className="mp-hero">
 
-          {/* Floating decorations */}
-          <div className="hero-float hero-float-1">
-            <div className="hero-chain-box">
-              <MIcon name="link" />
+          {/* Floating chips */}
+          <div className="mp-hero-float mp-hero-float-1">
+            <div className="mp-float-chip">
+              <div className="mp-float-icon" style={{ background: "#2A7D4F" }}>
+                <MI name="link" />
+              </div>
+              Blockchain Verified
             </div>
           </div>
-          <div className="hero-float hero-float-2">
-            <div className="hero-hash-chip">0x3f9a1b...c4e5</div>
+          <div className="mp-hero-float mp-hero-float-2">
+            <div className="mp-float-chip">
+              <div className="mp-float-icon" style={{ background: "#2EC4A0" }}>
+                <MI name="verified" />
+              </div>
+              Survey #4521-B
+            </div>
           </div>
-          <div className="hero-float hero-float-3">
-            <SelectionBox color="#F07060">
-              <span className="sel-tag">Survey #4521-B</span>
-            </SelectionBox>
+          <div className="mp-hero-float mp-hero-float-3">
+            <div className="mp-float-chip">
+              <div className="mp-float-icon" style={{ background: "#e07a5f" }}>
+                <MI name="gavel" />
+              </div>
+              Dispute Resolved
+            </div>
           </div>
-          <div className="hero-float hero-float-4"><Cursor /></div>
-          <div className="hero-float hero-float-5"><Cursor className="cursor-tilt" /></div>
-          <span className="hero-star-1">✦</span>
-          <span className="hero-star-2">✦</span>
+          <div className="mp-hero-float mp-hero-float-4">
+            <div className="mp-float-chip" style={{ fontFamily: "'DM Mono', monospace", fontSize: 10 }}>
+              0x3f9a1b…c4e5
+            </div>
+          </div>
 
           {/* Hero content */}
-          <div className="hero-content">
-            <SelectionBox color="#2EC4A0">
-              <span className="sel-tag">BLOCKCHAIN-READY LAND REGISTRY PLATFORM</span>
-            </SelectionBox>
+          <div className="mp-hero-content">
+            <div className="mp-hero-chip">
+              <div className="mp-hero-chip-dot" />
+              BLOCKCHAIN-READY LAND REGISTRY PLATFORM
+            </div>
 
-            <h1 className="hero-h1-line1">Land Records,</h1>
-            <h1 className="hero-h1-line2">
-              <span className="hero-highlight">Transparent</span>{" "}& Trusted
+            <h1 className="mp-hero-h1">Land Records,</h1>
+            <h1 className="mp-hero-h1">
+              <span className="mp-hero-h1-accent">Transparent</span> & Trusted
             </h1>
 
-            <p className="hero-subtitle">
+            <p className="mp-hero-sub">
               BhoomiSetu digitizes India's land registry — every ownership transfer, mutation,
               and inheritance recorded on a tamper-proof, time-stamped ledger.
               Secure, transparent, and built for every citizen.
             </p>
 
-            {/* Search bar */}
-            <div className="browser-chrome">
-              <div className="browser-tabs">
-                <div className="browser-tab-1" />
-                <div className="browser-tab-2" />
-                <div className="browser-urlbar">
-                  <div className="browser-url"><span>bhoomi-setu.gov.in</span></div>
-                  <div className="browser-go"><span>→ GO</span></div>
-                  <div className="browser-menu"><MIcon name="more_vert" /></div>
-                </div>
+            {/* Browser + search */}
+            <div className="mp-browser">
+              <div className="mp-browser-bar">
+                <div className="mp-browser-dot" style={{ background: "#e07a5f" }} />
+                <div className="mp-browser-dot" style={{ background: "#d4a84b" }} />
+                <div className="mp-browser-dot" style={{ background: "#2EC4A0" }} />
+                <div className="mp-browser-url">bhoomi-setu.gov.in</div>
               </div>
-              <div className="search-row">
+              <div className="mp-search-row">
                 <input
-                  className="search-input"
+                  className="mp-search-input"
                   value={searchVal}
                   onChange={e => setSearchVal(e.target.value)}
                   placeholder="Enter Property ID, Survey No. or Owner Name..."
                 />
-                <button className="search-btn" onClick={() => navigate("/login")}>Login →</button>
+                <button className="mp-search-btn" onClick={() => navigate("/login")}>
+                  Login →
+                </button>
               </div>
             </div>
 
             {/* Live hash bar */}
-            <div className="hash-bar">
-              <span className="hash-dot" />
-              <span className="hash-label">LATEST BLOCK</span>
-              <span className="hash-value">{HASHES[hashIdx]}</span>
+            <div className="mp-hash-bar">
+              <div className="mp-hash-dot" />
+              <span className="mp-hash-label">LATEST BLOCK</span>
+              <span className="mp-hash-value">{HASHES[hashIdx]}</span>
             </div>
           </div>
         </section>
 
         {/* ══ STATS ══ */}
-        <div className="stats-bar">
+        <div className="mp-stats">
           {STATS.map((s, i) => (
-            <div key={i} className="stat-cell">
-              <div className="stat-value" style={{ background: s.color }}>{s.value}</div>
-              <div className="stat-label">{s.label}</div>
+            <div key={i} className="mp-stat">
+              <div className="mp-stat-value" style={{ color: s.textColor }}>{s.value}</div>
+              <div className="mp-stat-label">{s.label}</div>
+              <div
+                className="mp-stat-badge"
+                style={{
+                  background: s.textColor + "18",
+                  color: s.textColor,
+                }}
+              >
+                ↑ verified
+              </div>
             </div>
           ))}
         </div>
 
         {/* ══ FEATURES ══ */}
-        <section id="features" className="features-section">
+        <section id="features" className="mp-features">
           <div className="section-inner">
-            <div className="section-header">
-              <SelectionBox color="#F07060">
-                <span className="sel-tag">PLATFORM CAPABILITIES</span>
-              </SelectionBox>
-              <h2 className="section-title">
-                Everything land ownership<br />should have always been.
+            <div className="mp-features-header">
+              <div className="mp-section-label">
+                <MI name="auto_awesome" style={{ fontSize: 11, color: "#2A7D4F" }} />
+                PLATFORM CAPABILITIES
+              </div>
+              <h2 className="mp-section-title">
+                Everything land ownership<br />
+                should have <span>always been.</span>
               </h2>
+              <p className="mp-section-sub">
+                From transfer workflows to dispute resolution — every step of land management
+                tracked, verified, and secured on-chain.
+              </p>
             </div>
-            <div className="features-grid">
+            <div className="mp-features-grid">
               {FEATURES.map((f, i) => (
-                <div key={i} className="feat-card">
-                  <div className="feat-icon" style={{ background: f.color }}>
-                    <MIcon name={f.icon} />
+                <div key={i} className="mp-feat-card">
+                  <div className="mp-feat-icon" style={{ background: f.color }}>
+                    <MI name={f.icon} />
                   </div>
-                  <div className="feat-tag" style={{ background: f.color }}>{f.tag}</div>
-                  <div className="feat-title">{f.title}</div>
-                  <div className="feat-desc">{f.desc}</div>
+                  <div className="mp-feat-tag" style={{ background: f.color + "22", color: f.color }}>
+                    {f.tag}
+                  </div>
+                  <div className="mp-feat-title">{f.title}</div>
+                  <div className="mp-feat-desc">{f.desc}</div>
                 </div>
               ))}
             </div>
@@ -1592,77 +1292,74 @@ export default function BhoomiSetuLanding() {
         </section>
 
         {/* ══ HOW IT WORKS ══ */}
-        <section id="how-it-works" className="how-section">
+        <section id="how-it-works" className="mp-how">
           <div className="section-inner">
-            <div className="how-header">
-              <div className="how-tag">WORKFLOW</div>
-              <h2 className="how-title">How BhoomiSetu works</h2>
+            <div className="mp-how-tag">
+              <MI name="route" style={{ fontSize: 11 }} />
+              WORKFLOW
             </div>
-            <div className="how-grid">
+            <h2 className="mp-how-title">
+              How <span>BhoomiSetu</span> works
+            </h2>
+
+            <div className="mp-how-grid">
 
               {/* Steps */}
-              <div className="steps-list">
+              <div className="mp-steps-list">
                 {STEPS.map((s, i) => (
                   <div
                     key={i}
-                    className="step-row"
+                    className="mp-step-row"
                     style={{
-                      borderColor: activeStep === i ? s.color : "rgba(255,255,255,0.1)",
-                      background:  activeStep === i ? "rgba(255,255,255,0.06)" : "transparent",
+                      borderColor: activeStep === i ? s.color + "55" : "rgba(255,255,255,0.07)",
+                      background:  activeStep === i ? s.color + "0d" : "transparent",
                     }}
                     onClick={() => setActiveStep(i)}
                   >
                     <div
-                      className="step-num"
+                      className="mp-step-num"
                       style={{
                         background: activeStep === i ? s.color : "rgba(255,255,255,0.08)",
-                        color:      activeStep === i ? "#0D3D2B" : "rgba(255,255,255,0.45)",
+                        color:      activeStep === i ? "#fff" : "rgba(255,255,255,0.4)",
                       }}
                     >
                       {s.num}
                     </div>
                     <div>
-                      <div className="step-title">{s.title}</div>
-                      <div className="step-desc">{s.desc}</div>
+                      <div className="mp-step-title">{s.title}</div>
+                      <div className="mp-step-desc">{s.desc}</div>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* Ledger */}
-              <div className="ledger-chrome">
-                <div className="browser-tabs">
-                  <div className="ledger-tab-1" />
-                  <div className="ledger-tab-2" />
-                  <div className="browser-urlbar">
-                    <div className="browser-url"><span>bhoomi-setu.gov.in</span></div>
-                    <div className="browser-go"><span>→ GO</span></div>
-                    <div className="browser-menu"><MIcon name="more_vert" /></div>
-                  </div>
+              <div className="mp-ledger">
+                <div className="mp-ledger-topbar">
+                  <div className="mp-browser-dot" style={{ background: "#e07a5f", width: 8, height: 8, borderRadius: "50%" }} />
+                  <div className="mp-browser-dot" style={{ background: "#d4a84b", width: 8, height: 8, borderRadius: "50%", marginRight: 2 }} />
+                  <div className="mp-browser-dot" style={{ background: "#2EC4A0", width: 8, height: 8, borderRadius: "50%", marginRight: 6 }} />
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", fontFamily: "'DM Mono',monospace" }}>bhoomi-setu.gov.in/ledger</div>
                 </div>
-                <div className="ledger-body">
-                  <div className="ledger-meta">IMMUTABLE LEDGER — PROPERTY #TN-4521-2019</div>
+                <div className="mp-ledger-meta">IMMUTABLE LEDGER — PROPERTY #TN-4521-2019</div>
+                <div className="mp-ledger-body">
                   {LEDGER_BLOCKS.map((b, i) => (
                     <div key={i}>
                       {i > 0 && (
-                        <div className="ledger-connector">
-                          <div className="ledger-conn-line" />
-                          <span className="ledger-conn-text">← prev_hash</span>
+                        <div className="mp-ledger-connector">
+                          <div className="mp-ledger-conn-line" />
+                          <span className="mp-ledger-conn-text">← prev_hash</span>
                         </div>
                       )}
-                      <div
-                        className="ledger-block"
-                        style={{
-                          border:     `2.5px solid ${i === 0 ? b.color : "#0D3D2B"}`,
-                          background: i === 0 ? `${b.color}22` : "#F8F8F4",
-                        }}
-                      >
-                        <div className="ledger-blk-top">
-                          <span className="ledger-blk-event">{b.event}</span>
-                          <span className="ledger-blk-badge" style={{ background: b.color }}>{b.status}</span>
+                      <div className="mp-ledger-block">
+                        <div className="mp-ledger-blk-top">
+                          <span className="mp-ledger-blk-event">{b.event}</span>
+                          <span className="mp-ledger-blk-badge" style={{ background: b.color }}>
+                            {b.status}
+                          </span>
                         </div>
-                        <div className="ledger-blk-sub">{b.sub} · {b.date}</div>
-                        <div className="ledger-blk-hash">{b.hash}</div>
+                        <div className="mp-ledger-blk-sub">{b.sub} · {b.date}</div>
+                        <div className="mp-ledger-blk-hash">{b.hash}</div>
                       </div>
                     </div>
                   ))}
@@ -1673,25 +1370,27 @@ export default function BhoomiSetuLanding() {
           </div>
         </section>
 
-        {/* ══ PROPERTY DETAIL ══ */}
-        <section id="verify" className="verify-section">
+        {/* ══ VERIFY / PROPERTY DETAIL ══ */}
+        <section id="verify" className="mp-verify">
           <div className="section-inner">
-            <div className="verify-grid">
+            <div className="mp-verify-grid">
 
               {/* Left: text */}
               <div>
-                <SelectionBox color="#2EC4A0">
-                  <span className="sel-tag">YOUR PROPERTY DASHBOARD</span>
-                </SelectionBox>
-                <h2 className="verify-title">
-                  Every detail.<br />One secure place.
+                <div className="mp-section-label">
+                  <MI name="home_work" style={{ fontSize: 11, color: "#2A7D4F" }} />
+                  YOUR PROPERTY DASHBOARD
+                </div>
+                <h2 className="mp-verify-title">
+                  Every detail.<br />
+                  <span>One secure place.</span>
                 </h2>
-                <p className="verify-desc">
+                <p className="mp-verify-desc">
                   Once logged in, every property you own is fully visible — complete with
                   ownership history, survey details, ongoing transfer status, and a
                   cryptographic hash tied to the blockchain ledger.
                 </p>
-                <div className="verify-list">
+                <div className="mp-verify-list">
                   {[
                     "Full ownership & transfer history",
                     "Live transfer & mutation status",
@@ -1699,41 +1398,122 @@ export default function BhoomiSetuLanding() {
                     "Verified certificates on demand",
                     "Cryptographic hash on every record",
                   ].map((item, i) => (
-                    <div key={i} className="verify-item">
-                      <div className="verify-check">
-                        <MIcon name="check" />
+                    <div key={i} className="mp-verify-item">
+                      <div className="mp-verify-check">
+                        <MI name="check" />
                       </div>
-                      <span className="verify-text">{item}</span>
+                      <span className="mp-verify-text">{item}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Right: property detail card mockup */}
-              <div className="prop-wrap">
-                <div className="prop-cursor"><Cursor /></div>
-                <div className="prop-card">
-                  <div className="prop-header">
-                    <span className="prop-id">Property #TN-4521-CHN-2019</span>
-                    <span className="prop-verified">
-                      <MIcon name="verified" /> VERIFIED
+              {/* Right: property card */}
+              <div className="mp-prop-wrap">
+                <div className="mp-prop-card">
+                  <div className="mp-prop-header">
+                    <span className="mp-prop-id">Property #TN-4521-CHN-2019</span>
+                    <span className="mp-prop-verified">
+                      <MI name="verified" /> VERIFIED
                     </span>
                   </div>
-                  <div className="prop-body">
+                  <div className="mp-prop-body">
                     {PROP_ROWS.map((row, i) => (
-                      <div key={i} className="prop-row">
-                        <span className="prop-row-label">{row.label}</span>
+                      <div key={i} className="mp-prop-row">
+                        <span className="mp-prop-label">{row.label}</span>
                         {row.badge
-                          ? <span className="prop-row-badge">{row.value}</span>
-                          : <span className={`prop-row-value ${row.bold ? "prop-row-bold" : ""}`}>{row.value}</span>
+                          ? <span className="mp-prop-badge">{row.value}</span>
+                          : <span className={`mp-prop-value ${row.bold ? "mp-prop-bold" : ""}`}>{row.value}</span>
                         }
                       </div>
                     ))}
-                    <div className="prop-hash-box">
-                      <div className="prop-hash-lbl">BLOCK HASH</div>
-                      <div className="prop-hash-val">0x3f9a1bc2d4e5f678a9b0c1d2e3f4a5b6</div>
+                    <div className="mp-prop-hash">
+                      <div className="mp-prop-hash-lbl">BLOCK HASH</div>
+                      <div className="mp-prop-hash-val">0x3f9a1bc2d4e5f678a9b0c1d2e3f4a5b6</div>
                     </div>
                   </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* ══ DASHBOARDS ══ */}
+        <section className="mp-dashboards">
+          <div className="section-inner">
+            <div className="mp-dash-header">
+              <div className="mp-how-tag" style={{ margin: "0 auto 0.75rem" }}>
+                <MI name="dashboard" style={{ fontSize: 11 }} />
+                ROLE-BASED ACCESS
+              </div>
+              <h2 className="mp-dash-title">Built for <span>every stakeholder</span></h2>
+              <p className="mp-dash-sub">Two purpose-built dashboards for citizens and registrars.</p>
+            </div>
+
+            <div className="mp-dash-grid">
+
+              {/* Citizen */}
+              <div className="mp-dash-card">
+                <div className="mp-dash-head">
+                  <div className="mp-dash-head-icon" style={{ background: "rgba(224,122,95,0.2)" }}>
+                    <MI name="person" style={{ color: "#e07a5f" }} />
+                  </div>
+                  <div className="mp-dash-name">Citizen Dashboard</div>
+                  <div className="mp-dash-sub-txt">For property owners and buyers</div>
+                </div>
+                <div className="mp-dash-body">
+                  {[
+                    "View all owned properties",
+                    "Initiate & track transfers",
+                    "Submit mutation requests",
+                    "Download encumbrance certs",
+                    "Track dispute resolutions",
+                  ].map((item, i) => (
+                    <div key={i} className="mp-dash-item">
+                      <span className="mp-dash-arrow" style={{ color: "#e07a5f" }}>→</span>
+                      <span className="mp-dash-item-text">{item}</span>
+                    </div>
+                  ))}
+                  <button
+                    className="mp-dash-btn"
+                    style={{ background: "#e07a5f", color: "#fff" }}
+                    onClick={() => navigate("/signup")}
+                  >
+                    Register as Citizen →
+                  </button>
+                </div>
+              </div>
+
+              {/* Registrar */}
+              <div className="mp-dash-card">
+                <div className="mp-dash-head">
+                  <div className="mp-dash-head-icon" style={{ background: "rgba(91,79,212,0.2)" }}>
+                    <MI name="admin_panel_settings" style={{ color: "#7C6EF5" }} />
+                  </div>
+                  <div className="mp-dash-name">Registrar Dashboard</div>
+                  <div className="mp-dash-sub-txt">For government officials</div>
+                </div>
+                <div className="mp-dash-body">
+                  {[
+                    "Review transfer requests",
+                    "Approve or reject applications",
+                    "Manage mutation queue",
+                    "Audit blockchain records",
+                    "Issue official certificates",
+                  ].map((item, i) => (
+                    <div key={i} className="mp-dash-item">
+                      <span className="mp-dash-arrow" style={{ color: "#7C6EF5" }}>→</span>
+                      <span className="mp-dash-item-text">{item}</span>
+                    </div>
+                  ))}
+                  <button
+                    className="mp-dash-btn"
+                    style={{ background: "#5B4FD4", color: "#fff" }}
+                    onClick={() => navigate("/login")}
+                  >
+                    Registrar Login →
+                  </button>
                 </div>
               </div>
 
@@ -1742,92 +1522,130 @@ export default function BhoomiSetuLanding() {
         </section>
 
         {/* ══ CTA ══ */}
-        <section className="cta-section">
-          <div className="cta-bg-text">BHOOMI</div>
-          <div className="cta-inner">
-            <SelectionBox color="#F07060">
-              <span className="sel-tag">GET STARTED TODAY</span>
-            </SelectionBox>
-            <h2 className="cta-title">
+        <section className="mp-cta">
+          <div className="mp-cta-bg-text">BHOOMI</div>
+          <div className="mp-cta-inner">
+            <div className="mp-section-label">
+              <MI name="rocket_launch" style={{ fontSize: 11, color: "#2A7D4F" }} />
+              GET STARTED TODAY
+            </div>
+            <h2 className="mp-cta-title">
               Your land records deserve to be{" "}
-              <span className="cta-highlight">secure</span>
+              <span>secure</span>
             </h2>
-            <p className="cta-desc">
+            <p className="mp-cta-desc">
               Join thousands of property owners and government officials who have moved to
               verified, blockchain-ready land management.
             </p>
-            <div className="cta-actions">
-              <button className="cta-btn cta-primary"   onClick={() => navigate("/signup")}>Register as Citizen →</button>
-              <button className="cta-btn cta-secondary" onClick={() => navigate("/login")}>Registrar Login →</button>
+            <div className="mp-cta-actions">
+              <button className="mp-cta-btn mp-cta-primary" onClick={() => navigate("/signup")}>
+                Register as Citizen →
+              </button>
+              <button className="mp-cta-btn mp-cta-secondary" onClick={() => navigate("/login")}>
+                Registrar Login →
+              </button>
             </div>
           </div>
         </section>
 
         {/* ══ FOOTER ══ */}
-        <footer className="main-footer">
+        <footer className="mp-footer">
+          <div className="mp-footer-body">
 
-          {/* Main footer: brand left + bordered box right */}
-          <div className="footer-body">
-
-            {/* Brand column — outside the box */}
-            <div className="footer-brand-col">
-              <div className="footer-logo-row">
-                <img src="/assets/logo.png" alt="BhoomiSetu" className="footer-logo-img" />
-                <span className="footer-name">BhoomiSetu</span>
+            {/* Brand */}
+            <div className="mp-footer-brand">
+              <div className="mp-footer-logo-row">
+                <svg className="mp-footer-logo-icon" viewBox="0 0 22 22" fill="none">
+                  <rect x="1" y="1" width="8" height="8" rx="1.5" fill="white" />
+                  <rect x="13" y="1" width="8" height="8" rx="1.5" fill="white" opacity="0.6" />
+                  <rect x="1" y="13" width="8" height="8" rx="1.5" fill="white" opacity="0.6" />
+                  <rect x="13" y="13" width="8" height="8" rx="1.5" fill="white" opacity="0.3" />
+                </svg>
+                <span className="mp-footer-brand-name">BhoomiSetu</span>
               </div>
-              <p className="footer-tagline">
-                Digitizing India's land records — transparent, tamper-proof,
-                and built for every citizen.
-              </p>
-              <p className="footer-builders">
-                COPYRIGHT © 2026 | BHOOMISETU
-              </p>
             </div>
 
-            {/* Bordered rectangle containing the 3 link columns */}
-            <div className="footer-cols-box">
-
-              {/* Products column */}
-              <div className="footer-col">
-                <div className="footer-col-heading">Features</div>
-                <span className="footer-col-link">Transfer Workflow</span>
-                <span className="footer-col-link">Dispute Management</span>
-                <span className="footer-col-link">Mutation & Inheritance</span>
-                <span className="footer-col-link">Registrar Suite</span>
-                <span className="footer-col-link">Audit Log</span>
+            {/* Columns */}
+            <div className="mp-footer-cols">
+              <div className="mp-footer-cols-row">
+              <div className="mp-footer-col mp-footer-col-border-bottom">
+                <div className="mp-footer-col-heading">Features</div>
+                {["Transfer Workflow","Dispute Management","Mutation & Inheritance","Registrar Suite","Audit Log"].map(l => (
+                  <span key={l} className="mp-footer-col-link">{l}</span>
+                ))}
               </div>
-
-              {/* Company column */}
-              <div className="footer-col">
-                <div className="footer-col-heading">Company</div>
-                <span className="footer-col-link">Contact Us</span>
-                <span className="footer-col-link">Help Center</span>
-                <span className="footer-col-link">GitHub</span>
+              <div className="mp-footer-col mp-footer-col-border-bottom">
+                <div className="mp-footer-col-heading">Company</div>
+                {["About Us","Contact Us","Help Center","GitHub","Blog"].map(l => (
+                  <span key={l} className="mp-footer-col-link">{l}</span>
+                ))}
               </div>
-
-              {/* Legal column */}
-              <div className="footer-col">
-                <div className="footer-col-heading">Legal</div>
-                <span className="footer-col-link">Terms</span>
-                <span className="footer-col-link">
-                  Privacy Policy <span className="ext-arrow">↗</span>
-                </span>
-                <span className="footer-col-link">Trust</span>
-                <span className="footer-col-link">Citizen Agreement</span>
-                <span className="footer-privacy-badge">
-                  <span className="footer-privacy-icon">
-                    ✓ <span className="footer-privacy-x">✕</span>
-                  </span>
-                  Your Privacy Choices
-                </span>
+              <div className="mp-footer-col mp-footer-col-border-bottom">
+                <div className="mp-footer-col-heading">Blockchain</div>
+                <div className="mp-footer-col-link" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span className="mi" style={{ fontSize: 13, color: "#2EC4A0" }}>link</span> Ledger Explorer
+                </div>
+                <div className="mp-footer-col-link" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span className="mi" style={{ fontSize: 13, color: "#2EC4A0" }}>verified</span> Verify Hash
+                </div>
+                <div className="mp-footer-col-link" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span className="mi" style={{ fontSize: 13, color: "#2EC4A0" }}>history</span> Block History
+                </div>
+                <div className="mp-footer-col-link" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span className="mi" style={{ fontSize: 13, color: "#2EC4A0" }}>fingerprint</span> Audit Trail
+                </div>
+                <div className="mp-footer-col-link" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span className="mi" style={{ fontSize: 13, color: "#2EC4A0" }}>lock</span> Tamper Proof
+                </div>
               </div>
+              <div className="mp-footer-col mp-footer-col-border-bottom">
+                <div className="mp-footer-col-heading">Resources</div>
+                {["Documentation","API Reference","Land Act Guide","FAQs","Status Page"].map(l => (
+                  <span key={l} className="mp-footer-col-link">{l}</span>
+                ))}
+              </div>
+              <div className="mp-footer-right-panel">
+                {/* Connect */}
+                <div className="mp-footer-col mp-footer-col-connect">
+                  <div className="mp-footer-col-heading">Connect</div>
+                  <div className="mp-footer-social-icons">
+                    {/* LinkedIn */}
+                    <div className="mp-footer-social-btn" title="LinkedIn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    </div>
+                    {/* GitHub */}
+                    <div className="mp-footer-social-btn" title="GitHub">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                    </div>
+                    {/* X (Twitter) */}
+                    <div className="mp-footer-social-btn" title="X / Twitter">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>
+                    </div>
+                    {/* Web / Link */}
+                    <div className="mp-footer-social-btn" title="Website">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    </div>
+                  </div>
+                </div>
+                {/* Legal — sits directly below Connect */}
+                <div className="mp-footer-col mp-footer-col-legal">
+                  <div className="mp-footer-col-heading">Legal</div>
+                  {["Terms","Privacy Policy","Trust","Citizen Agreement","Cookie Policy"].map(l => (
+                    <span key={l} className="mp-footer-col-link">{l}</span>
+                  ))}
+                  <div className="mp-footer-copyright-bottom">COPYRIGHT © 2026 | BHOOMISETU</div>
+                </div>
+              </div>
+              </div>{/* end mp-footer-cols-row */}
 
-            </div>
+              {/* Watermark — inside the bordered box at the bottom */}
+              <div className="mp-footer-bg">
+                <img src="/assets/logo.png" className="mp-footer-wm-logo" alt="" />
+                BHOOMISETU
+              </div>
+            </div>{/* end mp-footer-cols */}
+
           </div>
-
-          {/* Watermark text flows below the content row */}
-          <div className="footer-bg-word">BHOOMISETU</div>
-
         </footer>
 
       </div>

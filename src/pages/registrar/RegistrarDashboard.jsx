@@ -1,12 +1,11 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import {
-  getPendingApprovals,
-  getRegistrarDisputes,
-  getMutationRequests,
-} from "../../database/Transfers";
+import api from "../../api/axiosConfig";
 import Navbar2 from "../../components/Navbar2";
-
+/* ══════════════════════════════════════════════════
+   STATIC DATA
+══════════════════════════════════════════════════ */
 const ACTIVITY = [
   { icon: "check_circle",  label: "Transfer Approved",       sub: "TN-4521-CHN-2019 · Ownership updated",       date: "12 Jan 2024", color: "#2EC4A0" },
   { icon: "manage_search", label: "Review Started",          sub: "TXN-2024-004 · Under document verification", date: "17 Mar 2024", color: "#C8F135" },
@@ -14,800 +13,636 @@ const ACTIVITY = [
   { icon: "feedback",      label: "Clarification Requested", sub: "TXN-2024-003 · Fresh Patta copy requested",  date: "18 Mar 2024", color: "#5B4FD4" },
 ];
 
+/* ══════════════════════════════════════════════════
+   CSS
+══════════════════════════════════════════════════ */
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Sharp');
 
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .mi {
+    font-family: 'Material Icons Sharp';
+    font-style: normal; font-weight: normal; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    user-select: none;
   }
-
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: #EFEFEB; }
-  ::-webkit-scrollbar-thumb { background: #0D3D2B; border-radius: 4px; }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(14px); }
+    from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(91, 79, 212, 0.4); }
-    50%       { box-shadow: 0 0 0 6px rgba(240, 112, 96, 0); }
+    0%,100% { opacity: 1; } 50% { opacity: 0.3; }
   }
 
-  /* ── Page shell ── */
+  /* ── Root ── */
   .rd-page {
     font-family: 'Poppins', sans-serif;
-    background: #EFEFEB;
-    color: #0D3D2B;
+    background: #dcdcdc;
     min-height: 100vh;
+    color: #1a1a1a;
+    padding-top: 60px
   }
 
-  .rd-grid-bg {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background-image:
-      linear-gradient(rgba(13, 61, 43, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(13, 61, 43, 0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
+  /* ── Main wrapper ── */
+  .rd-main {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 14px 32px;
+    overflow-x: hidden;
   }
 
-  .rd-content {
-    position: relative;
-    z-index: 1;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 2.5rem 4rem;
-  }
-
-  /* ── Page container ── */
-  .page-container {
-    margin: 1.5rem 2rem 2rem;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 1.5px solid rgba(13,61,43,0.12);
-    box-shadow: 0 4px 6px rgba(13,61,43,0.04), 0 20px 40px rgba(13,61,43,0.08);
-    background: #f7f7f3;
-    position: relative;
-    z-index: 2;
-  }
-
-  /* ── Welcome banner ── */
-  .rd-welcome {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 18px;
-    overflow: hidden;
-    margin-bottom: 2rem;
-    box-shadow: 0 8px 24px rgba(13,61,43,0.1);
-  }
-
-  .rd-welcome-main {
-    background: linear-gradient(135deg, #0D3D2B 0%, #164d37 60%, #1a5c40 100%);
-    padding: 1.75rem 2rem;
+  /* ══ TOP BAR ══ */
+  .rd-topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-  }
-
-  .rd-welcome-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: rgba(91, 79, 212, 0.15);
-    border: 1.5px solid rgba(91, 79, 212, 0.3);
-    border-radius: 5px;
-    padding: 3px 10px;
-    width: fit-content;
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    color: #5B4FD4;
-    margin-bottom: 0.5rem;
-  }
-
-  .rd-welcome-name {
-    font-size: clamp(1.4rem, 3vw, 2rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: #fff;
-    line-height: 1.1;
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .rd-welcome-sub {
-    font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.45);
-    margin-top: 0.3rem;
-  }
-
-  .rd-welcome-btns {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-  }
-
-  .rd-welcome-btn {
-    padding: 0.65rem 1.4rem;
-    border: 2px solid #5B4FD4;
-    border-radius: 10px;
-    background: #5B4FD4;
-    color: #fff;
-    font-size: 0.85rem;
-    font-weight: 800;
-    cursor: pointer;
-    font-family: inherit;
-    transition: opacity 0.18s;
-    white-space: nowrap;
-  }
-
-  .rd-welcome-btn:hover { opacity: 0.85; }
-
-  .rd-welcome-btn-outline {
-    background: transparent;
-    color: rgba(255, 255, 255, 0.7);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-
-  .rd-welcome-btn-outline:hover {
-    border-color: rgba(255, 255, 255, 0.5);
-    color: #fff;
-  }
-
-  .rd-welcome-footer {
-    background: #5B4FD4;
-    border-top: 1px solid rgba(13,61,43,0.08);
-    padding: 0.6rem 2rem;
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-
-  .rd-welcome-meta {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.85);
-  }
-
-  .rd-welcome-meta-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #fff;
-    opacity: 0.5;
-  }
-
-  /* ── Stats ── */
-  .rd-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .rd-stat {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 14px;
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(13,61,43,0.06);
-    transition: transform 0.18s;
-  }
-
-  .rd-stat:hover { transform: translateY(-2px); }
-
-  .rd-stat-icon {
-    width: 44px;
-    height: 44px;
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 10px;
   }
-
-  .rd-stat-icon .material-icons-sharp { font-size: 22px; }
-
-  .rd-stat-val {
-    font-size: 1.8rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: #0D3D2B;
-    line-height: 1;
+  .rd-heading {
+    font-size: 18px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.4px;
   }
-
-  .rd-stat-label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: rgba(13, 61, 43, 0.45);
-    letter-spacing: 0.04em;
-    margin-top: 0.2rem;
+  .rd-heading span { color: #5B4FD4; }
+  .rd-topbar-right {
+    display: flex; align-items: center; gap: 8px;
   }
-
-  /* ── Main grid ── */
-  .rd-main-grid {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 1.5rem;
-    align-items: start;
+  .rd-meta-chip {
+    display: flex; align-items: center; gap: 5px;
+    background: #f0f0f0; border-radius: 11px;
+    padding: 6px 12px;
+    font-size: 11px; font-weight: 500; color: #666;
   }
-
-  /* ── Section head ── */
-  .rd-section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-  }
-
-  .rd-section-title {
-    font-size: 0.82rem;
-    font-weight: 800;
-    color: #0D3D2B;
-    letter-spacing: 0.04em;
-  }
-
-  .rd-section-link {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: #0D3D2B;
-    cursor: pointer;
-    padding: 3px 10px;
-    border: 1.5px solid rgba(13,61,43,0.2);
-    border-radius: 5px;
-    transition: all 0.15s;
-  }
-
-  .rd-section-link:hover { background: #5B4FD4; color: #fff; }
-
-  /* ── Queue cards ── */
-  .rd-queue-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-  }
-
-  .rd-queue-card {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 14px;
-    background: #fff;
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(13,61,43,0.06);
-    transition: transform 0.18s, box-shadow 0.18s;
-  }
-
-  .rd-queue-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(13,61,43,0.1);
-  }
-
-  .rd-queue-chrome {
-    border-bottom: 1px solid rgba(13,61,43,0.08);
-    display: flex;
-    align-items: flex-end;
-    padding: 5px 10px 0;
-    gap: 4px;
-    background: #F0F0EC;
-  }
-
-  .rd-queue-tab {
-    height: 22px;
-    border-radius: 5px 5px 0 0;
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-bottom: none;
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
-    font-size: 0.6rem;
-    font-weight: 800;
-  }
-
-  .rd-queue-top {
-    padding: 1rem 1.25rem;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .rd-queue-id {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    color: rgba(13, 61, 43, 0.35);
-    margin-bottom: 0.25rem;
-  }
-
-  .rd-queue-title {
-    font-size: 0.92rem;
-    font-weight: 800;
-    color: #0D3D2B;
-    margin-bottom: 0.2rem;
-  }
-
-  .rd-queue-parties { font-size: 0.75rem; color: rgba(13, 61, 43, 0.5); }
-
-  .rd-queue-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.4rem;
-    flex-shrink: 0;
-  }
-
-  .rd-pri-high   { background: #5B4FD4; color: #fff; border-radius: 5px; padding: 2px 9px; font-size: 0.62rem; font-weight: 800; }
-  .rd-pri-normal { background: #C8F135; color: #0D3D2B; border-radius: 5px; padding: 2px 9px; font-size: 0.62rem; font-weight: 800; border: 1.5px solid rgba(13,61,43,0.1); }
-
-  .rd-queue-value { font-size: 0.78rem; font-weight: 800; color: rgba(13, 61, 43, 0.6); }
-
-  .rd-queue-footer {
-    border-top: 1.5px solid rgba(13, 61, 43, 0.08);
-    padding: 0.55rem 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(13,61,43,0.02);
-  }
-
-  .rd-queue-date { font-size: 0.62rem; color: rgba(13, 61, 43, 0.4); }
-  .rd-queue-docs { font-size: 0.62rem; color: rgba(13, 61, 43, 0.4); }
-  .rd-queue-docs span { background: rgba(13, 61, 43, 0.06); border-radius: 4px; padding: 1px 6px; font-weight: 700; }
-
-  .rd-review-btn {
-    padding: 0.3rem 0.85rem;
-    border: 1.5px solid rgba(13,61,43,0.2);
-    border-radius: 6px;
-    background: transparent;
-    color: #5B4FD4;
-    font-size: 0.68rem;
-    font-weight: 800;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.18s;
-  }
-
-  .rd-review-btn:hover { background: #5B4FD4; color: #fff; }
-
-  /* ── Sidebar ── */
-  .rd-sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-
-  /* ── Activity card ── */
-  .rd-activity-card {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 14px;
-    background: #fff;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(13,61,43,0.06);
-  }
-
-  .rd-activity-head {
-    background: #0D3D2B;
-    padding: 0.85rem 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .rd-activity-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #5B4FD4;
-    animation: pulse 2s ease infinite;
-  }
-
-  .rd-activity-lbl {
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    color: rgba(255, 255, 255, 0.6);
-  }
-
-  .rd-activity-list { padding: 0.25rem 0; }
-
-  .rd-activity-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 0.75rem 1.25rem;
+  .rd-meta-chip .mi { font-size: 13px; color: #aaa; }
+  .rd-add-btn {
+    background: #1a1a1a; color: #fff; border: none;
+    border-radius: 11px; padding: 7px 14px;
+    font-family: 'Poppins', sans-serif; font-size: 11.5px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 5px;
     transition: background 0.15s;
   }
+  .rd-add-btn:hover { background: #2a2a2a; }
+  .rd-add-btn .mi { font-size: 14px; }
 
-  .rd-activity-item:not(:last-child) { border-bottom: 1px solid rgba(13, 61, 43, 0.07); }
-  .rd-activity-item:hover { background: rgba(13,61,43,0.02); }
-
-  .rd-act-icon {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 7px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+  /* ══ STAT STRIP ══ */
+  .rd-stats {
+    display: flex; gap: 12px; flex-shrink: 0;
   }
-
-  .rd-act-icon .material-icons-sharp { font-size: 16px; }
-  .rd-act-label { font-size: 0.8rem; font-weight: 700; color: #0D3D2B; }
-  .rd-act-sub   { font-size: 0.68rem; color: rgba(13, 61, 43, 0.45); line-height: 1.4; }
-  .rd-act-date  { font-size: 0.62rem; color: rgba(13, 61, 43, 0.35); white-space: nowrap; margin-left: auto; flex-shrink: 0; padding-top: 2px; }
-
-  /* ── List card ── */
-  .rd-list-card {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 14px;
-    background: #fff;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(13,61,43,0.06);
+  .rd-stat {
+    flex: 1; border-radius: 16px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 4px;
+    position: relative; overflow: hidden;
   }
-
-  .rd-list-head {
-    border-bottom: 1px solid rgba(13,61,43,0.08);
-    padding: 0.75rem 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(13,61,43,0.02);
+  .rd-stat.light  { background: #f0f0f0; }
+  .rd-stat.dark   { background: #1a1a1a; }
+  .rd-stat.purple { background: #1e1a38; }
+  .rd-stat.orange { background: #2a1a10; }
+  .rd-stat-glow { position: absolute; inset: 0; pointer-events: none; border-radius: 16px; }
+  .rd-stat-label { font-size: 10.5px; font-weight: 500; color: #999; }
+  .rd-stat.dark .rd-stat-label,
+  .rd-stat.purple .rd-stat-label,
+  .rd-stat.orange .rd-stat-label { color: #555; }
+  .rd-stat-value { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: #1a1a1a; }
+  .rd-stat.dark .rd-stat-value   { color: #fff; }
+  .rd-stat.purple .rd-stat-value { color: #c8c2ff; }
+  .rd-stat.orange .rd-stat-value { color: #ffb380; }
+  .rd-stat-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; font-weight: 600; padding: 2px 7px;
+    border-radius: 20px; width: fit-content;
+    color: #2a7a55; background: #e6f8ef;
   }
+  .rd-stat.dark .rd-stat-badge   { color: #6effc2; background: rgba(110,255,194,0.12); }
+  .rd-stat.purple .rd-stat-badge { color: #a89fff; background: rgba(124,110,245,0.18); }
+  .rd-stat.orange .rd-stat-badge { color: #ffb380; background: rgba(255,140,80,0.18); }
 
-  .rd-list-head-title { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; color: rgba(13, 61, 43, 0.5); }
-
-  .rd-list-view { font-size: 0.65rem; font-weight: 800; color: #5B4FD4; cursor: pointer; }
-  .rd-list-view:hover { text-decoration: underline; }
-
-  .rd-list-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1.25rem;
+  /* ══ QUICK ACTIONS ══ */
+  .rd-actions-row {
+    display: flex; gap: 8px; flex-wrap: wrap;
   }
+  .rd-action-btn {
+    display: flex; align-items: center; gap: 7px;
+    border: none; border-radius: 13px;
+    padding: 10px 16px;
+    font-family: 'Poppins', sans-serif; font-size: 11.5px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .rd-action-btn .mi { font-size: 15px; }
+  .rd-action-btn.primary   { background: #1a1a1a; color: #fff; }
+  .rd-action-btn.primary:hover { background: #2a2a2a; }
+  .rd-action-btn.ghost {
+    background: #f0f0f0; color: #555;
+  }
+  .rd-action-btn.ghost:hover { background: #e8e8e8; color: #111; }
+  .rd-action-btn.purple-btn { background: rgba(91,79,212,0.1); color: #5B4FD4; }
+  .rd-action-btn.purple-btn:hover { background: rgba(91,79,212,0.18); }
 
-  .rd-list-item:not(:last-child) { border-bottom: 1px solid rgba(13, 61, 43, 0.07); }
+  /* ══ TWO-COLUMN LAYOUT ══ */
+  .rd-content-row {
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .rd-col-left  { flex: 2; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .rd-col-right { flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 
-  .rd-list-dot   { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-  .rd-list-label { font-size: 0.78rem; font-weight: 700; color: #0D3D2B; flex: 1; }
+  /* ══ SECTION ZONE ══ */
+  .rd-zone {
+    background: rgba(240,240,240,0.4);
+    border: 1.5px solid #e0e0e0;
+    border-radius: 24px;
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .rd-zone-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 8px 12px;
+    border-bottom: 1px solid #e8e8e8;
+  }
+  .rd-zone-title-row { display: flex; align-items: center; gap: 10px; }
+  .rd-zone-title {
+    font-size: 14px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.3px;
+  }
+  .rd-zone-title span { color: #5B4FD4; }
+  .rd-zone-pill {
+    background: #1a1a1a; color: #fff;
+    border-radius: 20px; padding: 2px 10px;
+    font-size: 9.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .rd-zone-link {
+    font-size: 10.5px; font-weight: 600; color: #888;
+    background: none; border: none; font-family: inherit;
+    cursor: pointer; display: flex; align-items: center; gap: 3px;
+    transition: color 0.15s;
+  }
+  .rd-zone-link:hover { color: #1a1a1a; }
+  .rd-zone-link .mi { font-size: 13px; }
 
+  /* ══ QUEUE CARDS ══ */
+  .rd-queue-list { display: flex; flex-direction: column; gap: 8px; }
+  .rd-queue-card {
+    background: #f0f0f0; border-radius: 18px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 8px;
+    cursor: pointer; position: relative; overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+    animation: fadeUp 0.3s ease both;
+  }
+  .rd-queue-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+
+  .rd-queue-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .rd-queue-type-pill {
+    font-size: 9px; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+    display: inline-flex; align-items: center; flex-shrink: 0;
+  }
+  .rd-queue-type-high   { color: #c0392b; background: rgba(240,80,80,0.12); }
+  .rd-queue-type-normal { color: #2a7a55; background: rgba(46,196,160,0.13); }
+
+  .rd-queue-id {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: #aaa; letter-spacing: 0.05em; margin-bottom: 2px;
+  }
+  .rd-queue-title {
+    font-size: 12.5px; font-weight: 700; color: #1a1a1a;
+    letter-spacing: -0.2px; line-height: 1.3;
+  }
+  .rd-queue-parties { font-size: 10px; font-weight: 500; color: #aaa; margin-top: 1px; }
+
+  .rd-queue-right {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;
+  }
+  .rd-pri-high   { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 20px; color: #a89fff; background: rgba(124,110,245,0.18); }
+  .rd-pri-normal { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 20px; color: #2a7a55; background: #e6f8ef; }
+  .rd-queue-value { font-size: 10.5px; font-weight: 700; color: #555; font-family: 'DM Mono', monospace; }
+
+  .rd-queue-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.05);
+  }
+  .rd-queue-date { font-family: 'DM Mono', monospace; font-size: 8.5px; color: #5B4FD4; }
+  .rd-queue-docs { font-size: 9px; font-weight: 600; color: #aaa; }
+  .rd-review-btn {
+    font-size: 10px; font-weight: 700; color: #1a1a1a;
+    display: flex; align-items: center; gap: 3px;
+  }
+  .rd-review-btn .mi { font-size: 13px; }
+
+  /* ══ ACTIVITY FEED (full-width) ══ */
+  .rd-activity-zone {
+    background: rgba(240,240,240,0.4);
+    border: 1.5px solid #e0e0e0; border-radius: 24px; overflow: hidden;
+  }
+  .rd-activity-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid #e8e8e8;
+  }
+  .rd-activity-head-left { display: flex; align-items: center; gap: 8px; }
+  .rd-activity-head-dot  { width: 6px; height: 6px; border-radius: 50%; background: #1a1a1a; }
+  .rd-activity-head-txt  { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; color: #aaa; text-transform: uppercase; }
+  .rd-activity-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+  }
+  .rd-activity-item {
+    padding: 14px 16px; display: flex; flex-direction: column; gap: 5px;
+    border-right: 1px solid #e8e8e8; transition: background 0.15s;
+  }
+  .rd-activity-item:last-child { border-right: none; }
+  .rd-activity-item:hover { background: rgba(0,0,0,0.02); }
+  .rd-activity-icon-row { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
+  .rd-activity-color-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .rd-activity-icon-wrap {
+    width: 24px; height: 24px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .rd-activity-icon-wrap .mi { font-size: 13px; }
+  .rd-activity-label { font-size: 12px; font-weight: 700; color: #1a1a1a; line-height: 1.3; }
+  .rd-activity-sub   { font-size: 10px; color: #999; line-height: 1.5; }
+  .rd-activity-date  { font-size: 9px; font-weight: 600; color: #bbb; margin-top: 3px; font-family: 'DM Mono', monospace; }
+
+  /* ══ TRANSFER / LIST ROWS ══ */
+  .rd-list-rows { display: flex; flex-direction: column; gap: 6px; }
+  .rd-list-row {
+    background: #f0f0f0; border-radius: 14px; padding: 12px 14px;
+    display: flex; align-items: center; gap: 12px;
+    transition: transform 0.15s;
+  }
+  .rd-list-row:hover { transform: translateY(-1px); }
+  .rd-list-dot-icon {
+    width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0;
+  }
+  .rd-list-label { font-size: 11.5px; font-weight: 700; color: #1a1a1a; flex: 1; min-width: 0; }
   .rd-list-badge {
-    border-radius: 4px;
-    padding: 1px 7px;
-    font-size: 0.6rem;
-    font-weight: 800;
-    flex-shrink: 0;
-    border: 1.5px solid rgba(13,61,43,0.1);
+    font-size: 9px; font-weight: 700; padding: 3px 9px; border-radius: 20px; flex-shrink: 0;
+    border: 1.5px solid transparent;
   }
 
-  /* ── Blockchain card ── */
-  .rd-chain-card {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 14px;
-    background: #0D3D2B;
-    padding: 1.25rem;
-    box-shadow: 0 4px 12px rgba(91,79,212,0.15);
+  /* ══ BLOCKCHAIN STATUS PANEL ══ */
+  .rd-chain-zone {
+    background: #1a1a1a; border-radius: 20px; overflow: hidden;
   }
-
   .rd-chain-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
+    padding: 14px 16px 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
   }
-
-  .rd-chain-title { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; color: rgba(255, 255, 255, 0.45); }
-
+  .rd-chain-head-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.07em; color: #555;
+    text-transform: uppercase;
+  }
   .rd-chain-live {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.65rem;
-    font-weight: 800;
-    color: #2EC4A0;
+    display: flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; color: #2EC4A0;
   }
-
-  .rd-chain-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #2EC4A0;
-    box-shadow: 0 0 5px #2EC4A0;
+  .rd-chain-live-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #2EC4A0;
+    animation: pulse 2s infinite;
   }
-
-  .rd-chain-rows {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-
+  .rd-chain-rows { padding: 4px 0 8px; }
   .rd-chain-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 16px; border-bottom: 1px solid rgba(255,255,255,0.03);
   }
+  .rd-chain-row:last-child { border-bottom: none; }
+  .rd-chain-label { font-size: 10.5px; font-weight: 500; color: #555; }
+  .rd-chain-val   { font-family: 'DM Mono', monospace; font-size: 10.5px; color: #ccc; }
+  .rd-chain-val-green { font-family: 'DM Mono', monospace; font-size: 10.5px; font-weight: 600; color: #2EC4A0; }
 
-  .rd-chain-lbl { font-size: 0.65rem; color: rgba(255, 255, 255, 0.4); font-weight: 600; }
-  .rd-chain-val { font-size: 0.72rem; font-weight: 700; color: #C8F135; font-family: 'DM Mono', monospace; }
-  .rd-chain-div { height: 1px; background: rgba(255, 255, 255, 0.08); }
-
-  /* ── Responsive ── */
-  @media (max-width: 1024px) {
-    .rd-main-grid { grid-template-columns: 1fr; }
-    .rd-sidebar   { display: grid; grid-template-columns: 1fr 1fr; }
+  /* ══ RESPONSIVE ══ */
+  @media (max-width: 900px) {
+    .rd-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .rd-content-row { flex-direction: column; }
+    .rd-activity-grid { grid-template-columns: repeat(2, 1fr); }
+    .rd-activity-item:nth-child(2n) { border-right: none; }
   }
-
-  @media (max-width: 768px) {
-    .page-container { margin: 1rem; border-radius: 12px; }
-    .rd-content { padding: 1.25rem 1rem 3rem; }
-    .rd-stats { grid-template-columns: repeat(2, 1fr); }
-    .rd-sidebar { grid-template-columns: 1fr; }
-    .rd-welcome-main { padding: 1.25rem; }
-    .rd-welcome-footer { padding: 0.6rem 1.25rem; }
-  }
-
-  @media (max-width: 480px) {
-    .page-container { margin: 0.65rem; border-radius: 10px; }
+  @media (max-width: 580px) {
+    .rd-main { padding: 10px 10px 80px; gap: 10px; }
+    .rd-topbar { flex-direction: column; align-items: flex-start; }
+    .rd-activity-grid { grid-template-columns: 1fr 1fr; }
   }
 `;
 
+/* ══════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════ */
+const MI = ({ name, style }) => <span className="mi" style={style}>{name}</span>;
+
+/* ══════════════════════════════════════════════════
+   COMPONENT
+══════════════════════════════════════════════════ */
 export default function RegistrarDashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const pending   = getPendingApprovals();
-  const disputes  = getRegistrarDisputes();
-  const mutations = getMutationRequests();
+  const [disputes, setDisputes] = useState([]);
+  const [mutations, setMutations] = useState([]);
+  const [pending, setPending] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const stats = [
-    { label: "PENDING APPROVALS", value: String(pending.length),  icon: "pending_actions", color: "#F07060" },
-    { label: "APPROVED TODAY",    value: "2",                     icon: "check_circle",    color: "#2EC4A0" },
-    { label: "ACTIVE DISPUTES",   value: String(disputes.length), icon: "gavel",           color: "#5B4FD4" },
-    { label: "TOTAL MANAGED",     value: "248",                   icon: "domain",          color: "#C8F135" },
-  ];
+  useEffect(() => {
+    Promise.all([
+      api.get('/transfers/pending'),
+      api.get('/disputes/all'),
+      api.get('/mutations/pending')
+    ])
+    .then(([transRes, dispRes, mutRes]) => {
+      setPending(transRes.data.map(t => ({
+         ...t,
+         priority: "Normal",
+         saleValue: t.saleValue || "₹ 0",
+         documents: ["Doc1", "Doc2"]
+      })));
+      setDisputes(dispRes.data);
+      setMutations(mutRes.data);
+    })
+    .catch(err => console.error("Failed to fetch dashboard data", err))
+    .finally(() => setLoading(false));
+  }, []);
 
   return (
     <>
       <style>{styles}</style>
       <div className="rd-page">
-        <div className="rd-grid-bg" />
         <Navbar2 user={user} onLogout={logout} />
 
-        <div className="page-container">
-          <div className="rd-content">
+        <div className="rd-main">
 
-            {/* Welcome banner */}
-            <div className="rd-welcome">
-              <div className="rd-welcome-main">
-                <div>
-                  <div className="rd-welcome-tag">
-                    <span className="material-icons-sharp" style={{ fontSize: 13 }}>account_balance</span>
-                    REGISTRAR DASHBOARD
-                  </div>
-                  <div className="rd-welcome-name">Welcome, {user?.name?.split(" ").slice(-1)[0]} ✦</div>
-                  <div className="rd-welcome-sub">{user?.office || "Sub-Registrar Office"} · {user?.district || "Chennai"} District</div>
-                </div>
-                <div className="rd-welcome-btns">
-                  <button
-                    className="rd-welcome-btn"
-                    style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
-                    onClick={() => navigate("/registrar/approvals")}
-                  >
-                    Review Queue
-                    <span className="material-icons-sharp" style={{ fontSize: 16 }}>arrow_forward</span>
-                  </button>
-                  <button className="rd-welcome-btn rd-welcome-btn-outline" onClick={() => navigate("/registrar/disputes")}>
-                    View Disputes
-                  </button>
-                </div>
-              </div>
-              <div className="rd-welcome-footer">
-                <div className="rd-welcome-meta">
-                  <span className="material-icons-sharp" style={{ fontSize: 14 }}>location_on</span>
-                  {user?.district || "Chennai"}
-                  <span className="rd-welcome-meta-dot" />
-                  Member since {user?.since || "2019"}
-                </div>
-                <div className="rd-welcome-meta">
-                  <span className="material-icons-sharp" style={{ fontSize: 14 }}>email</span>
-                  {user?.email || "registrar@bhoomi.in"}
-                </div>
-                <div className="rd-welcome-meta">
-                  <span className="material-icons-sharp" style={{ fontSize: 14 }}>bolt</span>
-                  {pending.length} items need your attention
-                </div>
-              </div>
+          {/* ══ TOP BAR ══ */}
+          <div className="rd-topbar">
+            <div className="rd-heading">
+              Welcome, <span>{user?.name?.split(" ").slice(-1)[0] ?? "Registrar"}</span>
             </div>
-
-            {/* Stats */}
-            <div className="rd-stats">
-              {stats.map((s, i) => (
-                <div key={i} className="rd-stat">
-                  <div className="rd-stat-icon" style={{ background: `${s.color}25` }}>
-                    <span className="material-icons-sharp">{s.icon}</span>
-                  </div>
-                  <div>
-                    <div className="rd-stat-val" style={{ color: s.color }}>{s.value}</div>
-                    <div className="rd-stat-label">{s.label}</div>
-                  </div>
+            <div className="rd-topbar-right">
+              {user?.district && (
+                <div className="rd-meta-chip">
+                  <MI name="location_on" /> {user.district}
                 </div>
-              ))}
+              )}
+              {user?.office && (
+                <div className="rd-meta-chip">
+                  <MI name="account_balance" /> {user.office}
+                </div>
+              )}
+              <button className="rd-add-btn" onClick={() => navigate("/registrar/approvals")}>
+                <MI name="arrow_forward" /> Review Queue
+              </button>
             </div>
+          </div>
 
-            {/* Main grid */}
-            <div className="rd-main-grid">
+          {/* ══ STAT STRIP ══ */}
+          <div className="rd-stats">
+            <div className="rd-stat dark">
+              <div className="rd-stat-glow" style={{ background: "radial-gradient(circle at 70% 20%, rgba(255,255,255,0.07) 0%, transparent 60%)" }} />
+              <div className="rd-stat-label">Pending Approvals</div>
+              <div className="rd-stat-value">{pending.length}</div>
+              <div className="rd-stat-badge">need review</div>
+            </div>
+            <div className="rd-stat light">
+              <div className="rd-stat-label">Approved Today</div>
+              <div className="rd-stat-value">2</div>
+              <div className="rd-stat-badge">completed</div>
+            </div>
+            <div className="rd-stat purple">
+              <div className="rd-stat-glow" style={{ background: "radial-gradient(circle at 70% 20%, rgba(91,79,212,0.25) 0%, transparent 60%)" }} />
+              <div className="rd-stat-label">Active Disputes</div>
+              <div className="rd-stat-value">{disputes.length}</div>
+              <div className="rd-stat-badge">in progress</div>
+            </div>
+            <div className="rd-stat orange">
+              <div className="rd-stat-glow" style={{ background: "radial-gradient(circle at 70% 20%, rgba(255,140,80,0.2) 0%, transparent 60%)" }} />
+              <div className="rd-stat-label">Total Managed</div>
+              <div className="rd-stat-value">248</div>
+              <div className="rd-stat-badge">on-chain</div>
+            </div>
+          </div>
 
-              {/* Left — queue */}
-              <div>
-                <div className="rd-section-head">
-                  <span className="rd-section-title">PENDING APPROVALS</span>
-                  <span
-                    className="rd-section-link"
-                    style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
-                    onClick={() => navigate("/registrar/approvals")}
-                  >
-                    View All
-                    <span className="material-icons-sharp" style={{ fontSize: 13 }}>arrow_forward</span>
-                  </span>
+          {/* ══ QUICK ACTIONS ══ */}
+          <div className="rd-actions-row">
+            <button className="rd-action-btn primary" onClick={() => navigate("/registrar/approvals")}>
+              <MI name="pending_actions" /> Review Queue
+            </button>
+            <button className="rd-action-btn ghost" onClick={() => navigate("/registrar/disputes")}>
+              <MI name="gavel" /> Disputes
+            </button>
+            <button className="rd-action-btn ghost" onClick={() => navigate("/registrar/mutations")}>
+              <MI name="edit_document" /> Mutations
+            </button>
+            <button className="rd-action-btn purple-btn" onClick={() => navigate("/registrar/review")}>
+              <MI name="manage_search" /> Full Review
+            </button>
+          </div>
+
+          {/* ══ TWO-COLUMN CONTENT ══ */}
+          <div className="rd-content-row">
+
+            {/* ── LEFT COLUMN ── */}
+            <div className="rd-col-left">
+
+              {/* Pending Approvals */}
+              <div className="rd-zone">
+                <div className="rd-zone-header">
+                  <div className="rd-zone-title-row">
+                    <div className="rd-zone-title">Pending <span>Approvals</span></div>
+                    <div className="rd-zone-pill">{pending.length} queued</div>
+                  </div>
+                  <button className="rd-zone-link" onClick={() => navigate("/registrar/approvals")}>
+                    View all <MI name="arrow_forward" />
+                  </button>
                 </div>
+
                 <div className="rd-queue-list">
                   {pending.map((t, i) => (
-                    <div key={i} className="rd-queue-card" onClick={() => navigate("/registrar/approvals")}>
-                      <div className="rd-queue-chrome">
-                        <div
-                          className="rd-queue-tab"
-                          style={{ background: t.priority === "High" ? "#F07060" : "#C8F135", color: "#0D3D2B", minWidth: 80 }}
-                        >
-                          {t.type || "Transfer"}
-                        </div>
-                      </div>
-                      <div className="rd-queue-top">
+                    <div
+                      key={i}
+                      className="rd-queue-card"
+                      style={{ animationDelay: `${i * 0.05}s` }}
+                      onClick={() => navigate("/registrar/approvals")}
+                    >
+                      <div className="rd-queue-top-row">
                         <div>
                           <div className="rd-queue-id">{t.id}</div>
                           <div className="rd-queue-title">{t.propertyTitle}</div>
                           <div className="rd-queue-parties">{t.sellerName} → {t.buyerName}</div>
                         </div>
                         <div className="rd-queue-right">
-                          <span className={t.priority === "High" ? "rd-pri-high" : "rd-pri-normal"}>{t.priority}</span>
+                          <span className={t.priority === "High" ? "rd-pri-high" : "rd-pri-normal"}>
+                            {t.priority}
+                          </span>
                           <span className="rd-queue-value">{t.saleValue}</span>
-                          <button
+                          <span
                             className="rd-review-btn"
-                            style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
                             onClick={e => { e.stopPropagation(); navigate("/registrar/review"); }}
                           >
-                            Review
-                            <span className="material-icons-sharp" style={{ fontSize: 13 }}>arrow_forward</span>
-                          </button>
+                            Review <MI name="arrow_forward" />
+                          </span>
                         </div>
                       </div>
                       <div className="rd-queue-footer">
-                        <span className="rd-queue-date">Submitted {t.submittedOn}</span>
-                        <span className="rd-queue-docs"><span>{t.documents.length}</span> docs attached</span>
+                        <span className="rd-queue-date">{t.submittedOn}</span>
+                        <span className="rd-queue-docs">{t.documents.length} docs attached</span>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Right — sidebar */}
-              <div className="rd-sidebar">
-
-                {/* Recent activity */}
-                <div className="rd-activity-card">
-                  <div className="rd-activity-head">
-                    <span className="rd-activity-dot" />
-                    <span className="rd-activity-lbl">RECENT ACTIVITY</span>
+              {/* Active Disputes */}
+              {disputes.length > 0 && (
+                <div className="rd-zone">
+                  <div className="rd-zone-header">
+                    <div className="rd-zone-title-row">
+                      <div className="rd-zone-title">Active <span>Disputes</span></div>
+                      <div className="rd-zone-pill">{disputes.length} open</div>
+                    </div>
+                    <button className="rd-zone-link" onClick={() => navigate("/registrar/disputes")}>
+                      View all <MI name="arrow_forward" />
+                    </button>
                   </div>
-                  <div className="rd-activity-list">
-                    {ACTIVITY.map((a, i) => (
-                      <div key={i} className="rd-activity-item">
-                        <div className="rd-act-icon" style={{ background: `${a.color}20` }}>
-                          <span className="material-icons-sharp">{a.icon}</span>
-                        </div>
-                        <div>
-                          <div className="rd-act-label">{a.label}</div>
-                          <div className="rd-act-sub">{a.sub}</div>
-                        </div>
-                        <div className="rd-act-date">{a.date}</div>
+                  <div className="rd-list-rows">
+                    {disputes.map((d, i) => (
+                      <div className="rd-list-row" key={i}>
+                        <div className="rd-list-dot-icon" style={{ background: d.statusColor }} />
+                        <span className="rd-list-label">{d.type} — {d.propertyId}</span>
+                        <span
+                          className="rd-list-badge"
+                          style={{ background: `${d.statusColor}15`, color: d.statusColor, borderColor: `${d.statusColor}60` }}
+                        >
+                          {d.status}
+                        </span>
                       </div>
                     ))}
                   </div>
                 </div>
+              )}
 
-                {/* Active disputes */}
-                <div className="rd-list-card">
-                  <div className="rd-list-head">
-                    <span className="rd-list-head-title">ACTIVE DISPUTES</span>
-                    <span className="rd-list-view" onClick={() => navigate("/registrar/disputes")}>View All</span>
+              {/* Mutation Requests */}
+              {mutations.length > 0 && (
+                <div className="rd-zone">
+                  <div className="rd-zone-header">
+                    <div className="rd-zone-title-row">
+                      <div className="rd-zone-title">Mutation <span>Requests</span></div>
+                      <div className="rd-zone-pill">{mutations.length} pending</div>
+                    </div>
+                    <button className="rd-zone-link" onClick={() => navigate("/registrar/mutations")}>
+                      View all <MI name="arrow_forward" />
+                    </button>
                   </div>
-                  {disputes.map((d, i) => (
-                    <div key={i} className="rd-list-item">
-                      <div className="rd-list-dot" style={{ background: d.statusColor }} />
-                      <span className="rd-list-label">{d.type} — {d.propertyId}</span>
-                      <span
-                        className="rd-list-badge"
-                        style={{ background: `${d.statusColor}15`, color: d.statusColor, borderColor: `${d.statusColor}60` }}
-                      >
-                        {d.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Mutation requests */}
-                <div className="rd-list-card">
-                  <div className="rd-list-head">
-                    <span className="rd-list-head-title">MUTATION REQUESTS</span>
-                    <span className="rd-list-view" onClick={() => navigate("/registrar/mutations")}>View All</span>
-                  </div>
-                  {mutations.map((m, i) => (
-                    <div key={i} className="rd-list-item">
-                      <div className="rd-list-dot" style={{ background: "#5B4FD4" }} />
-                      <span className="rd-list-label">{m.type} — {m.propertyId}</span>
-                      <span
-                        className="rd-list-badge"
-                        style={{ background: "rgba(91,79,212,0.1)", color: "#5B4FD4", borderColor: "#5B4FD4" }}
-                      >
-                        {m.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Blockchain status */}
-                <div className="rd-chain-card">
-                  <div className="rd-chain-head">
-                    <span className="rd-chain-title">NETWORK STATUS</span>
-                    <span className="rd-chain-live">
-                      <span className="rd-chain-dot" />
-                      LIVE
-                    </span>
-                  </div>
-                  <div className="rd-chain-rows">
-                    <div className="rd-chain-row">
-                      <span className="rd-chain-lbl">Latest Block</span>
-                      <span className="rd-chain-val">#1,847,392</span>
-                    </div>
-                    <div className="rd-chain-div" />
-                    <div className="rd-chain-row">
-                      <span className="rd-chain-lbl">District Records</span>
-                      <span className="rd-chain-val">248 on-chain</span>
-                    </div>
-                    <div className="rd-chain-row">
-                      <span className="rd-chain-lbl">Pending Writes</span>
-                      <span className="rd-chain-val">{pending.length} queued</span>
-                    </div>
-                    <div className="rd-chain-div" />
-                    <div className="rd-chain-row">
-                      <span className="rd-chain-lbl">Integrity</span>
-                      <span className="rd-chain-val" style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-                        <span className="material-icons-sharp" style={{ fontSize: 14 }}>verified</span>
-                        Verified
-                      </span>
-                    </div>
+                  <div className="rd-list-rows">
+                    {mutations.map((m, i) => (
+                      <div className="rd-list-row" key={i}>
+                        <div className="rd-list-dot-icon" style={{ background: "#5B4FD4" }} />
+                        <span className="rd-list-label">{m.type} — {m.propertyId}</span>
+                        <span
+                          className="rd-list-badge"
+                          style={{ background: "rgba(91,79,212,0.1)", color: "#5B4FD4", borderColor: "#5B4FD4" }}
+                        >
+                          {m.status}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
+              )}
 
-              </div>
             </div>
 
+            {/* ── RIGHT COLUMN ── */}
+            <div className="rd-col-right">
+
+              {/* Blockchain / Network Status */}
+              <div className="rd-chain-zone">
+                <div className="rd-chain-head">
+                  <span className="rd-chain-head-title">Network Status</span>
+                  <span className="rd-chain-live">
+                    <span className="rd-chain-live-dot" /> LIVE
+                  </span>
+                </div>
+                <div className="rd-chain-rows">
+                  {[
+                    { label: "Latest Block",    val: "#1,847,392",              green: false },
+                    { label: "District Records",val: "248 on-chain",            green: false },
+                    { label: "Pending Writes",  val: `${pending.length} queued`, green: false },
+                    { label: "Network",         val: "TN State Registry",       green: true  },
+                    { label: "Integrity",       val: "✓ Verified",              green: true  },
+                  ].map((r, i) => (
+                    <div className="rd-chain-row" key={i}>
+                      <span className="rd-chain-label">{r.label}</span>
+                      <span className={r.green ? "rd-chain-val-green" : "rd-chain-val"}>{r.val}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Registrar info mini panel */}
+              <div style={{
+                background: "#f0f0f0", borderRadius: 20, padding: "16px 18px",
+                display: "flex", flexDirection: "column", gap: 12,
+              }}>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: "#1a1a1a" }}>Office Details</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  {[
+                    { label: "District", val: user?.district || "Chennai", accent: true },
+                    { label: "Approved", val: "2", accent: false },
+                    { label: "Queue",    val: String(pending.length), accent: false },
+                    { label: "Disputes", val: String(disputes.length), accent: true },
+                  ].map((b, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        background: b.accent ? "#1a1a1a" : "#e8e8e8",
+                        borderRadius: 12, padding: 11,
+                        display: "flex", flexDirection: "column", gap: 3,
+                      }}
+                    >
+                      <div style={{ fontSize: 9, fontWeight: 500, color: b.accent ? "#555" : "#aaa" }}>{b.label}</div>
+                      <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.3, color: b.accent ? "#fff" : "#1a1a1a" }}>{b.val}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ height: 1, background: "#e0e0e0" }} />
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {[
+                    { label: "Email", val: user?.email || "registrar@bhoomi.in" },
+                    { label: "Since", val: user?.since || "2019" },
+                    { label: "Office", val: user?.office || "Sub-Registrar Office" },
+                  ].map((r, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 10.5, fontWeight: 500, color: "#999" }}>{r.label}</span>
+                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#555" }}>{r.val}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
           </div>
+
+          {/* ══ ACTIVITY FEED (full width) ══ */}
+          <div className="rd-activity-zone">
+            <div className="rd-activity-head">
+              <div className="rd-activity-head-left">
+                <div className="rd-activity-head-dot" />
+                <span className="rd-activity-head-txt">Recent Activity</span>
+              </div>
+            </div>
+            <div className="rd-activity-grid">
+              {ACTIVITY.map((a, i) => (
+                <div className="rd-activity-item" key={i}>
+                  <div className="rd-activity-icon-row">
+                    <div className="rd-activity-color-dot" style={{ background: a.color }} />
+                    <div className="rd-activity-icon-wrap" style={{ background: a.color + "18" }}>
+                      <MI name={a.icon} style={{ color: a.color }} />
+                    </div>
+                  </div>
+                  <div className="rd-activity-label">{a.label}</div>
+                  <div className="rd-activity-sub">{a.sub}</div>
+                  <div className="rd-activity-date">{a.date}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
     </>

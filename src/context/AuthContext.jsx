@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { authenticateUser, findUserByEmail } from "../database/Users";
+import api from "../api/axiosConfig";
 
 /* ══════════════════════════════════════════════════
    AUTH CONTEXT
@@ -37,39 +37,43 @@ export function AuthProvider({ children }) {
 
   /* ────────────────────────────────────────────────
      login(email, password)
-     Returns { success: true } or { success: false, error: string }
   ──────────────────────────────────────────────── */
-  const login = (email, password) => {
-    const result = authenticateUser(email, password);
-    if (result.success) setUser(result.user);
-    return result;
+  const login = async (email, password) => {
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      const userData = response.data; // { token, role, name, email, ... }
+      setUser(userData);
+      return { success: true, user: userData };
+    } catch (error) {
+      return { success: false, error: error.response?.data?.message || "Login failed" };
+    }
   };
 
   /* ────────────────────────────────────────────────
      signup(formData)
-     Simulates account creation — in production this
-     would POST to your backend.
-     Returns { success: true } or { success: false, error: string }
   ──────────────────────────────────────────────── */
-  const signup = (formData) => {
-    const existing = findUserByEmail(formData.email);
-    if (existing) return { success: false, error: "An account with this email already exists." };
-
-    const newUser = {
-      id:      `USR-${Date.now()}`,
-      name:    `${formData.firstName} ${formData.lastName}`,
-      email:   formData.email,
-      role:    "user",
-      phone:   formData.phone,
-      aadhaar: `XXXX XXXX ${formData.aadhaar.slice(-4)}`,
-      state:   formData.state,
-      since:   new Date().toLocaleDateString("en-IN", { month: "long", year: "numeric" }),
-      address: [formData.address1, formData.address2, formData.city, formData.state, formData.pincode]
-                 .filter(Boolean).join(", "),
-    };
-
-    setUser(newUser);
-    return { success: true, user: newUser };
+  const signup = async (formData) => {
+    try {
+      const payload = {
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        aadhaar: formData.aadhaar.replace(/\s/g, ""), // strip spaces from "XXXX XXXX XXXX"
+        dob: formData.dob,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode,
+        role: "USER"
+      };
+      const response = await api.post('/auth/register', payload);
+      const userData = response.data;
+      setUser(userData);
+      return { success: true, user: userData };
+    } catch (error) {
+      return { success: false, error: error.response?.data?.message || "Registration failed" };
+    }
   };
 
   /* ────────────────────────────────────────────────

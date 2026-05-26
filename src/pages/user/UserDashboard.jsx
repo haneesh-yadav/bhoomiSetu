@@ -1,901 +1,675 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { getPropertiesByOwner } from "../../database/Properties";
-import { getTransfersByUser } from "../../database/Transfers";
-import Navbar1 from "../../components/Navbar1";
+import api from "../../api/axiosConfig";
 
+/* ══════════════════════════════════════════════════
+   STATIC DATA
+══════════════════════════════════════════════════ */
 const ACTIVITY = [
-  { icon: "check_circle", label: "Transfer Approved",      sub: "TN-4521-CHN-2019 · Ownership updated",          date: "12 Jan 2024", color: "#2EC4A0" },
-  { icon: "pending",      label: "Transfer Initiated",     sub: "TN-4521-CHN-2019 · Awaiting buyer confirmation", date: "10 Jan 2024", color: "#C8F135" },
-  { icon: "account_tree", label: "Mutation Request Filed", sub: "TN-7734-MDU-2021 · Inheritance claim submitted",  date: "05 Dec 2023", color: "#5B4FD4" },
-  { icon: "download",     label: "Certificate Downloaded", sub: "Encumbrance Certificate — TN-1182-CBE-2018",      date: "18 Nov 2023", color: "#F07060" },
-  { icon: "search",       label: "Property Verified",      sub: "TN-4521-CHN-2019 · Public record accessed",       date: "01 Nov 2023", color: "#2EC4A0" },
+  { icon: "check_circle",    label: "Transfer Approved",      sub: "TN-4521-CHN-2019 · Ownership updated",           date: "12 Jan 2024", color: "#2EC4A0" },
+  { icon: "sync",            label: "Transfer Initiated",     sub: "TN-4521-CHN-2019 · Awaiting buyer confirmation",  date: "10 Jan 2024", color: "#d4a84b" },
+  { icon: "call_split",      label: "Mutation Request Filed", sub: "TN-7734-MDU-2021 · Inheritance claim submitted",  date: "05 Dec 2023", color: "#9b8de0" },
+  { icon: "download",        label: "Certificate Downloaded", sub: "Encumbrance Certificate — TN-1182-CBE-2018",      date: "18 Nov 2023", color: "#e8533a" },
+  { icon: "verified",        label: "Property Verified",      sub: "TN-4521-CHN-2019 · Public record accessed",       date: "01 Nov 2023", color: "#2EC4A0" },
 ];
 
+const TYPE_META = {
+  Residential:  { icon: "home",     iconBg: "#C8F135" },
+  Agricultural: { icon: "grass",    iconBg: "#2EC4A0" },
+  Commercial:   { icon: "business", iconBg: "#5B4FD4" },
+};
+
+/* ══════════════════════════════════════════════════
+   CSS
+══════════════════════════════════════════════════ */
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
-  @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Sharp');
 
-  *, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: #EFEFEB; }
-  ::-webkit-scrollbar-thumb { background: #0D3D2B; border-radius: 4px; }
-
-  /* ── Material Icon helper ── */
   .mi {
-    font-family: 'Material Icons';
-    font-style: normal;
-    font-weight: normal;
-    line-height: 1;
-    letter-spacing: normal;
-    text-transform: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    font-family: 'Material Icons Sharp';
+    font-style: normal; font-weight: normal; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
     user-select: none;
   }
 
-  /* ── Page shell ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes blink {
+    0%,100% { opacity: 1; } 50% { opacity: 0.25; }
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; } 50% { opacity: 0.3; }
+  }
+
+  /* ── Root ── */
   .ud-page {
     font-family: 'Poppins', sans-serif;
-    background: #EFEFEB;
-    color: #0D3D2B;
+    background: #dcdcdc;
     min-height: 100vh;
+    color: #1a1a1a;
+    padding-top: 60px
   }
 
-  .ud-grid-bg {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background-image:
-      linear-gradient(rgba(13,61,43,0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(13,61,43,0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
+  /* ── Main wrapper ── */
+  .ud-main {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 14px 32px;
+    overflow-x: hidden;
   }
 
-  /* ── Page container — the outer bordered card ── */
-  .page-container {
-    margin: 1.5rem 2rem 2rem;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 2px solid rgba(13,61,43,0.15);
-    box-shadow:
-      0 4px 6px rgba(13,61,43,0.04),
-      0 20px 40px rgba(13,61,43,0.08);
-    background: #f7f7f3;
-    position: relative;
-    z-index: 2;
-  }
-
-  /* ── Main content area ── */
-  .ud-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1.75rem 2rem 2.5rem;
-  }
-
-  /* ══════════════════════════════════════════════════
-     WELCOME BANNER
-  ══════════════════════════════════════════════════ */
-  .ud-welcome {
-    border-radius: 16px;
-    overflow: hidden;
-    margin-bottom: 1.75rem;
-    border: 1.5px solid rgba(13,61,43,0.12);
-    box-shadow: 0 8px 24px rgba(13,61,43,0.1);
-  }
-
-  .ud-welcome-main {
-    background: linear-gradient(135deg, #0D3D2B 0%, #164d37 60%, #1a5c40 100%);
-    padding: 2rem 2.25rem;
+  /* ══ TOP BAR ══ */
+  .ud-topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Decorative circles in banner */
-  .ud-welcome-main::before {
-    content: '';
-    position: absolute;
-    top: -60px;
-    right: -60px;
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    background: rgba(200,241,53,0.06);
-    pointer-events: none;
-  }
-
-  .ud-welcome-main::after {
-    content: '';
-    position: absolute;
-    bottom: -40px;
-    right: 200px;
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    background: rgba(200,241,53,0.04);
-    pointer-events: none;
-  }
-
-  .ud-welcome-left {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  .ud-welcome-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: rgba(200,241,53,0.12);
-    border: 1px solid rgba(200,241,53,0.25);
-    border-radius: 6px;
-    padding: 3px 10px;
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: #C8F135;
-    width: fit-content;
-  }
-
-  .ud-welcome-tag .mi { font-size: 0.85rem; }
-
-  .ud-welcome-name {
-    font-size: clamp(1.4rem, 3.5vw, 2rem);
-    font-weight: 800;
-    color: #fff;
-    letter-spacing: -0.02em;
-    line-height: 1.15;
-  }
-
-  .ud-welcome-sub {
-    font-size: 0.83rem;
-    color: rgba(255,255,255,0.45);
-    font-weight: 400;
-  }
-
-  .ud-welcome-right {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    position: relative;
-    z-index: 1;
-  }
-
-  .ud-welcome-btn-primary {
-    padding: 0.65rem 1.4rem;
-    border: 1.5px solid #C8F135;
-    border-radius: 10px;
-    background: #C8F135;
-    color: #0D3D2B;
-    font-size: 0.82rem;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.18s;
-    white-space: nowrap;
-  }
-
-  .ud-welcome-btn-primary:hover {
-    background: #b8e020;
-    border-color: #b8e020;
-    transform: translateY(-1px);
-  }
-
-  .ud-welcome-btn-secondary {
-    padding: 0.65rem 1.4rem;
-    border: 1.5px solid rgba(255,255,255,0.2);
-    border-radius: 10px;
-    background: rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.8);
-    font-size: 0.82rem;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.18s;
-    white-space: nowrap;
-    backdrop-filter: blur(4px);
-  }
-
-  .ud-welcome-btn-secondary:hover {
-    border-color: rgba(255,255,255,0.4);
-    color: #fff;
-    background: rgba(255,255,255,0.1);
-  }
-
-  .ud-welcome-footer {
-    background: rgba(13,61,43,0.04);
-    border-top: 1px solid rgba(13,61,43,0.08);
-    padding: 0.75rem 2.25rem;
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-
-  .ud-welcome-meta {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.72rem;
-    font-weight: 500;
-    color: rgba(13,61,43,0.5);
-  }
-
-  .ud-welcome-meta .mi {
-    font-size: 0.9rem;
-    color: #0D3D2B;
-    opacity: 0.4;
-  }
-
-  .ud-welcome-meta-dot {
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: rgba(13,61,43,0.25);
-  }
-
-  /* ══════════════════════════════════════════════════
-     STATS ROW
-  ══════════════════════════════════════════════════ */
-  .ud-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.75rem;
-  }
-
-  .ud-stat-card {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 14px;
-    background: #fff;
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    box-shadow: 0 2px 8px rgba(13,61,43,0.05);
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .ud-stat-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--stat-color, #C8F135);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .ud-stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(13,61,43,0.1);
-    border-color: rgba(13,61,43,0.2);
-  }
-
-  .ud-stat-card:hover::after {
-    opacity: 1;
-  }
-
-  .ud-stat-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 10px;
   }
-
-  .ud-stat-icon .mi {
-    font-size: 1.35rem;
-    color: #0D3D2B;
+  .ud-heading {
+    font-size: 18px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.4px;
   }
-
-  .ud-stat-value {
-    font-size: 1.9rem;
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    color: #0D3D2B;
-    line-height: 1;
+  .ud-heading span { color: #e07a5f; }
+  .ud-topbar-right {
+    display: flex; align-items: center; gap: 8px;
   }
-
-  .ud-stat-label {
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: rgba(13,61,43,0.45);
-    margin-top: 0.25rem;
-    letter-spacing: 0.01em;
+  .ud-meta-chip {
+    display: flex; align-items: center; gap: 5px;
+    background: #f0f0f0; border-radius: 11px;
+    padding: 6px 12px;
+    font-size: 11px; font-weight: 500; color: #666;
   }
-
-  /* ══════════════════════════════════════════════════
-     MAIN GRID
-  ══════════════════════════════════════════════════ */
-  .ud-main-grid {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 1.25rem;
-    align-items: start;
+  .ud-meta-chip .mi { font-size: 13px; color: #aaa; }
+  .ud-add-btn {
+    background: #1a1a1a; color: #fff; border: none;
+    border-radius: 11px; padding: 7px 14px;
+    font-family: 'Poppins', sans-serif; font-size: 11.5px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 5px;
+    transition: background 0.15s;
   }
+  .ud-add-btn:hover { background: #2a2a2a; }
+  .ud-add-btn .mi { font-size: 14px; }
 
-  /* ── Section heading ── */
-  .ud-section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
+  /* ══ STAT STRIP ══ */
+  .ud-stats {
+    display: flex; gap: 12px; flex-shrink: 0;
   }
-
-  .ud-section-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #0D3D2B;
-    letter-spacing: -0.01em;
+  .ud-stat {
+    flex: 1; border-radius: 16px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 4px;
+    position: relative; overflow: hidden;
   }
-
-  .ud-section-link {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #0D3D2B;
-    cursor: pointer;
-    padding: 4px 12px;
-    border: 1.5px solid rgba(13,61,43,0.2);
-    border-radius: 20px;
-    transition: all 0.15s;
-    background: #fff;
+  .ud-stat.light  { background: #f0f0f0; }
+  .ud-stat.dark   { background: #1a1a1a; }
+  .ud-stat.purple { background: #1e1a38; }
+  .ud-stat.orange { background: #2a1a10; }
+  .ud-stat-glow { position: absolute; inset: 0; pointer-events: none; border-radius: 16px; }
+  .ud-stat-label { font-size: 10.5px; font-weight: 500; color: #999; }
+  .ud-stat.dark .ud-stat-label,
+  .ud-stat.purple .ud-stat-label,
+  .ud-stat.orange .ud-stat-label { color: #555; }
+  .ud-stat-value { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: #1a1a1a; }
+  .ud-stat.dark .ud-stat-value   { color: #fff; }
+  .ud-stat.purple .ud-stat-value { color: #c8c2ff; }
+  .ud-stat.orange .ud-stat-value { color: #ffb380; }
+  .ud-stat-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; font-weight: 600; padding: 2px 7px;
+    border-radius: 20px; width: fit-content;
+    color: #2a7a55; background: #e6f8ef;
   }
+  .ud-stat.dark .ud-stat-badge   { color: #6effc2; background: rgba(110,255,194,0.12); }
+  .ud-stat.purple .ud-stat-badge { color: #a89fff; background: rgba(124,110,245,0.18); }
+  .ud-stat.orange .ud-stat-badge { color: #ffb380; background: rgba(255,140,80,0.18); }
 
-  .ud-section-link:hover {
-    background: #0D3D2B;
-    color: #C8F135;
-    border-color: #0D3D2B;
+  /* ══ QUICK ACTIONS ══ */
+  .ud-actions-row {
+    display: flex; gap: 8px; flex-wrap: wrap;
   }
-
-  /* ══════════════════════════════════════════════════
-     PROPERTIES LIST
-  ══════════════════════════════════════════════════ */
-  .ud-props-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+  .ud-action-btn {
+    display: flex; align-items: center; gap: 7px;
+    border: none; border-radius: 13px;
+    padding: 10px 16px;
+    font-family: 'Poppins', sans-serif; font-size: 11.5px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
   }
+  .ud-action-btn .mi { font-size: 15px; }
+  .ud-action-btn.primary   { background: #1a1a1a; color: #fff; }
+  .ud-action-btn.primary:hover { background: #2a2a2a; }
+  .ud-action-btn.ghost {
+    background: #f0f0f0; color: #555;
+  }
+  .ud-action-btn.ghost:hover { background: #e8e8e8; color: #111; }
+  .ud-action-btn.purple-btn { background: rgba(91,79,212,0.1); color: #5B4FD4; }
+  .ud-action-btn.purple-btn:hover { background: rgba(91,79,212,0.18); }
 
+  /* ══ TWO-COLUMN LAYOUT ══ */
+  .ud-content-row {
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .ud-col-left  { flex: 2; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .ud-col-right { flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+  /* ══ SECTION ZONE ══ */
+  .ud-zone {
+    background: rgba(240,240,240,0.4);
+    border: 1.5px solid #e0e0e0;
+    border-radius: 24px;
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .ud-zone-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 8px 12px;
+    border-bottom: 1px solid #e8e8e8;
+  }
+  .ud-zone-title-row { display: flex; align-items: center; gap: 10px; }
+  .ud-zone-title {
+    font-size: 14px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.3px;
+  }
+  .ud-zone-title span { color: #5B4FD4; }
+  .ud-zone-pill {
+    background: #1a1a1a; color: #fff;
+    border-radius: 20px; padding: 2px 10px;
+    font-size: 9.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .ud-zone-link {
+    font-size: 10.5px; font-weight: 600; color: #888;
+    background: none; border: none; font-family: inherit;
+    cursor: pointer; display: flex; align-items: center; gap: 3px;
+    transition: color 0.15s;
+  }
+  .ud-zone-link:hover { color: #1a1a1a; }
+  .ud-zone-link .mi { font-size: 13px; }
+
+  /* ══ PROPERTY CARDS (compact — like hack-card) ══ */
   .ud-prop-card {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 14px;
-    background: #fff;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(13,61,43,0.04);
-    transition: all 0.2s;
-    cursor: pointer;
+    background: #f0f0f0; border-radius: 18px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 8px;
+    cursor: pointer; position: relative; overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+    animation: fadeUp 0.3s ease both;
   }
+  .ud-prop-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .ud-prop-card.dark { background: #1a1a1a; }
 
-  .ud-prop-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(13,61,43,0.1);
-    border-color: rgba(13,61,43,0.2);
+  .ud-prop-row1 { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .ud-prop-icon-wrap {
+    width: 32px; height: 32px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-
-  .ud-prop-top {
-    padding: 1.1rem 1.25rem;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
+  .ud-prop-icon-wrap .mi { font-size: 16px; }
+  .ud-prop-status-pill {
+    font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 20px;
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
   }
+  .ud-prop-status-pill .pdot { width: 5px; height: 5px; border-radius: 50%; }
+  .s-clear   { color: #2a7a55; background: #e6f8ef; }
+  .s-enc     { color: #b07a00; background: rgba(255,185,0,0.14); }
+  .s-disp    { color: #c0392b; background: rgba(240,80,80,0.12); }
+  .d-clear   { background: #2a7a55; }
+  .d-enc     { background: #e0a020; }
+  .d-disp    { background: #c0392b; }
 
   .ud-prop-id {
-    font-size: 0.6rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    color: rgba(13,61,43,0.35);
-    font-family: 'DM Mono', monospace;
-    margin-bottom: 0.3rem;
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: #aaa; letter-spacing: 0.05em; margin-bottom: 2px;
   }
-
+  .ud-prop-card.dark .ud-prop-id { color: #444; }
   .ud-prop-title {
-    font-size: 0.92rem;
-    font-weight: 700;
-    color: #0D3D2B;
-    letter-spacing: -0.01em;
+    font-size: 12.5px; font-weight: 700; color: #1a1a1a;
+    letter-spacing: -0.2px; line-height: 1.3;
   }
+  .ud-prop-card.dark .ud-prop-title { color: #fff; }
+  .ud-prop-meta { font-size: 10px; font-weight: 500; color: #aaa; margin-top: 1px; }
+  .ud-prop-card.dark .ud-prop-meta { color: #555; }
 
-  .ud-prop-meta {
-    font-size: 0.75rem;
-    color: rgba(13,61,43,0.45);
-    margin-top: 0.2rem;
-    font-weight: 400;
+  .ud-prop-chips { display: flex; gap: 6px; }
+  .ud-prop-chip {
+    flex: 1; background: rgba(0,0,0,0.04); border-radius: 9px; padding: 7px 10px;
+    display: flex; flex-direction: column; gap: 2px;
   }
-
-  .ud-prop-badge {
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.62rem;
-    font-weight: 700;
-    white-space: nowrap;
-    flex-shrink: 0;
-    letter-spacing: 0.02em;
-  }
+  .ud-prop-card.dark .ud-prop-chip { background: rgba(255,255,255,0.04); }
+  .ud-prop-chip-label { font-size: 8.5px; font-weight: 600; color: #bbb; text-transform: uppercase; letter-spacing: 0.4px; }
+  .ud-prop-card.dark .ud-prop-chip-label { color: #444; }
+  .ud-prop-chip-val { font-size: 11px; font-weight: 700; color: #1a1a1a; }
+  .ud-prop-card.dark .ud-prop-chip-val { color: #ccc; }
 
   .ud-prop-footer {
-    border-top: 1px solid rgba(13,61,43,0.06);
-    padding: 0.6rem 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(13,61,43,0.02);
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.05);
   }
+  .ud-prop-card.dark .ud-prop-footer { border-top-color: rgba(255,255,255,0.05); }
+  .ud-prop-hash { font-family: 'DM Mono', monospace; font-size: 8.5px; color: #5B4FD4; }
+  .ud-prop-card.dark .ud-prop-hash { color: #7c6ef5; }
+  .ud-prop-cta { font-size: 10px; font-weight: 700; color: #1a1a1a; display: flex; align-items: center; gap: 3px; }
+  .ud-prop-card.dark .ud-prop-cta { color: #ccc; }
+  .ud-prop-cta .mi { font-size: 13px; }
 
-  .ud-prop-hash {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    color: rgba(91,79,212,0.7);
+  /* ══ TRANSFER ROWS ══ */
+  .ud-transfer-list { display: flex; flex-direction: column; gap: 6px; }
+  .ud-transfer-row {
+    background: #f0f0f0; border-radius: 14px; padding: 12px 14px;
+    display: flex; align-items: center; gap: 12px;
+    transition: transform 0.15s;
   }
-
-  .ud-prop-since {
-    font-size: 0.65rem;
-    font-weight: 500;
-    color: rgba(13,61,43,0.35);
+  .ud-transfer-row:hover { transform: translateY(-1px); }
+  .ud-transfer-icon {
+    width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
   }
+  .ud-transfer-icon .mi { font-size: 15px; }
+  .ud-transfer-body { flex: 1; min-width: 0; }
+  .ud-transfer-title { font-size: 11.5px; font-weight: 700; color: #1a1a1a; }
+  .ud-transfer-sub   { font-size: 9.5px; font-weight: 500; color: #aaa; margin-top: 1px; }
+  .ud-transfer-date  { font-size: 9px; font-weight: 600; color: #bbb; font-family: 'DM Mono', monospace; white-space: nowrap; }
+  .t-pending   { color: #b07a00; background: rgba(255,185,0,0.13); }
+  .t-completed { color: #2a7a55; background: rgba(46,196,160,0.13); }
+  .t-reviewing { color: #5B4FD4; background: rgba(91,79,212,0.12); }
 
-  /* ══════════════════════════════════════════════════
-     RIGHT COLUMN — BLOCKCHAIN STATUS
-  ══════════════════════════════════════════════════ */
-  .ud-right-col {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
+  /* ══ BLOCKCHAIN STATUS PANEL ══ */
+  .ud-chain-zone {
+    background: #1a1a1a; border-radius: 20px; overflow: hidden;
   }
-
-  .ud-chain-card {
-    border: 1.5px solid rgba(13,61,43,0.12);
-    border-radius: 14px;
-    background: #0D3D2B;
-    padding: 1.4rem;
-    box-shadow: 0 8px 24px rgba(13,61,43,0.15);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .ud-chain-card::before {
-    content: '';
-    position: absolute;
-    top: -50px;
-    right: -50px;
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    background: rgba(200,241,53,0.05);
-    pointer-events: none;
-  }
-
-  .ud-chain-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.25rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  .ud-chain-title {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.4);
-  }
-
-  .ud-chain-live {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.62rem;
-    font-weight: 700;
-    color: #2EC4A0;
-    background: rgba(46,196,160,0.1);
-    border: 1px solid rgba(46,196,160,0.2);
-    border-radius: 20px;
-    padding: 2px 8px;
-  }
-
-  .ud-chain-live-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #2EC4A0;
-    box-shadow: 0 0 6px #2EC4A0;
-  }
-
-  .ud-chain-rows {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    position: relative;
-    z-index: 1;
-  }
-
-  .ud-chain-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.55rem 0;
+  .ud-chain-head {
+    padding: 14px 16px 10px;
+    display: flex; align-items: center; justify-content: space-between;
     border-bottom: 1px solid rgba(255,255,255,0.05);
   }
-
-  .ud-chain-row:last-child {
-    border-bottom: none;
+  .ud-chain-head-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.07em; color: #555;
+    text-transform: uppercase;
   }
-
-  .ud-chain-label {
-    font-size: 0.7rem;
-    color: rgba(255,255,255,0.35);
-    font-weight: 500;
+  .ud-chain-live {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; color: #2EC4A0;
   }
-
-  .ud-chain-val {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: rgba(255,255,255,0.85);
-    font-family: 'DM Mono', monospace;
+  .ud-chain-live-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #2EC4A0;
+    animation: pulse 2s infinite;
   }
-
-  .ud-chain-val-lime { color: #C8F135; }
-
-  .ud-chain-val-verified {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: #2EC4A0;
-    font-family: 'Poppins', sans-serif;
+  .ud-chain-rows { padding: 4px 0 8px; }
+  .ud-chain-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 16px; border-bottom: 1px solid rgba(255,255,255,0.03);
   }
+  .ud-chain-row:last-child { border-bottom: none; }
+  .ud-chain-label { font-size: 10.5px; font-weight: 500; color: #555; }
+  .ud-chain-val   { font-family: 'DM Mono', monospace; font-size: 10.5px; color: #ccc; }
+  .ud-chain-val-green { font-family: 'DM Mono', monospace; font-size: 10.5px; font-weight: 600; color: #2EC4A0; }
 
-  .ud-chain-val-verified .mi { font-size: 0.82rem; }
-
-  .ud-chain-divider {
-    height: 1px;
-    background: rgba(255,255,255,0.06);
-    margin: 0.25rem 0;
+  /* ══ ACTIVITY FEED ══ */
+  .ud-activity-zone {
+    background: rgba(240,240,240,0.4);
+    border: 1.5px solid #e0e0e0; border-radius: 24px; overflow: hidden;
   }
-
-  /* ══════════════════════════════════════════════════
-     ACTIVITY FEED
-  ══════════════════════════════════════════════════ */
-  .ud-activity-card {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 14px;
-    background: #fff;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(13,61,43,0.04);
-    grid-column: 1 / -1;
-  }
-
   .ud-activity-head {
-    background: #0D3D2B;
-    padding: 0.9rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid #e8e8e8;
   }
-
-  .ud-activity-head-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #C8F135;
-    box-shadow: 0 0 6px rgba(200,241,53,0.6);
-    flex-shrink: 0;
+  .ud-activity-head-left { display: flex; align-items: center; gap: 8px; }
+  .ud-activity-head-dot  { width: 6px; height: 6px; border-radius: 50%; background: #1a1a1a; }
+  .ud-activity-head-txt  { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; color: #aaa; text-transform: uppercase; }
+  .ud-activity-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr);
   }
-
-  .ud-activity-head-txt {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.6);
-  }
-
-  .ud-activity-list {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    padding: 0;
-  }
-
   .ud-activity-item {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.45rem;
-    padding: 1.1rem 1.25rem;
-    transition: background 0.15s;
-    position: relative;
+    padding: 14px 16px; display: flex; flex-direction: column; gap: 5px;
+    border-right: 1px solid #e8e8e8; transition: background 0.15s;
+  }
+  .ud-activity-item:last-child { border-right: none; }
+  .ud-activity-item:hover { background: rgba(0,0,0,0.02); }
+  .ud-activity-icon-row { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
+  .ud-activity-color-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .ud-activity-icon-wrap {
+    width: 24px; height: 24px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ud-activity-icon-wrap .mi { font-size: 13px; }
+  .ud-activity-label { font-size: 12px; font-weight: 700; color: #1a1a1a; line-height: 1.3; }
+  .ud-activity-sub   { font-size: 10px; color: #999; line-height: 1.5; }
+  .ud-activity-date  { font-size: 9px; font-weight: 600; color: #bbb; margin-top: 3px; font-family: 'DM Mono', monospace; }
+
+  /* ══ MINI STATS PANEL ══ */
+  .ud-mini-stats {
+    background: #f0f0f0; border-radius: 20px; padding: 16px 18px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .ud-mini-title { font-size: 12.5px; font-weight: 700; color: #1a1a1a; }
+  .ud-mini-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ud-mini-block {
+    background: #e8e8e8; border-radius: 12px; padding: 11px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .ud-mini-block.accent { background: #1a1a1a; }
+  .ud-mini-block-label { font-size: 9px; font-weight: 500; color: #aaa; }
+  .ud-mini-block.accent .ud-mini-block-label { color: #555; }
+  .ud-mini-block-val   { font-size: 18px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.3px; }
+  .ud-mini-block.accent .ud-mini-block-val { color: #fff; }
+  .ud-mini-block-sub   { font-size: 9px; color: #bbb; }
+  .ud-mini-block.accent .ud-mini-block-sub { color: #444; }
+  .ud-mini-divider { height: 1px; background: #e0e0e0; }
+  .ud-mini-bar-rows { display: flex; flex-direction: column; gap: 7px; }
+  .ud-mini-bar-row  { display: flex; align-items: center; gap: 8px; }
+  .ud-mini-bar-name { font-size: 10px; font-weight: 500; color: #555; width: 72px; flex-shrink: 0; }
+  .ud-mini-bar-bg   { flex: 1; height: 5px; background: #e0e0e0; border-radius: 99px; overflow: hidden; }
+  .ud-mini-bar-fill { height: 100%; border-radius: 99px; }
+  .ud-mini-bar-pct  { font-size: 9px; font-weight: 600; color: #aaa; width: 26px; text-align: right; flex-shrink: 0; }
+
+  /* ══ TIMELINE ══ */
+  .ud-timeline-zone {
+    background: #1a1a1a; border-radius: 20px; padding: 16px 18px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .ud-tl-title { font-size: 12.5px; font-weight: 700; color: #fff; }
+  .ud-tl-feed  { display: flex; flex-direction: column; }
+  .ud-tl-item  {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .ud-tl-item:last-child { border-bottom: none; }
+  .ud-tl-left  { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 2px; }
+  .ud-tl-icon  { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ud-tl-icon .mi { font-size: 13px; }
+  .ud-tl-line  { width: 1px; height: 18px; background: rgba(255,255,255,0.05); }
+  .ud-tl-body  { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .ud-tl-name  { font-size: 10.5px; font-weight: 600; color: #ccc; }
+  .ud-tl-detail{ font-size: 9.5px; color: #555; line-height: 1.4; }
+  .ud-tl-date  {
+    font-size: 8.5px; font-weight: 600; padding: 2px 7px; border-radius: 20px;
+    background: rgba(255,255,255,0.05); color: #555; flex-shrink: 0; white-space: nowrap;
   }
 
-  .ud-activity-item:not(:last-child) {
-    border-right: 1px solid rgba(13,61,43,0.06);
-  }
-
-  .ud-activity-item:hover { background: rgba(13,61,43,0.02); }
-
-  .ud-activity-icon {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 0.2rem;
-  }
-
-  .ud-activity-icon .mi {
-    font-size: 0.95rem;
-    color: #0D3D2B;
-  }
-
-  .ud-activity-label {
-    font-size: 0.76rem;
-    font-weight: 700;
-    color: #0D3D2B;
-    line-height: 1.3;
-  }
-
-  .ud-activity-sub {
-    font-size: 0.66rem;
-    color: rgba(13,61,43,0.45);
-    line-height: 1.45;
-    font-weight: 400;
-  }
-
-  .ud-activity-date {
-    font-size: 0.6rem;
-    font-weight: 600;
-    color: rgba(13,61,43,0.3);
-    margin-top: auto;
-    padding-top: 0.25rem;
-  }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 1024px) {
-    .ud-main-grid { grid-template-columns: 1fr; }
-    .ud-right-col { display: grid; grid-template-columns: 1fr; }
-    .ud-activity-list { grid-template-columns: repeat(3, 1fr); }
+  /* ══ RESPONSIVE ══ */
+  @media (max-width: 900px) {
+    .ud-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ud-content-row { flex-direction: column; }
+    .ud-activity-grid { grid-template-columns: repeat(3, 1fr); }
     .ud-activity-item:nth-child(3) { border-right: none; }
-    .ud-activity-item:nth-child(n+4) { border-top: 1px solid rgba(13,61,43,0.06); }
   }
-
-  @media (max-width: 768px) {
-    .page-container { margin: 1rem; border-radius: 14px; }
-    .ud-content { padding: 1.25rem 1rem 2rem; }
-    .ud-stats { grid-template-columns: repeat(2, 1fr); }
-    .ud-welcome-main { padding: 1.5rem; }
-    .ud-welcome-footer { padding: 0.65rem 1.5rem; gap: 1rem; }
-    .ud-activity-list { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 580px) {
+    .ud-main { padding: 10px 10px 80px; gap: 10px; }
+    .ud-topbar { flex-direction: column; align-items: flex-start; }
+    .ud-activity-grid { grid-template-columns: 1fr 1fr; }
     .ud-activity-item:nth-child(2n) { border-right: none; }
-    .ud-activity-item:nth-child(n+3) { border-top: 1px solid rgba(13,61,43,0.06); }
-  }
-
-  @media (max-width: 480px) {
-    .page-container { margin: 0.65rem; border-radius: 12px; }
-    .ud-stats { grid-template-columns: 1fr 1fr; }
-    .ud-stat-card { padding: 1rem; }
-    .ud-stat-value { font-size: 1.5rem; }
-    .ud-welcome-right { width: 100%; }
-    .ud-welcome-btn-primary,
-    .ud-welcome-btn-secondary { flex: 1; text-align: center; }
-    .ud-activity-list { grid-template-columns: 1fr; }
-    .ud-activity-item { border-right: none !important; }
-    .ud-activity-item:not(:last-child) {
-      border-right: none;
-      border-bottom: 1px solid rgba(13,61,43,0.06);
-    }
   }
 `;
 
 /* ══════════════════════════════════════════════════
-   REUSABLE COMPONENTS
+   HELPERS
 ══════════════════════════════════════════════════ */
-const MIcon = ({ name, className = "" }) => (
-  <span className={`mi ${className}`}>{name}</span>
-);
+const MI = ({ name, style }) => <span className="mi" style={style}>{name}</span>;
 
-const SectionHead = ({ title, linkLabel, onLink }) => (
-  <div className="ud-section-head">
-    <span className="ud-section-title">{title}</span>
-    {linkLabel && <span className="ud-section-link" onClick={onLink}>{linkLabel}</span>}
-  </div>
-);
+function statusMeta(p) {
+  if (p.disputeActive) return { cls: "s-disp", dotCls: "d-disp" };
+  if (p.encumbrance)   return { cls: "s-enc",  dotCls: "d-enc"  };
+  return { cls: "s-clear", dotCls: "d-clear" };
+}
 
 /* ══════════════════════════════════════════════════
-   USER DASHBOARD COMPONENT
+   COMPONENT
 ══════════════════════════════════════════════════ */
 export default function UserDashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const properties = user ? getPropertiesByOwner(user.id) : [];
-  const transfers  = user ? getTransfersByUser(user.id)   : [];
+  const [properties, setProperties] = useState([]);
+  const [transfers, setTransfers]   = useState([]);
+  const [disputes, setDisputes]     = useState([]);
+  const [loading, setLoading]       = useState(true);
 
-  const pendingTransfers = transfers.filter(t => t.status !== "Completed").length;
-  const activeDisputes   = properties.filter(p => p.disputeActive).length;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [propRes, transRes, dispRes] = await Promise.all([
+          api.get('/properties/my-properties'),
+          api.get('/transfers/my-transfers'),
+          api.get('/disputes/my-disputes')
+        ]);
+        setProperties(propRes.data);
+        setTransfers(transRes.data);
+        setDisputes(dispRes.data);
+      } catch (error) {
+        console.error("Dashboard data fetch failed", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user) fetchData();
+  }, [user]);
 
-  const stats = [
-    { label: "Properties Owned",  value: String(properties.length), icon: "home",        color: "#C8F135" },
-    { label: "Pending Transfers", value: String(pendingTransfers),   icon: "sync_alt",    color: "#F07060" },
-    { label: "Active Disputes",   value: String(activeDisputes),     icon: "gavel",       color: "#5B4FD4" },
-    { label: "Certificates",      value: "5",                        icon: "description", color: "#2EC4A0" },
-  ];
+  const pendingTransfers = transfers.filter(t => t.status !== "Completed" && t.status !== "APPROVED").length;
+  const activeDisputes   = disputes.filter(d => d.status === "ACTIVE").length;
+  const clearTitle       = properties.filter(p => p.status === "Clear Title").length;
+
+  /* type distribution bars */
+  const typeCounts = {
+    Residential:  properties.filter(p => p.type === "Residential").length,
+    Agricultural: properties.filter(p => p.type === "Agricultural").length,
+    Commercial:   properties.filter(p => p.type === "Commercial").length,
+  };
+  const maxCount = Math.max(...Object.values(typeCounts), 1);
+  const BAR_CLR  = { Residential: "#C8F135", Agricultural: "#2EC4A0", Commercial: "#5B4FD4" };
+
+  /* timeline from recent properties */
+  const tlItems = properties.slice(0, 5).map(p => {
+    const meta = TYPE_META[p.type] || TYPE_META.Residential;
+    return { icon: meta.icon, iconBg: meta.iconBg + "22", iconColor: meta.iconBg, name: p.title, detail: `${p.status} · ${p.area}`, date: p.registeredOn };
+  });
+
+  /* transfer status helper */
+  const tStatus = (t) => {
+    if (t.status === "Completed") return { cls: "t-completed", icon: "check_circle" };
+    if (t.status === "Reviewing") return { cls: "t-reviewing", icon: "manage_search" };
+    return { cls: "t-pending", icon: "pending" };
+  };
 
   return (
     <>
       <style>{styles}</style>
-
       <div className="ud-page">
-        <div className="ud-grid-bg" />
 
-        {/* Dashboard subnav */}
-        <Navbar1 user={user} onLogout={logout} />
+        <div className="ud-main">
 
-        <div className="page-container">
-          <div className="ud-content">
-
-            {/* ── Welcome banner ── */}
-            <div className="ud-welcome">
-              <div className="ud-welcome-main">
-                <div className="ud-welcome-left">
-                  <div className="ud-welcome-tag">
-                    <MIcon name="person" /> CITIZEN DASHBOARD
-                  </div>
-                  <div className="ud-welcome-name">
-                    Welcome back, {user?.name?.split(" ")[0] ?? "Citizen"} ✦
-                  </div>
-                  <div className="ud-welcome-sub">Manage your properties, transfers and legal records</div>
-                </div>
-                <div className="ud-welcome-right">
-                  <button className="ud-welcome-btn-primary" onClick={() => navigate("/user/transfer")}>
-                    + Initiate Transfer
-                  </button>
-                  <button className="ud-welcome-btn-secondary" onClick={() => navigate("/user/properties")}>
-                    My Properties →
-                  </button>
-                </div>
-              </div>
-              <div className="ud-welcome-footer">
-                <div className="ud-welcome-meta">
-                  <MIcon name="location_on" /> {user?.state ?? "—"}
-                  <span className="ud-welcome-meta-dot" />
-                  Member since {user?.since ?? "—"}
-                </div>
-                <div className="ud-welcome-meta">
-                  <MIcon name="lock" /> Aadhaar: {user?.aadhaar ?? "—"}
-                  <span className="ud-welcome-meta-dot" />
-                  {user?.email ?? "—"}
-                </div>
-              </div>
+          {/* ══ TOP BAR ══ */}
+          <div className="ud-topbar">
+            <div className="ud-heading">
+              Welcome back, <span>{user?.name ?? "Citizen"}</span>
             </div>
-
-            {/* ── Stats row ── */}
-            <div className="ud-stats">
-              {stats.map((s, i) => (
-                <div key={i} className="ud-stat-card" style={{ "--stat-color": s.color }}>
-                  <div className="ud-stat-icon" style={{ background: s.color }}>
-                    <MIcon name={s.icon} />
-                  </div>
-                  <div>
-                    <div className="ud-stat-value">{s.value}</div>
-                    <div className="ud-stat-label">{s.label}</div>
-                  </div>
+            <div className="ud-topbar-right">
+              {user?.state && (
+                <div className="ud-meta-chip">
+                  <MI name="location_on" /> {user.state}
                 </div>
-              ))}
+              )}
+              {user?.aadhaar && (
+                <div className="ud-meta-chip">
+                  <MI name="lock" /> ••••{user.aadhaar?.slice(-4)}
+                </div>
+              )}
+              <button className="ud-add-btn" onClick={() => navigate("/user/transfers")}>
+                <MI name="add" /> Initiate Transfer
+              </button>
             </div>
+          </div>
 
-            {/* ── Main grid ── */}
-            <div className="ud-main-grid">
+          {/* ══ STAT STRIP ══ */}
+          <div className="ud-stats">
+            <div className="ud-stat dark">
+              <div className="ud-stat-glow" style={{ background: "radial-gradient(circle at 70% 20%, rgba(255,255,255,0.07) 0%, transparent 60%)" }} />
+              <div className="ud-stat-label">Properties Owned</div>
+              <div className="ud-stat-value">{properties.length}</div>
+              <div className="ud-stat-badge">registered</div>
+            </div>
+            <div className="ud-stat purple">
+              <div className="ud-stat-glow" style={{ background: "radial-gradient(circle at 70% 20%, rgba(91,79,212,0.25) 0%, transparent 60%)" }} />
+              <div className="ud-stat-label">Pending Transfers</div>
+              <div className="ud-stat-value">{pendingTransfers}</div>
+              <div className="ud-stat-badge">in progress</div>
+            </div>
+            <div className="ud-stat orange">
+              <div className="ud-stat-glow" style={{ background: "radial-gradient(circle at 70% 20%, rgba(255,140,80,0.2) 0%, transparent 60%)" }} />
+              <div className="ud-stat-label">Active Disputes</div>
+              <div className="ud-stat-value">{activeDisputes}</div>
+              <div className="ud-stat-badge">need attention</div>
+            </div>
+            <div className="ud-stat light">
+              <div className="ud-stat-label">Clear Title</div>
+              <div className="ud-stat-value">{clearTitle}</div>
+              <div className="ud-stat-badge">clean records</div>
+            </div>
+          </div>
 
-              {/* LEFT — Properties */}
-              <div>
-                <SectionHead
-                  title="My Properties"
-                  linkLabel="View All →"
-                  onLink={() => navigate("/user/properties")}
-                />
-                <div className="ud-props-list">
-                  {properties.map((p, i) => (
-                    <div key={i} className="ud-prop-card" onClick={() => navigate(`/property/${p.id}`)}>
-                      <div className="ud-prop-top">
+          {/* ══ QUICK ACTIONS ══ */}
+          <div className="ud-actions-row">
+            <button className="ud-action-btn primary" onClick={() => navigate("/user/transfers")}>
+              <MI name="swap_horiz" /> Initiate Transfer
+            </button>
+            <button className="ud-action-btn ghost" onClick={() => navigate("/user/properties")}>
+              <MI name="home_work" /> My Properties
+            </button>
+
+            <button className="ud-action-btn purple-btn" onClick={() => navigate("/user/mutations")}>
+              <MI name="edit_document" /> File Mutation
+            </button>
+          </div>
+
+          {/* ══ TWO-COLUMN CONTENT ══ */}
+          <div className="ud-content-row">
+
+            {/* ── LEFT COLUMN ── */}
+            <div className="ud-col-left">
+
+              {/* Properties section */}
+              <div className="ud-zone">
+                <div className="ud-zone-header">
+                  <div className="ud-zone-title-row">
+                    <div className="ud-zone-title">My <span>Properties</span></div>
+                    <div className="ud-zone-pill">{properties.length} total</div>
+                  </div>
+                  <button className="ud-zone-link" onClick={() => navigate("/user/properties")}>
+                    View all <MI name="arrow_forward" />
+                  </button>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
+                  {properties.slice(0, 4).map((p, i) => {
+                    const meta = TYPE_META[p.type] || TYPE_META.Residential;
+                    const { cls, dotCls } = statusMeta(p);
+                    const isDark = p.type === "Commercial";
+                    return (
+                      <div
+                        key={p.id}
+                        className={`ud-prop-card${isDark ? " dark" : ""}`}
+                        style={{ animationDelay: `${i * 0.05}s` }}
+                        onClick={() => navigate("/user/properties", { state: { openPropertyId: p.id } })}
+                      >
+                        <div className="ud-prop-row1">
+                          <div className="ud-prop-icon-wrap" style={{ background: isDark ? "rgba(255,255,255,0.06)" : meta.iconBg + "22" }}>
+                            <MI name={meta.icon} style={{ color: isDark ? "#a89fff" : meta.iconBg }} />
+                          </div>
+                          <div className={`ud-prop-status-pill ${cls}`}>
+                            <div className={`pdot ${dotCls}`} />
+                            {p.status}
+                          </div>
+                        </div>
                         <div>
                           <div className="ud-prop-id">{p.id}</div>
                           <div className="ud-prop-title">{p.title}</div>
-                          <div className="ud-prop-meta">{p.area} · {p.district}</div>
+                          <div className="ud-prop-meta">{p.district}</div>
                         </div>
-                        <div className="ud-prop-badge" style={{ background: p.statusColor, color: "#0D3D2B" }}>
-                          {p.status}
+                        <div className="ud-prop-chips">
+                          <div className="ud-prop-chip">
+                            <div className="ud-prop-chip-label">Area</div>
+                            <div className="ud-prop-chip-val">{p.area}</div>
+                          </div>
+                          <div className="ud-prop-chip">
+                            <div className="ud-prop-chip-label">Value</div>
+                            <div className="ud-prop-chip-val">{p.marketValue}</div>
+                          </div>
+                        </div>
+                        <div className="ud-prop-footer">
+                          <span className="ud-prop-hash">{p.hash?.slice(0, 18)}…</span>
+                          <span className="ud-prop-cta">View <MI name="arrow_forward" /></span>
                         </div>
                       </div>
-                      <div className="ud-prop-footer">
-                        <span className="ud-prop-hash">{p.hash}</span>
-                        <span className="ud-prop-since">Since {p.since}</span>
-                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              
+
+            </div>
+
+            {/* ── RIGHT COLUMN ── */}
+            <div className="ud-col-right">
+
+              {/* Blockchain status */}
+              <div className="ud-chain-zone">
+                <div className="ud-chain-head">
+                  <span className="ud-chain-head-title">Blockchain Status</span>
+                  <span className="ud-chain-live">
+                    <span className="ud-chain-live-dot" /> LIVE
+                  </span>
+                </div>
+                <div className="ud-chain-rows">
+                  {[
+                    { label: "Latest Block",  val: "#1,847,392",     green: false },
+                    { label: "Your Records",  val: `${properties.length} on-chain`, green: false },
+                    { label: "Last Hash",     val: "0x3f9a…c4e5",    green: false },
+                    { label: "Network",       val: "TN State Registry", green: true },
+                    { label: "Integrity",     val: "✓ Verified",     green: true },
+                  ].map((r, i) => (
+                    <div className="ud-chain-row" key={i}>
+                      <span className="ud-chain-label">{r.label}</span>
+                      <span className={r.green ? "ud-chain-val-green" : "ud-chain-val"}>{r.val}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* RIGHT — Blockchain Status */}
-              <div className="ud-right-col">
-                <div className="ud-chain-card">
-                  <div className="ud-chain-header">
-                    <span className="ud-chain-title">BLOCKCHAIN STATUS</span>
-                    <span className="ud-chain-live">
-                      <span className="ud-chain-live-dot" /> LIVE
-                    </span>
-                  </div>
-                  <div className="ud-chain-rows">
-                    <div className="ud-chain-row">
-                      <span className="ud-chain-label">Latest Block</span>
-                      <span className="ud-chain-val ud-chain-val-lime">#1,847,392</span>
-                    </div>
-                    <div className="ud-chain-divider" />
-                    <div className="ud-chain-row">
-                      <span className="ud-chain-label">Your Records</span>
-                      <span className="ud-chain-val">3 on-chain</span>
-                    </div>
-                    <div className="ud-chain-row">
-                      <span className="ud-chain-label">Last Hash</span>
-                      <span className="ud-chain-val">0x3f9a...c4e5</span>
-                    </div>
-                    <div className="ud-chain-row">
-                      <span className="ud-chain-label">Network</span>
-                      <span className="ud-chain-val ud-chain-val-lime">TN State Registry</span>
-                    </div>
-                    <div className="ud-chain-divider" />
-                    <div className="ud-chain-row">
-                      <span className="ud-chain-label">Integrity</span>
-                      <span className="ud-chain-val ud-chain-val-verified">
-                        <MIcon name="verified" /> All records verified
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              
 
-              {/* BOTTOM — Recent Activity (horizontal, full-width) */}
-              <div className="ud-activity-card">
-                <div className="ud-activity-head">
-                  <span className="ud-activity-head-dot" />
-                  <span className="ud-activity-head-txt">RECENT ACTIVITY</span>
-                </div>
-                <div className="ud-activity-list">
-                  {ACTIVITY.map((a, i) => (
-                    <div key={i} className="ud-activity-item">
-                      <div className="ud-activity-icon" style={{ background: a.color }}>
-                        <MIcon name={a.icon} />
-                      </div>
-                      <div className="ud-activity-label">{a.label}</div>
-                      <div className="ud-activity-sub">{a.sub}</div>
-                      <div className="ud-activity-date">{a.date}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              
 
             </div>
           </div>
+
+          {/* ══ ACTIVITY FEED (full width) ══ */}
+          <div className="ud-activity-zone">
+            <div className="ud-activity-head">
+              <div className="ud-activity-head-left">
+                <div className="ud-activity-head-dot" />
+                <span className="ud-activity-head-txt">Recent Activity</span>
+              </div>
+            </div>
+            <div className="ud-activity-grid">
+              {ACTIVITY.map((a, i) => (
+                <div className="ud-activity-item" key={i}>
+                  <div className="ud-activity-icon-row">
+                    <div className="ud-activity-color-dot" style={{ background: a.color }} />
+                    <div className="ud-activity-icon-wrap" style={{ background: a.color + "18" }}>
+                      <MI name={a.icon} style={{ color: a.color }} />
+                    </div>
+                  </div>
+                  <div className="ud-activity-label">{a.label}</div>
+                  <div className="ud-activity-sub">{a.sub}</div>
+                  <div className="ud-activity-date">{a.date}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
     </>

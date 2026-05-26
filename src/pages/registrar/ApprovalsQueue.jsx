@@ -1,538 +1,455 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { getPendingApprovals, getCompletedApprovals } from "../../database/Transfers";
+import api from "../../api/axiosConfig";
 import Navbar2 from "../../components/Navbar2";
 
 const FILTERS    = ["All", "High Priority", "Normal", "Completed"];
 const TYPE_ICONS = { Residential: "home", Agricultural: "grass", Commercial: "store" };
 
+/* ══════════════════════════════════════════════════
+   CSS
+══════════════════════════════════════════════════ */
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Sharp');
 
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .mi {
+    font-family: 'Material Icons Sharp';
+    font-style: normal; font-weight: normal; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    user-select: none;
   }
-
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: #EFEFEB; }
-  ::-webkit-scrollbar-thumb { background: #0D3D2B; border-radius: 4px; }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(14px); }
+    from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes slideIn {
     from { opacity: 0; transform: translateX(18px); }
     to   { opacity: 1; transform: translateX(0); }
   }
-
   @keyframes spin {
     from { transform: rotate(0); }
     to   { transform: rotate(360deg); }
   }
 
-  /* ── Page shell ── */
+  /* ── Root ── */
   .aq-page {
     font-family: 'Poppins', sans-serif;
-    background: #EFEFEB;
-    color: #0D3D2B;
+    background: #dcdcdc;
     min-height: 100vh;
+    color: #1a1a1a;
+    padding-top: 60px
   }
 
-  /* ── Page container ── */
-  .page-container {
-    margin: 1.5rem 2rem 2rem;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 1.5px solid rgba(13,61,43,0.12);
-    box-shadow: 0 4px 6px rgba(13,61,43,0.04), 0 20px 40px rgba(13,61,43,0.08);
-    background: #f7f7f3;
-    position: relative;
-    z-index: 2;
+  /* ── Main wrapper ── */
+  .aq-main {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 14px 32px;
+    overflow-x: hidden;
   }
 
-  /* ── Header ── */
-  .aq-header {
-    background: #fff;
-    border-bottom: 2px solid rgba(13, 61, 43, 0.1);
-    padding: 1rem 2rem;
+  /* ══ TOP BAR ══ */
+  .aq-topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .aq-header-left {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-  }
-
-  .aq-header-right {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
     flex-shrink: 0;
     flex-wrap: wrap;
+    gap: 10px;
+  }
+  .aq-heading {
+    font-size: 18px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.4px;
+  }
+  .aq-heading span { color: #5B4FD4; }
+  .aq-topbar-sub {
+    font-size: 11px; font-weight: 500; color: #888; margin-top: 2px;
+  }
+  .aq-topbar-right {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .aq-meta-chip {
+    display: flex; align-items: center; gap: 5px;
+    background: #f0f0f0; border-radius: 11px;
+    padding: 6px 12px;
+    font-size: 11px; font-weight: 500; color: #666;
+  }
+  .aq-meta-chip .mi { font-size: 13px; color: #aaa; }
+
+  /* ══ STAT STRIP ══ */
+  .aq-stats {
+    display: flex; gap: 12px; flex-shrink: 0;
+  }
+  .aq-stat {
+    flex: 1; border-radius: 16px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 4px;
+    position: relative; overflow: hidden;
+  }
+  .aq-stat.light  { background: #f0f0f0; }
+  .aq-stat.dark   { background: #1a1a1a; }
+  .aq-stat.purple { background: #1e1a38; }
+  .aq-stat.green  { background: #0d2218; }
+  .aq-stat-glow { position: absolute; inset: 0; pointer-events: none; border-radius: 16px; }
+  .aq-stat-label { font-size: 10.5px; font-weight: 500; color: #999; }
+  .aq-stat.dark .aq-stat-label,
+  .aq-stat.purple .aq-stat-label,
+  .aq-stat.green .aq-stat-label { color: #555; }
+  .aq-stat-value { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: #1a1a1a; }
+  .aq-stat.dark .aq-stat-value   { color: #fff; }
+  .aq-stat.purple .aq-stat-value { color: #c8c2ff; }
+  .aq-stat.green .aq-stat-value  { color: #6effc2; }
+  .aq-stat-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; font-weight: 600; padding: 2px 7px;
+    border-radius: 20px; width: fit-content;
+    color: #2a7a55; background: #e6f8ef;
+  }
+  .aq-stat.dark .aq-stat-badge   { color: #fff; background: rgba(255,255,255,0.08); }
+  .aq-stat.purple .aq-stat-badge { color: #a89fff; background: rgba(124,110,245,0.18); }
+  .aq-stat.green .aq-stat-badge  { color: #6effc2; background: rgba(110,255,194,0.12); }
+  @media (max-width: 900px) {
+    .aq-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   }
 
-  .aq-page-label {
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: rgba(13, 61, 43, 0.4);
+  /* ══ FILTER TABS ══ */
+  .aq-filter-row {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
   }
-
-  .aq-page-title {
-    font-size: 1.15rem;
-    font-weight: 800;
-    color: #0D3D2B;
-    letter-spacing: -0.02em;
-  }
-
-  .aq-page-sub {
-    font-size: 0.78rem;
-    color: rgba(13, 61, 43, 0.5);
-    font-weight: 500;
-    margin-top: 0.1rem;
-  }
-
-  /* ── Filter tabs ── */
-  .aq-filter-tabs {
-    display: flex;
-    gap: 0.4rem;
-    flex-wrap: wrap;
-  }
-
   .aq-filter-tab {
-    padding: 0.35rem 0.85rem;
-    border: 1.5px solid rgba(13, 61, 43, 0.18);
+    padding: 6px 14px;
+    border: 1.5px solid #e0e0e0;
     border-radius: 20px;
     cursor: pointer;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: rgba(13, 61, 43, 0.5);
-    background: #fff;
+    font-size: 11px; font-weight: 600;
+    color: #888;
+    background: #f0f0f0;
     font-family: 'Poppins', sans-serif;
-    transition: all 0.18s;
+    transition: all 0.15s;
   }
-
-  .aq-filter-tab:hover { border-color: #0D3D2B; }
-
+  .aq-filter-tab:hover { border-color: #bbb; color: #555; }
   .aq-filter-active {
-    background: #0D3D2B;
+    background: #1a1a1a;
     color: #fff;
-    border-color: #0D3D2B;
+    border-color: #1a1a1a;
     font-weight: 700;
   }
 
-  /* ── Toolbar ── */
+  /* ══ TOOLBAR ══ */
   .aq-toolbar {
-    background: rgba(13,61,43,0.02);
-    border-bottom: 1.5px solid rgba(13, 61, 43, 0.1);
+    background: rgba(240,240,240,0.4);
+    border: 1.5px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
   }
-
-  .aq-toolbar-inner {
-    padding: 0.85rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-
   .aq-search-wrap {
-    flex: 1;
-    min-width: 200px;
-    position: relative;
+    flex: 1; min-width: 200px; position: relative;
   }
-
   .aq-search-icon {
-    position: absolute;
-    left: 0.85rem;
-    top: 50%;
+    position: absolute; left: 10px; top: 50%;
     transform: translateY(-50%);
-    font-size: 20px;
-    opacity: 0.3;
-    pointer-events: none;
+    font-size: 16px; color: #aaa; pointer-events: none;
   }
-
   .aq-search {
     width: 100%;
-    padding: 0.6rem 1rem 0.6rem 2.4rem;
-    border: 2px solid rgba(13, 61, 43, 0.2);
-    border-radius: 8px;
-    background: rgba(13,61,43,0.02);
-    font-size: 0.85rem;
+    padding: 8px 12px 8px 32px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 11px;
+    background: #f0f0f0;
+    font-size: 11.5px;
     font-family: inherit;
-    color: #0D3D2B;
+    color: #1a1a1a;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.15s, background 0.15s;
   }
-
-  .aq-search:focus { border-color: #0D3D2B; background: #fff; }
-  .aq-search::placeholder { color: rgba(13, 61, 43, 0.32); }
-
+  .aq-search:focus { border-color: #bbb; background: #fff; }
+  .aq-search::placeholder { color: #bbb; }
   .aq-count {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: rgba(13, 61, 43, 0.4);
-    white-space: nowrap;
+    font-size: 10.5px; font-weight: 700; color: #aaa; white-space: nowrap;
   }
 
-  /* ── Content ── */
-  .aq-content { padding: 1.5rem 1.5rem 3rem; }
-
-  /* ── Approval cards ── */
+  /* ══ CARD LIST ══ */
   .aq-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    display: flex; flex-direction: column; gap: 10px;
   }
 
+  /* ══ APPROVAL CARDS ══ */
   .aq-card {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 14px;
-    background: #fff;
+    background: rgba(240,240,240,0.4);
+    border: 1.5px solid #e0e0e0;
+    border-radius: 20px;
     overflow: hidden;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(13,61,43,0.06);
-    transition: transform 0.18s, box-shadow 0.18s;
-    animation: fadeUp 0.4s ease both;
+    transition: transform 0.15s, box-shadow 0.15s;
+    animation: fadeUp 0.3s ease both;
   }
-
   .aq-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(13,61,43,0.1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.07);
   }
 
-  .aq-card-chrome {
-    border-bottom: 1px solid rgba(13,61,43,0.08);
-    display: flex;
-    align-items: flex-end;
-    padding: 5px 10px 0;
-    gap: 4px;
-    background: #F0F0EC;
+  .aq-card-top {
+    padding: 14px 16px 10px;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
   }
-
-  .aq-card-tab {
-    height: 22px;
-    border-radius: 5px 5px 0 0;
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-bottom: none;
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
-    font-size: 0.6rem;
-    font-weight: 800;
+  .aq-card-type-pill {
+    font-size: 9px; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+    display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
   }
+  .aq-card-type-pill .mi { font-size: 11px; }
+  .aq-type-high   { color: #c0392b; background: rgba(240,80,80,0.12); }
+  .aq-type-normal { color: #2a7a55; background: rgba(46,196,160,0.13); }
 
-  .aq-card-body { padding: 1.1rem 1.25rem; }
-
-  .aq-card-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.6rem;
+  .aq-card-id {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: #aaa; letter-spacing: 0.05em; margin-bottom: 3px;
   }
+  .aq-card-title   { font-size: 12.5px; font-weight: 700; color: #1a1a1a; letter-spacing: -0.2px; line-height: 1.3; }
+  .aq-card-parties { font-size: 10px; font-weight: 500; color: #aaa; margin-top: 2px; }
 
-  .aq-card-id { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: rgba(13, 61, 43, 0.35); }
+  .aq-card-right {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;
+  }
+  .aq-pri-high   { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 20px; color: #a89fff; background: rgba(124,110,245,0.18); }
+  .aq-pri-normal { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 20px; color: #2a7a55; background: #e6f8ef; }
+  .aq-done-pill  { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 3px; }
+  .aq-done-pill .mi { font-size: 11px; }
+  .aq-done-approve { color: #2a7a55; background: rgba(46,196,160,0.13); }
+  .aq-done-reject  { color: #c0392b; background: rgba(240,80,80,0.12); }
+  .aq-done-clarify { color: #5B4FD4; background: rgba(91,79,212,0.12); }
 
-  .aq-pri-high   { background: #F07060; color: #fff; border-radius: 5px; padding: 2px 8px; font-size: 0.6rem; font-weight: 800; }
-  .aq-pri-normal { background: #C8F135; color: #0D3D2B; border-radius: 5px; padding: 2px 8px; font-size: 0.6rem; font-weight: 800; border: 1.5px solid rgba(13,61,43,0.1); }
-
-  .aq-card-title   { font-size: 0.92rem; font-weight: 800; color: #0D3D2B; margin-bottom: 0.2rem; }
-  .aq-card-parties { font-size: 0.75rem; color: rgba(13, 61, 43, 0.5); margin-bottom: 0.7rem; }
-
+  /* chips */
   .aq-card-chips {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 0.4rem;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+    padding: 0 16px 10px;
   }
-
-  .aq-chip     { background: rgba(13,61,43,0.02); border: 1.5px solid rgba(13, 61, 43, 0.1); border-radius: 7px; padding: 0.4rem 0.6rem; }
-  .aq-chip-lbl { font-size: 0.55rem; font-weight: 800; letter-spacing: 0.06em; color: rgba(13, 61, 43, 0.38); margin-bottom: 0.1rem; }
-  .aq-chip-val { font-size: 0.75rem; font-weight: 700; color: #0D3D2B; }
+  .aq-chip {
+    background: rgba(0,0,0,0.04); border-radius: 9px; padding: 7px 10px;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .aq-chip-lbl { font-size: 8.5px; font-weight: 600; color: #bbb; text-transform: uppercase; letter-spacing: 0.4px; }
+  .aq-chip-val { font-size: 11px; font-weight: 700; color: #1a1a1a; }
 
   .aq-card-footer {
-    border-top: 1.5px solid rgba(13, 61, 43, 0.08);
-    padding: 0.55rem 1.25rem;
-    display: flex;
-    justify-content: space-between;
-    background: rgba(13,61,43,0.02);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 16px;
+    border-top: 1px solid rgba(0,0,0,0.05);
   }
+  .aq-card-date { font-family: 'DM Mono', monospace; font-size: 8.5px; color: #5B4FD4; }
+  .aq-card-docs { font-size: 9px; font-weight: 600; color: #bbb; }
 
-  .aq-card-date { font-size: 0.62rem; color: rgba(13, 61, 43, 0.4); }
-  .aq-card-docs { font-size: 0.62rem; color: rgba(13, 61, 43, 0.4); }
-  .aq-card-docs span { background: rgba(13, 61, 43, 0.06); border-radius: 4px; padding: 1px 6px; font-weight: 700; }
-
-  /* ── Detail view ── */
-  .aq-detail-view { animation: slideIn 0.25s ease both; }
+  /* ══ DETAIL VIEW ══ */
+  .aq-detail-view { animation: slideIn 0.25s ease both; display: flex; flex-direction: column; gap: 12px; }
 
   .aq-back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.38rem 0.9rem;
-    border: 2px solid rgba(13, 61, 43, 0.2);
-    border-radius: 8px;
-    background: #fff;
-    color: #0D3D2B;
-    font-size: 0.75rem;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.18s;
-    margin-bottom: 1.25rem;
-    box-shadow: 2px 2px 0 rgba(13, 61, 43, 0.1);
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #f0f0f0; border: none; border-radius: 11px;
+    padding: 7px 14px;
+    font-family: 'Poppins', sans-serif; font-size: 11.5px; font-weight: 600;
+    color: #555; cursor: pointer; transition: background 0.15s, color 0.15s;
+    width: fit-content;
   }
+  .aq-back-btn .mi { font-size: 14px; }
+  .aq-back-btn:hover { background: #e0e0e0; color: #1a1a1a; }
 
-  .aq-back-btn .material-icons-sharp { font-size: 15px; }
-  .aq-back-btn:hover { background: #0D3D2B; color: #C8F135; border-color: #0D3D2B; }
-
-  .aq-detail {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 14px;
-    background: #fff;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(13,61,43,0.08);
+  /* detail zone */
+  .aq-detail-zone {
+    background: rgba(240,240,240,0.4);
+    border: 1.5px solid #e0e0e0;
+    border-radius: 24px;
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 14px;
   }
-
-  .aq-detail-chrome {
-    border-bottom: 1px solid rgba(13,61,43,0.08);
-    display: flex;
-    align-items: flex-end;
-    padding: 6px 10px 0;
-    gap: 4px;
-    background: #F0F0EC;
+  .aq-detail-zone-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding-bottom: 12px; border-bottom: 1px solid #e8e8e8; gap: 10px;
   }
-
-  .aq-detail-tab {
-    height: 24px;
-    border-radius: 6px 6px 0 0;
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-bottom: none;
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
-    font-size: 0.62rem;
-    font-weight: 800;
-  }
-
-  .aq-detail-body { padding: 1.25rem; }
-
-  .aq-detail-title {
-    font-size: 1rem;
-    font-weight: 800;
-    color: #0D3D2B;
-    margin-bottom: 0.2rem;
-  }
-
+  .aq-detail-title { font-size: 14px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.3px; }
+  .aq-detail-title span { color: #5B4FD4; }
   .aq-detail-id {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.62rem;
-    color: rgba(13, 61, 43, 0.35);
-    margin-bottom: 1rem;
+    font-family: 'DM Mono', monospace; font-size: 9px; color: #aaa; margin-top: 3px;
+  }
+  .aq-detail-head-right {
+    display: flex; gap: 6px; align-items: center; flex-shrink: 0;
   }
 
-  /* ── Parties ── */
+  /* parties */
   .aq-parties {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
   }
-
   .aq-party {
-    border: 2px solid rgba(13, 61, 43, 0.12);
-    border-radius: 10px;
-    padding: 0.85rem;
-    background: rgba(13,61,43,0.02);
+    background: #f0f0f0; border-radius: 14px; padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 3px;
   }
+  .aq-party-role    { font-size: 8.5px; font-weight: 700; letter-spacing: 0.07em; color: #aaa; text-transform: uppercase; }
+  .aq-party-name    { font-size: 12px; font-weight: 700; color: #1a1a1a; }
+  .aq-party-aadhaar { font-family: 'DM Mono', monospace; font-size: 9.5px; color: #aaa; }
 
-  .aq-party-role    { font-size: 0.58rem; font-weight: 800; letter-spacing: 0.1em; color: rgba(13, 61, 43, 0.4); margin-bottom: 0.35rem; }
-  .aq-party-name    { font-size: 0.85rem; font-weight: 800; color: #0D3D2B; margin-bottom: 0.15rem; }
-  .aq-party-aadhaar { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: rgba(13, 61, 43, 0.4); }
-
-  /* ── Info rows ── */
+  /* info rows */
   .aq-info-rows {
-    display: flex;
-    flex-direction: column;
-    border: 2px solid rgba(13, 61, 43, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 1.25rem;
+    background: #f0f0f0; border-radius: 14px; overflow: hidden;
   }
-
   .aq-info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.55rem 0.85rem;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 14px; border-bottom: 1px solid rgba(0,0,0,0.04);
   }
+  .aq-info-row:last-child { border-bottom: none; }
+  .aq-info-lbl { font-size: 10px; color: #aaa; font-weight: 500; }
+  .aq-info-val { font-size: 11px; font-weight: 700; color: #1a1a1a; }
 
-  .aq-info-row:not(:last-child) { border-bottom: 1px solid rgba(13, 61, 43, 0.07); }
-  .aq-info-lbl { font-size: 0.65rem; color: rgba(13, 61, 43, 0.45); font-weight: 600; }
-  .aq-info-val { font-size: 0.78rem; font-weight: 700; color: #0D3D2B; }
-
-  /* ── Documents ── */
+  /* docs */
   .aq-docs-title {
-    font-size: 0.62rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    color: rgba(13, 61, 43, 0.4);
-    margin-bottom: 0.6rem;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; color: #aaa; text-transform: uppercase;
   }
-
-  .aq-docs-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    margin-bottom: 1.25rem;
-  }
-
+  .aq-docs-list { display: flex; flex-direction: column; gap: 6px; }
   .aq-doc-item {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.55rem 0.75rem;
-    border: 1.5px solid rgba(13, 61, 43, 0.1);
-    border-radius: 8px;
-    background: rgba(13,61,43,0.02);
-    cursor: pointer;
-    transition: all 0.18s;
+    display: flex; align-items: center; gap: 10px;
+    background: #f0f0f0; border-radius: 12px; padding: 10px 14px;
+    cursor: pointer; transition: background 0.15s;
   }
+  .aq-doc-item:hover { background: #e8e8e8; }
+  .aq-doc-item .mi { font-size: 16px; color: #bbb; flex-shrink: 0; }
+  .aq-doc-name { font-size: 11px; font-weight: 700; color: #1a1a1a; flex: 1; }
+  .aq-doc-view { font-size: 10px; font-weight: 700; color: #5B4FD4; flex-shrink: 0; }
 
-  .aq-doc-item:hover { border-color: #5B4FD4; }
-  .aq-doc-name { font-size: 0.78rem; font-weight: 700; color: #0D3D2B; flex: 1; }
-  .aq-doc-view { font-size: 0.65rem; font-weight: 800; color: #5B4FD4; }
+  /* full review button */
+  .aq-full-review-btn {
+    width: 100%; padding: 11px;
+    border: none; border-radius: 13px;
+    background: #1a1a1a; color: #fff;
+    font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: background 0.15s;
+  }
+  .aq-full-review-btn .mi { font-size: 16px; }
+  .aq-full-review-btn:hover { background: #2a2a2a; }
 
-  /* ── Notes + actions ── */
+  /* notes */
   .aq-notes-title {
-    font-size: 0.62rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    color: rgba(13, 61, 43, 0.4);
-    margin-bottom: 0.5rem;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; color: #aaa; text-transform: uppercase;
+    margin-bottom: 6px;
   }
-
   .aq-notes-input {
     width: 100%;
-    padding: 0.65rem 0.85rem;
-    border: 2px solid rgba(13, 61, 43, 0.18);
-    border-radius: 8px;
-    background: rgba(13,61,43,0.02);
-    color: #0D3D2B;
-    font-size: 0.82rem;
+    padding: 10px 12px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 13px;
+    background: #f0f0f0;
+    color: #1a1a1a;
+    font-size: 11.5px;
     font-family: inherit;
     resize: vertical;
     min-height: 80px;
     outline: none;
-    transition: border-color 0.2s;
-    margin-bottom: 1rem;
+    transition: border-color 0.15s, background 0.15s;
   }
+  .aq-notes-input:focus { border-color: #bbb; background: #fff; }
+  .aq-notes-input::placeholder { color: #bbb; }
 
-  .aq-notes-input:focus { border-color: #0D3D2B; }
-  .aq-notes-input::placeholder { color: rgba(13, 61, 43, 0.32); }
-
-  .aq-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-
+  /* action buttons */
+  .aq-actions { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; }
   .aq-btn {
-    width: 100%;
-    padding: 0.78rem;
-    border-radius: 10px;
-    font-size: 0.88rem;
-    font-weight: 800;
-    cursor: pointer;
-    font-family: inherit;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: all 0.18s;
-    border: 2.5px solid;
+    width: 100%; padding: 11px;
+    border-radius: 13px;
+    font-size: 12px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.15s; border: none;
   }
-
+  .aq-btn .mi { font-size: 15px; }
   .aq-btn:hover    { opacity: 0.88; transform: translateY(-1px); }
   .aq-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
-  .aq-btn-approve { background: #2EC4A0; color: #0D3D2B; border-color: #2EC4A0; box-shadow: 0 2px 8px rgba(13,61,43,0.06); }
-  .aq-btn-clarify { background: #C8F135; color: #0D3D2B; border-color: #0D3D2B; box-shadow: 0 2px 8px rgba(13,61,43,0.06); }
-  .aq-btn-reject  { background: #fff; color: #F07060; border-color: #F07060; }
+  .aq-btn-approve { background: #1a1a1a; color: #6effc2; }
+  .aq-btn-clarify { background: rgba(91,79,212,0.1); color: #5B4FD4; }
+  .aq-btn-reject  { background: rgba(240,80,80,0.1); color: #c0392b; }
 
   .spinner {
-    width: 16px;
-    height: 16px;
-    border: 2.5px solid currentColor;
+    width: 14px; height: 14px;
+    border: 2px solid currentColor;
     border-top-color: transparent;
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
     display: inline-block;
   }
 
-  /* ── Actioned state ── */
+  /* actioned state */
   .aq-actioned {
-    text-align: center;
-    padding: 1.5rem 1rem;
-    border: 2px solid rgba(13, 61, 43, 0.1);
-    border-radius: 10px;
-    background: rgba(13,61,43,0.02);
+    text-align: center; padding: 20px 16px;
+    background: #f0f0f0; border-radius: 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
   }
-
-  .aq-actioned-icon  { margin-bottom: 0.5rem; display: flex; justify-content: center; }
-  .aq-actioned-title { font-size: 0.92rem; font-weight: 800; color: #0D3D2B; }
-  .aq-actioned-sub   { font-size: 0.72rem; color: rgba(13, 61, 43, 0.45); margin-top: 0.3rem; margin-bottom: 1rem; }
-
+  .aq-actioned .mi { font-size: 36px; }
+  .aq-actioned-title { font-size: 13px; font-weight: 800; color: #1a1a1a; }
+  .aq-actioned-sub   { font-size: 10.5px; color: #aaa; margin-bottom: 6px; }
   .aq-actioned-btn {
-    padding: 0.55rem 1.25rem;
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 8px;
-    background: #C8F135;
-    color: #0D3D2B;
-    font-size: 0.78rem;
-    font-weight: 800;
-    cursor: pointer;
-    font-family: inherit;
-    box-shadow: 0 2px 6px rgba(13,61,43,0.08);
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #1a1a1a; color: #fff; border: none;
+    border-radius: 11px; padding: 7px 14px;
+    font-family: 'Poppins', sans-serif; font-size: 11.5px; font-weight: 600;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .aq-actioned-btn .mi { font-size: 13px; }
+  .aq-actioned-btn:hover { background: #2a2a2a; }
+
+  /* empty state */
+  .aq-empty {
+    text-align: center; padding: 40px 20px;
+    color: #bbb; font-size: 12px; font-weight: 500;
   }
 
-  /* ── Responsive ── */
-  @media (max-width: 768px) {
-    .page-container { margin: 1rem; border-radius: 12px; }
-    .aq-content { padding: 1.25rem 1rem 3rem; }
-    .aq-toolbar-inner { padding: 0.85rem 1rem; }
+  /* ══ RESPONSIVE ══ */
+  @media (max-width: 900px) {
     .aq-card-chips { grid-template-columns: 1fr 1fr; }
+    .aq-parties { grid-template-columns: 1fr; }
   }
-
-  @media (max-width: 480px) {
-    .page-container { margin: 0.65rem; border-radius: 10px; }
+  @media (max-width: 580px) {
+    .aq-main { padding: 10px 10px 80px; gap: 10px; }
+    .aq-topbar { flex-direction: column; align-items: flex-start; }
+    .aq-card-chips { grid-template-columns: 1fr 1fr; }
   }
 `;
 
+/* ══════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════ */
+const MI = ({ name, style }) => <span className="mi" style={style}>{name}</span>;
+
+/* ══════════════════════════════════════════════════
+   COMPONENT
+══════════════════════════════════════════════════ */
 export default function ApprovalsQueue() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const [activeFilter, setFilter]    = useState("All");
-  const [search,       setSearch]    = useState("");
-  const [detailView,   setDetailView]= useState(null);
-  const [notes,        setNotes]     = useState("");
-  const [loading,      setLoading]   = useState(null);
-  const [actioned,     setActioned]  = useState({});
+  const [activeFilter, setFilter]     = useState("All");
+  const [search,       setSearch]     = useState("");
+  const [detailView,   setDetailView] = useState(null);
+  const [notes,        setNotes]      = useState("");
+  const [loading,      setLoading]    = useState(null);
+  const [actioned,     setActioned]   = useState({});
 
-  const pending   = getPendingApprovals();
-  const completed = getCompletedApprovals();
-  const allItems  = [...pending, ...completed];
+  const [allItems, setAllItems] = useState([]);
+  const [loadingProps, setLoadingProps] = useState(true);
+
+  useEffect(() => {
+    api.get('/transfers/all')
+      .then(res => setAllItems(res.data.map(t => ({
+        ...t,
+        priority: "Normal",
+        documents: ["Doc1"],
+        saleValue: t.saleValue || "₹ 0"
+      }))))
+      .catch(console.error)
+      .finally(() => setLoadingProps(false));
+  }, []);
+
+  const pending   = allItems.filter(t => t.status !== "Completed" && t.status !== "APPROVED");
+  const completed = allItems.filter(t => t.status === "Completed" || t.status === "APPROVED");
 
   const filtered = allItems.filter(t => {
     const matchFilter =
@@ -544,7 +461,7 @@ export default function ApprovalsQueue() {
     const q = search.toLowerCase();
     return matchFilter && (
       !q ||
-      t.id.toLowerCase().includes(q) ||
+      String(t.id).toLowerCase().includes(q) ||
       t.propertyTitle?.toLowerCase().includes(q) ||
       t.sellerName?.toLowerCase().includes(q) ||
       t.buyerName?.toLowerCase().includes(q)
@@ -553,11 +470,27 @@ export default function ApprovalsQueue() {
 
   const doAction = async (action) => {
     setLoading(action);
-    await new Promise(r => setTimeout(r, 1100));
-    setLoading(null);
-    setActioned(a => ({ ...a, [detailView?.id]: action }));
-    setNotes("");
+    const apiStatus = action === 'approve' ? 'APPROVED' : (action === 'reject' ? 'REJECTED' : 'PENDING');
+    try {
+      await api.put(`/transfers/${detailView.id}/review?status=${apiStatus}&remarks=${notes}`);
+      setAllItems(prev => prev.map(t => 
+        t.id === detailView.id ? { ...t, status: apiStatus, remarks: notes } : t
+      ));
+      setActioned(a => ({ ...a, [detailView.id]: action }));
+      setNotes("");
+    } catch (err) {
+      console.error("Failed to perform action", err);
+    } finally {
+      setLoading(null);
+    }
   };
+
+  const actionedColor = (a) =>
+    a === "approve" ? "#2EC4A0" : a === "reject" ? "#F07060" : "#5B4FD4";
+  const actionedIcon = (a) =>
+    a === "approve" ? "check_circle" : a === "reject" ? "cancel" : "help";
+  const actionedLabel = (a) =>
+    a === "approve" ? "Transfer Approved" : a === "reject" ? "Transfer Rejected" : "Clarification Requested";
 
   return (
     <>
@@ -565,294 +498,273 @@ export default function ApprovalsQueue() {
       <div className="aq-page">
         <Navbar2 user={user} onLogout={logout} />
 
-        <div className="page-container">
+        <div className="aq-main">
 
-          {/* Header */}
-          <div className="aq-header">
-            <div className="aq-header-left">
-              <span className="aq-page-label">APPROVALS QUEUE</span>
-              <span className="aq-page-title">Approvals Queue</span>
-              <span className="aq-page-sub">Review and process pending transfer requests</span>
-            </div>
-            <div className="aq-header-right">
-              <div className="aq-filter-tabs">
-                {FILTERS.map(f => (
-                  <button
-                    key={f}
-                    className={`aq-filter-tab ${activeFilter === f ? "aq-filter-active" : ""}`}
-                    onClick={() => setFilter(f)}
-                  >
-                    {f}
-                  </button>
-                ))}
+          {/* ══ TOP BAR ══ */}
+          <div className="aq-topbar">
+            <div>
+              <div className="aq-heading">
+                Approvals <span>Queue</span>
               </div>
-              <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "rgba(13,61,43,0.4)" }}>
-                {filtered.length} pending
-              </span>
+              <div className="aq-topbar-sub">Review and process pending transfer requests</div>
+            </div>
+            <div className="aq-topbar-right">
+              <div className="aq-meta-chip">
+                <MI name="pending_actions" /> {pending.length} pending
+              </div>
+              <div className="aq-meta-chip">
+                <MI name="check_circle" /> {completed.length} completed
+              </div>
             </div>
           </div>
 
-          {/* Toolbar */}
+          {/* ══ STAT STRIP ══ */}
+          <div className="aq-stats">
+            <div className="aq-stat dark">
+              <div className="aq-stat-glow" style={{ background: "radial-gradient(circle at 70% 20%, rgba(255,255,255,0.07) 0%, transparent 60%)" }} />
+              <div className="aq-stat-label">Total</div>
+              <div className="aq-stat-value">{allItems.length}</div>
+              <div className="aq-stat-badge">all transfers</div>
+            </div>
+            <div className="aq-stat light">
+              <div className="aq-stat-label">Pending</div>
+              <div className="aq-stat-value">{pending.length}</div>
+              <div className="aq-stat-badge">awaiting action</div>
+            </div>
+            <div className="aq-stat purple">
+              <div className="aq-stat-glow" style={{ background: "radial-gradient(circle at 70% 20%, rgba(124,110,245,0.25) 0%, transparent 60%)" }} />
+              <div className="aq-stat-label">High Priority</div>
+              <div className="aq-stat-value">{allItems.filter(t => t.priority === "High").length}</div>
+              <div className="aq-stat-badge">urgent</div>
+            </div>
+            <div className="aq-stat green">
+              <div className="aq-stat-glow" style={{ background: "radial-gradient(circle at 70% 20%, rgba(46,196,160,0.2) 0%, transparent 60%)" }} />
+              <div className="aq-stat-label">Completed</div>
+              <div className="aq-stat-value">{completed.length}</div>
+              <div className="aq-stat-badge">processed</div>
+            </div>
+          </div>
+
+          {/* ══ FILTER TABS ══ */}
+          <div className="aq-filter-row">
+            {FILTERS.map(f => (
+              <button
+                key={f}
+                className={`aq-filter-tab${activeFilter === f ? " aq-filter-active" : ""}`}
+                onClick={() => setFilter(f)}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+
+          {/* ══ TOOLBAR ══ */}
           <div className="aq-toolbar">
-            <div className="aq-toolbar-inner">
-              <div className="aq-search-wrap">
-                <span className="aq-search-icon material-icons-sharp">search</span>
-                <input
-                  className="aq-search"
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  placeholder="Search by ID, property, seller or buyer..."
-                />
-              </div>
-              <span className="aq-count">{filtered.length} result{filtered.length !== 1 ? "s" : ""}</span>
+            <div className="aq-search-wrap">
+              <MI name="search" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 16, color: "#aaa" }} />
+              <input
+                className="aq-search"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search by ID, property, seller or buyer…"
+              />
             </div>
+            <span className="aq-count">{filtered.length} result{filtered.length !== 1 ? "s" : ""}</span>
           </div>
 
-          {/* Content */}
-          <div className="aq-content">
-            {detailView ? (
-              /* Detail view */
-              <div className="aq-detail-view">
-                <button className="aq-back-btn" onClick={() => setDetailView(null)}>
-                  <span className="material-icons-sharp">arrow_back</span>
-                  Back to Queue
-                </button>
+          {/* ══ CONTENT ══ */}
+          {detailView ? (
 
-                <div className="aq-detail">
-                  <div className="aq-detail-chrome">
-                    <div className="aq-detail-tab" style={{ background: "#5B4FD4", color: "#fff", minWidth: 100 }}>
-                      {detailView.id}
+            /* ── DETAIL VIEW ── */
+            <div className="aq-detail-view">
+              <button className="aq-back-btn" onClick={() => setDetailView(null)}>
+                <MI name="arrow_back" /> Back to Queue
+              </button>
+
+              <div className="aq-detail-zone">
+
+                {/* Header */}
+                <div className="aq-detail-zone-head">
+                  <div>
+                    <div className="aq-detail-title">
+                      {detailView.propertyTitle?.split(" ").slice(0, -1).join(" ")}{" "}
+                      <span>{detailView.propertyTitle?.split(" ").slice(-1)[0]}</span>
                     </div>
-                    <div className="aq-detail-tab" style={{ background: "#C8F135", color: "#0D3D2B", minWidth: 70 }}>
-                      REVIEW
-                    </div>
+                    <div className="aq-detail-id">{detailView.id} · {detailView.propertyId} · {detailView.surveyNo}</div>
                   </div>
-
-                  <div className="aq-detail-body">
-                    <div className="aq-detail-title">{detailView.propertyTitle}</div>
-                    <div className="aq-detail-id">{detailView.propertyId} · {detailView.surveyNo}</div>
-
-                    <div className="aq-parties">
-                      <div className="aq-party">
-                        <div className="aq-party-role">SELLER</div>
-                        <div className="aq-party-name">{detailView.sellerName}</div>
-                        <div className="aq-party-aadhaar">{detailView.sellerAadhaar || "—"}</div>
-                      </div>
-                      <div className="aq-party">
-                        <div className="aq-party-role">BUYER</div>
-                        <div className="aq-party-name">{detailView.buyerName}</div>
-                        <div className="aq-party-aadhaar">{detailView.buyerAadhaar || "—"}</div>
-                      </div>
-                    </div>
-
-                    <div className="aq-info-rows">
-                      {[
-                        { label: "Sale Value", value: detailView.saleValue },
-                        { label: "Area",       value: detailView.area      || "—" },
-                        { label: "District",   value: detailView.district  || "—" },
-                        { label: "Survey No.", value: detailView.surveyNo  || "—" },
-                        { label: "Submitted",  value: detailView.submittedOn || detailView.completedOn },
-                        { label: "Priority",   value: detailView.priority  || "—" },
-                      ].map((r, i) => (
-                        <div key={i} className="aq-info-row">
-                          <span className="aq-info-lbl">{r.label}</span>
-                          <span className="aq-info-val">{r.value}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="aq-docs-title">DOCUMENTS ({detailView.documents?.length || 0})</div>
-                    <div className="aq-docs-list">
-                      {(detailView.documents || []).map((d, i) => (
-                        <div key={i} className="aq-doc-item">
-                          <span className="material-icons-sharp" style={{ fontSize: 18, color: "rgba(13,61,43,0.4)" }}>
-                            insert_drive_file
-                          </span>
-                          <span className="aq-doc-name">{d}</span>
-                          <span className="aq-doc-view">View</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div style={{ marginBottom: "1rem" }}>
-                      <button
-                        style={{
-                          width: "100%",
-                          padding: "0.75rem",
-                          border: "1.5px solid rgba(13,61,43,0.1)",
-                          borderRadius: "10px",
-                          background: "#0D3D2B",
-                          color: "#C8F135",
-                          fontWeight: 800,
-                          fontSize: "0.85rem",
-                          cursor: "pointer",
-                          fontFamily: "inherit",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "0.5rem",
-                          boxShadow: "3px 3px 0 rgba(13,61,43,0.3)",
-                        }}
-                        onClick={() => navigate(`/registrar/review/${detailView.id}`)}
-                      >
-                        <span className="material-icons-sharp" style={{ fontSize: 18 }}>manage_search</span>
-                        Open Full Review
-                      </button>
-                    </div>
-
-                    {actioned[detailView.id] ? (
-                      <div className="aq-actioned">
-                        <div className="aq-actioned-icon">
-                          <span
-                            className="material-icons-sharp"
-                            style={{
-                              fontSize: 36,
-                              color:
-                                actioned[detailView.id] === "approve" ? "#2EC4A0" :
-                                actioned[detailView.id] === "reject"  ? "#F07060" : "#5B4FD4",
-                            }}
-                          >
-                            {actioned[detailView.id] === "approve" ? "check_circle" :
-                             actioned[detailView.id] === "reject"  ? "cancel" : "help"}
-                          </span>
-                        </div>
-                        <div className="aq-actioned-title">
-                          {actioned[detailView.id] === "approve" ? "Transfer Approved" :
-                           actioned[detailView.id] === "reject"  ? "Transfer Rejected" : "Clarification Requested"}
-                        </div>
-                        <div className="aq-actioned-sub">Action recorded on blockchain ledger.</div>
-                        <button
-                          className="aq-actioned-btn"
-                          style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
-                          onClick={() => setDetailView(null)}
-                        >
-                          Back to Queue
-                          <span className="material-icons-sharp" style={{ fontSize: 14 }}>arrow_forward</span>
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="aq-notes-title">NOTES / REASON</div>
-                        <textarea
-                          className="aq-notes-input"
-                          value={notes}
-                          onChange={e => setNotes(e.target.value)}
-                          placeholder="Add notes, remarks or reason for rejection..."
-                        />
-                        <div className="aq-actions">
-                          <button
-                            className="aq-btn aq-btn-approve"
-                            onClick={() => doAction("approve")}
-                            disabled={!!loading}
-                          >
-                            {loading === "approve" ? (
-                              <><span className="spinner" /> Approving...</>
-                            ) : (
-                              <><span className="material-icons-sharp" style={{ fontSize: 16 }}>check_circle</span> Approve Transfer</>
-                            )}
-                          </button>
-                          <button
-                            className="aq-btn aq-btn-clarify"
-                            onClick={() => doAction("clarify")}
-                            disabled={!!loading}
-                          >
-                            {loading === "clarify" ? (
-                              <><span className="spinner" /> Sending...</>
-                            ) : (
-                              <><span className="material-icons-sharp" style={{ fontSize: 16 }}>edit_note</span> Request Clarification</>
-                            )}
-                          </button>
-                          <button
-                            className="aq-btn aq-btn-reject"
-                            onClick={() => doAction("reject")}
-                            disabled={!!loading}
-                          >
-                            {loading === "reject" ? (
-                              <><span className="spinner" /> Rejecting...</>
-                            ) : (
-                              <><span className="material-icons-sharp" style={{ fontSize: 16 }}>cancel</span> Reject Transfer</>
-                            )}
-                          </button>
-                        </div>
-                      </>
-                    )}
+                  <div className="aq-detail-head-right">
+                    <span className={detailView.priority === "High" ? "aq-pri-high" : "aq-pri-normal"}>
+                      {detailView.priority}
+                    </span>
                   </div>
                 </div>
-              </div>
-            ) : (
-              /* List view */
-              <div className="aq-list">
-                {filtered.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "3rem", color: "rgba(13,61,43,0.4)", fontSize: "0.88rem" }}>
-                    No results found.
+
+                {/* Parties */}
+                <div className="aq-parties">
+                  <div className="aq-party">
+                    <div className="aq-party-role">Seller</div>
+                    <div className="aq-party-name">{detailView.sellerName}</div>
+                    <div className="aq-party-aadhaar">{detailView.sellerAadhaar || "—"}</div>
+                  </div>
+                  <div className="aq-party">
+                    <div className="aq-party-role">Buyer</div>
+                    <div className="aq-party-name">{detailView.buyerName}</div>
+                    <div className="aq-party-aadhaar">{detailView.buyerAadhaar || "—"}</div>
+                  </div>
+                </div>
+
+                {/* Info rows */}
+                <div className="aq-info-rows">
+                  {[
+                    { label: "Sale Value", value: detailView.saleValue },
+                    { label: "Area",       value: detailView.area      || "—" },
+                    { label: "District",   value: detailView.district  || "—" },
+                    { label: "Survey No.", value: detailView.surveyNo  || "—" },
+                    { label: "Submitted",  value: detailView.submittedOn || detailView.completedOn },
+                    { label: "Priority",   value: detailView.priority  || "—" },
+                  ].map((r, i) => (
+                    <div key={i} className="aq-info-row">
+                      <span className="aq-info-lbl">{r.label}</span>
+                      <span className="aq-info-val">{r.value}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Documents */}
+                <div>
+                  <div className="aq-docs-title">Documents ({detailView.documents?.length || 0})</div>
+                  <div className="aq-docs-list" style={{ marginTop: 8 }}>
+                    {(detailView.documents || []).map((d, i) => (
+                      <div key={i} className="aq-doc-item">
+                        <MI name="insert_drive_file" />
+                        <span className="aq-doc-name">{d}</span>
+                        <span className="aq-doc-view">View</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Full review button */}
+                <button
+                  className="aq-full-review-btn"
+                  onClick={() => navigate(`/registrar/review/${detailView.id}`)}
+                >
+                  <MI name="manage_search" /> Open Full Review
+                </button>
+
+                {/* Actions / Actioned state */}
+                {actioned[detailView.id] ? (
+                  <div className="aq-actioned">
+                    <MI
+                      name={actionedIcon(actioned[detailView.id])}
+                      style={{ color: actionedColor(actioned[detailView.id]) }}
+                    />
+                    <div className="aq-actioned-title">{actionedLabel(actioned[detailView.id])}</div>
+                    <div className="aq-actioned-sub">Action recorded on blockchain ledger.</div>
+                    <button className="aq-actioned-btn" onClick={() => setDetailView(null)}>
+                      Back to Queue <MI name="arrow_forward" />
+                    </button>
                   </div>
                 ) : (
-                  filtered.map((t, i) => {
-                    const done = actioned[t.id];
-                    return (
-                      <div
-                        key={t.id}
-                        className="aq-card"
-                        style={{ animationDelay: `${i * 0.06}s` }}
-                        onClick={() => setDetailView(t)}
-                      >
-                        <div className="aq-card-chrome">
-                          <div
-                            className="aq-card-tab"
-                            style={{
-                              background: t.priority === "High" ? "#F07060" : "#C8F135",
-                              color: t.priority === "High" ? "#fff" : "#0D3D2B",
-                              minWidth: 80,
-                            }}
-                          >
-                            <span className="material-icons-sharp" style={{ fontSize: 14, marginRight: 4, verticalAlign: "middle" }}>
-                              {TYPE_ICONS[t.type] || "home"}
-                            </span>
-                            {t.type || "Transfer"}
-                          </div>
-                          {done && (
-                            <div
-                              className="aq-card-tab"
-                              style={{
-                                background: done === "approve" ? "#2EC4A0" : done === "reject" ? "#F07060" : "#C8F135",
-                                color: "#0D3D2B",
-                                marginLeft: 4,
-                              }}
-                            >
-                              {done === "approve" ? (
-                                <><span className="material-icons-sharp" style={{ fontSize: 12, verticalAlign: "middle", marginRight: 2 }}>check</span>Approved</>
-                              ) : done === "reject" ? (
-                                <><span className="material-icons-sharp" style={{ fontSize: 12, verticalAlign: "middle", marginRight: 2 }}>close</span>Rejected</>
-                              ) : (
-                                <><span className="material-icons-sharp" style={{ fontSize: 12, verticalAlign: "middle", marginRight: 2 }}>help</span>Clarify</>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        <div className="aq-card-body">
-                          <div className="aq-card-meta">
-                            <span className="aq-card-id">{t.id}</span>
-                            <span className={t.priority === "High" ? "aq-pri-high" : "aq-pri-normal"}>{t.priority}</span>
-                          </div>
+                  <div>
+                    <div className="aq-notes-title">Notes / Reason</div>
+                    <textarea
+                      className="aq-notes-input"
+                      value={notes}
+                      onChange={e => setNotes(e.target.value)}
+                      placeholder="Add notes, remarks or reason for rejection…"
+                    />
+                    <div className="aq-actions">
+                      <button className="aq-btn aq-btn-approve" onClick={() => doAction("approve")} disabled={!!loading}>
+                        {loading === "approve"
+                          ? <><span className="spinner" /> Approving…</>
+                          : <><MI name="check_circle" /> Approve Transfer</>}
+                      </button>
+                      <button className="aq-btn aq-btn-clarify" onClick={() => doAction("clarify")} disabled={!!loading}>
+                        {loading === "clarify"
+                          ? <><span className="spinner" /> Sending…</>
+                          : <><MI name="edit_note" /> Request Clarification</>}
+                      </button>
+                      <button className="aq-btn aq-btn-reject" onClick={() => doAction("reject")} disabled={!!loading}>
+                        {loading === "reject"
+                          ? <><span className="spinner" /> Rejecting…</>
+                          : <><MI name="cancel" /> Reject Transfer</>}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+
+          ) : (
+
+            /* ── LIST VIEW ── */
+            <div className="aq-list">
+              {filtered.length === 0 ? (
+                <div className="aq-empty">No results found.</div>
+              ) : (
+                filtered.map((t, i) => {
+                  const done = actioned[t.id];
+                  const typeIcon = TYPE_ICONS[t.type] || "home";
+                  return (
+                    <div
+                      key={t.id}
+                      className="aq-card"
+                      style={{ animationDelay: `${i * 0.05}s` }}
+                      onClick={() => setDetailView(t)}
+                    >
+                      <div className="aq-card-top">
+                        <div>
+                          <div className="aq-card-id">{t.id}</div>
                           <div className="aq-card-title">{t.propertyTitle}</div>
                           <div className="aq-card-parties">{t.sellerName} → {t.buyerName}</div>
-                          <div className="aq-card-chips">
-                            <div className="aq-chip"><div className="aq-chip-lbl">AREA</div><div className="aq-chip-val">{t.area || "—"}</div></div>
-                            <div className="aq-chip"><div className="aq-chip-lbl">DISTRICT</div><div className="aq-chip-val">{t.district || "—"}</div></div>
-                            <div className="aq-chip"><div className="aq-chip-lbl">VALUE</div><div className="aq-chip-val">{t.saleValue}</div></div>
-                          </div>
                         </div>
-                        <div className="aq-card-footer">
-                          <span className="aq-card-date">Submitted {t.submittedOn || t.completedOn}</span>
-                          <span className="aq-card-docs"><span>{t.documents?.length || 0}</span> docs</span>
+                        <div className="aq-card-right">
+                          {done ? (
+                            <span className={`aq-done-pill aq-done-${done}`}>
+                              <MI name={actionedIcon(done)} />
+                              {done === "approve" ? "Approved" : done === "reject" ? "Rejected" : "Clarify"}
+                            </span>
+                          ) : (
+                            <span className={t.priority === "High" ? "aq-pri-high" : "aq-pri-normal"}>
+                              {t.priority}
+                            </span>
+                          )}
+                          <span
+                            className={`aq-card-type-pill ${t.priority === "High" ? "aq-type-high" : "aq-type-normal"}`}
+                          >
+                            <MI name={typeIcon} />
+                            {t.type || "Transfer"}
+                          </span>
                         </div>
                       </div>
-                    );
-                  })
-                )}
-              </div>
-            )}
-          </div>
+
+                      <div className="aq-card-chips">
+                        <div className="aq-chip">
+                          <div className="aq-chip-lbl">Area</div>
+                          <div className="aq-chip-val">{t.area || "—"}</div>
+                        </div>
+                        <div className="aq-chip">
+                          <div className="aq-chip-lbl">District</div>
+                          <div className="aq-chip-val">{t.district || "—"}</div>
+                        </div>
+                        <div className="aq-chip">
+                          <div className="aq-chip-lbl">Value</div>
+                          <div className="aq-chip-val">{t.saleValue}</div>
+                        </div>
+                      </div>
+
+                      <div className="aq-card-footer">
+                        <span className="aq-card-date">{t.submittedOn || t.completedOn}</span>
+                        <span className="aq-card-docs">{t.documents?.length || 0} docs attached</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
 
         </div>
       </div>

@@ -1,23 +1,50 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# ─── Frontend ────────────────────────────────────────────
+# Dependencies
 /node_modules
 /.pnp
 .pnp.js
 
-# testing
+# Testing
 /coverage
 
-# production
+# Production build
 /build
 
-# misc
-.DS_Store
+# Env files (contains secrets — never commit real ones)
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Misc
+.DS_Store
+
+# ─── Backend ──────────────────────────────────────────────
+# Maven build output
+backend/target/
+
+# Real application.properties with passwords — NEVER commit
+backend/src/main/resources/application.properties
+
+# IDE / Editor files
+.idea/
+*.iml
+.vscode/
+
+# ─── Project Temp Files ──────────────────────────────────
+fix.js
+fix.env
+old_pd.jsx
+old_pd_utf8.jsx
+temp_main.jsx
+temp_signup.jsx
+scratch/
+BhoomiSetu.pdf

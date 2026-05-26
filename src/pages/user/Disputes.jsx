@@ -1,546 +1,511 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { getPropertiesByOwner } from "../../database/Properties";
-import Navbar1 from "../../components/Navbar1";
+import api from "../../api/axiosConfig";
 
 const DISPUTE_TYPES = [
-  { id:"ownership",    label:"Ownership Dispute",    icon:"gavel",          desc:"Challenge the legitimacy of a current owner"    },
-  { id:"boundary",     label:"Boundary Dispute",     icon:"straighten",     desc:"Dispute over property boundary or survey"       },
-  { id:"encumbrance",  label:"Encumbrance Dispute",  icon:"lock",           desc:"Challenge an incorrect encumbrance record"      },
-  { id:"fraud",        label:"Fraudulent Record",    icon:"report",         desc:"Report a suspected forged or tampered record"   },
+  { id: "ownership",   label: "Ownership Dispute",   icon: "gavel",      desc: "Challenge the legitimacy of a current owner"   },
+  { id: "boundary",    label: "Boundary Dispute",    icon: "straighten", desc: "Dispute over property boundary or survey"      },
+  { id: "encumbrance", label: "Encumbrance Dispute", icon: "lock",       desc: "Challenge an incorrect encumbrance record"     },
+  { id: "fraud",       label: "Fraudulent Record",   icon: "report",     desc: "Report a suspected forged or tampered record"  },
 ];
 
-const MOCK_DISPUTES = [
-  { id:"DSP-2023-001", propertyId:"TN-7734-MDU-2021", type:"Encumbrance Dispute", status:"Under Investigation", statusColor:"#F0A030", filedOn:"02 Sep 2023", description:"Incorrect encumbrance recorded against property.", resolution:null },
-];
 
+/* ══════════════════════════════════════════════════
+   CSS — UserDashboard design language
+══════════════════════════════════════════════════ */
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
-  *, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Sharp');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .mi {
+    font-family: 'Material Icons Sharp';
+    font-style: normal; font-weight: normal; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    user-select: none;
   }
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: #EFEFEB; }
-  ::-webkit-scrollbar-thumb {
-    background: #0D3D2B;
-    border-radius: 4px;
-  }
+
   @keyframes fadeUp {
-    from{opacity: 0;
-    transform: translateY(14px);
-    }to{opacity: 1;
-    transform: translateY(0);
-    };
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
   @keyframes spin {
-    from{transform: rotate(0deg);
-    }to{transform: rotate(360deg);
-    };
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; } 50% { opacity: 0.3; }
   }
 
+  /* ── Root ── */
   .dp-page {
-    font-family: 'Poppins',sans-serif;
-    background: #EFEFEB;
-    color: #0D3D2B;
+    font-family: 'Poppins', sans-serif;
+    background: #dcdcdc;
     min-height: 100vh;
+    color: #1a1a1a;
+    padding-top: 60px
   }
-  /* grid-bg removed */
 
-  /* Hero — coral */
-/* ── Slim page header ── */
-  .dp-header {
-    background: #fff;
-    border-bottom: 2px solid rgba(13,61,43,0.1);
-    padding: 1rem 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  .dp-header-left {
+  /* ── Main wrapper ── */
+  .dp-main {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
-  }
-  .dp-header-right {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    flex-shrink: 0;
-  }
-  .dp-page-label {
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: rgba(13,61,43,0.4);
-  }
-  .dp-page-title {
-    font-size: 1.15rem;
-    font-weight: 800;
-    color: #0D3D2B;
-    letter-spacing: -0.02em;
-  }
-  .dp-page-sub {
-    font-size: 0.78rem;
-    color: rgba(13,61,43,0.5);
-    font-weight: 500;
-    margin-top: 0.1rem;
-  }
-
-  /* Tabs */
-  .dp-tabs {
-    background: #fff;
-    border-bottom: 1px solid rgba(13,61,43,0.08);
-    position: relative;
-    z-index: 2;
-  }
-  .dp-tabs-inner {
-    max-width: 1000px;
+    gap: 12px;
+    padding: 12px 14px 32px;
+    max-width: 900px;
     margin: 0 auto;
-    display: flex;
-  }
-  .dp-tab {
-    padding: 0.9rem 1.5rem;
-    font-size: 0.82rem;
-    font-weight: 700;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all 0.18s;
-    color: rgba(13,61,43,0.5);
-  }
-  .dp-tab:hover { color: #0D3D2B; }
-  .dp-tab-active {
-    color: #0D3D2B;
-    font-weight: 800;
-    border-bottom-color: #C8F135;
   }
 
-  /* Content */
-  .dp-content {
-    position: relative;
-    z-index: 2;
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 2rem 2.5rem 4rem;
+  /* ══ TOP BAR ══ */
+  .dp-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
   }
+  .dp-heading {
+    font-size: 18px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.4px;
+  }
+  .dp-heading span { color: #e8533a; }
+  .dp-topbar-right { display: flex; align-items: center; gap: 8px; }
+  .dp-meta-chip {
+    display: flex; align-items: center; gap: 5px;
+    background: #f0f0f0; border-radius: 11px;
+    padding: 6px 12px;
+    font-size: 11px; font-weight: 500; color: #666;
+  }
+  .dp-meta-chip .mi { font-size: 13px; color: #aaa; }
+  .dp-back-btn {
+    background: #f0f0f0; color: #555; border: none;
+    border-radius: 11px; padding: 7px 14px;
+    font-family: 'Poppins', sans-serif; font-size: 11.5px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 5px;
+    transition: background 0.15s;
+  }
+  .dp-back-btn:hover { background: #e8e8e8; color: #111; }
+  .dp-back-btn .mi { font-size: 14px; }
 
-  /* My disputes list */
-  .dp-disputes-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
+  /* ══ TAB STRIP ══ */
+  .dp-tab-strip {
+    display: flex; gap: 6px;
   }
-  .dp-dispute-card {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 14px;
-    background: #fff;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(13,61,43,0.06);
-    animation: fadeUp 0.4s ease both;
+  .dp-tab-btn {
+    display: flex; align-items: center; gap: 6px;
+    border: none; border-radius: 11px;
+    padding: 8px 16px;
+    font-family: 'Poppins', sans-serif; font-size: 11.5px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+    background: #f0f0f0; color: #888;
   }
-  .dp-dispute-top {
-    padding: 1.1rem 1.25rem;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
+  .dp-tab-btn .mi { font-size: 14px; }
+  .dp-tab-btn:hover { background: #e8e8e8; color: #444; }
+  .dp-tab-btn.active { background: #1a1a1a; color: #fff; }
+  .dp-tab-count {
+    background: rgba(255,255,255,0.15); color: inherit;
+    border-radius: 20px; padding: 1px 7px;
+    font-size: 9.5px; font-weight: 700;
   }
+  .dp-tab-btn:not(.active) .dp-tab-count { background: rgba(0,0,0,0.07); }
+
+  /* ══ ZONE (section card — matches ud-zone) ══ */
+  .dp-zone {
+    background: rgba(240,240,240,0.4);
+    border: 1.5px solid #e0e0e0;
+    border-radius: 24px;
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 14px;
+    animation: fadeUp 0.3s ease both;
+  }
+  .dp-zone-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 8px 12px;
+    border-bottom: 1px solid #e8e8e8;
+  }
+  .dp-zone-title-row { display: flex; align-items: center; gap: 10px; }
+  .dp-zone-title {
+    font-size: 14px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.3px;
+  }
+  .dp-zone-title span { color: #e8533a; }
+  .dp-zone-pill {
+    background: #1a1a1a; color: #fff;
+    border-radius: 20px; padding: 2px 10px;
+    font-size: 9.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .dp-zone-pill.accent { background: rgba(232,83,58,0.12); color: #e8533a; }
+  .dp-zone-action {
+    font-size: 10.5px; font-weight: 600; color: #888;
+    background: none; border: none; font-family: inherit;
+    cursor: pointer; display: flex; align-items: center; gap: 3px;
+    transition: color 0.15s;
+  }
+  .dp-zone-action:hover { color: #1a1a1a; }
+  .dp-zone-action .mi { font-size: 13px; }
+
+  /* ══ DISPUTE CARDS (My Disputes list) ══ */
+  .dp-disputes-list { display: flex; flex-direction: column; gap: 8px; }
+  .dp-dispute-row {
+    background: #f0f0f0; border-radius: 18px; padding: 14px 16px;
+    display: flex; align-items: flex-start; gap: 12px;
+    animation: fadeUp 0.3s ease both;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .dp-dispute-row:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+
+  .dp-dispute-icon-wrap {
+    width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(232,83,58,0.12);
+  }
+  .dp-dispute-icon-wrap .mi { font-size: 17px; color: #e8533a; }
+
+  .dp-dispute-body { flex: 1; min-width: 0; }
   .dp-dispute-id {
-    font-family: 'DM Mono',monospace;
-    font-size: 0.6rem;
-    color: rgba(13,61,43,0.35);
-    margin-bottom: 0.2rem;
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: #aaa; letter-spacing: 0.05em; margin-bottom: 2px;
   }
   .dp-dispute-type {
-    font-size: 0.95rem;
-    font-weight: 800;
-    color: #0D3D2B;
-    margin-bottom: 0.25rem;
+    font-size: 12.5px; font-weight: 700; color: #1a1a1a;
+    letter-spacing: -0.2px; margin-bottom: 2px;
   }
-  .dp-dispute-desc {
-    font-size: 0.78rem;
-    color: rgba(13,61,43,0.55);
-    line-height: 1.45;
-  }
-  .dp-dispute-badge {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 5px;
-    padding: 3px 10px;
-    font-size: 0.65rem;
-    font-weight: 800;
-    flex-shrink: 0;
-  }
-  .dp-dispute-footer {
-    border-top: 1.5px solid rgba(13,61,43,0.08);
-    padding: 0.55rem 1.25rem;
-    background: rgba(13,61,43,0.02);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .dp-dispute-date {
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: rgba(13,61,43,0.4);
-  }
-  .dp-dispute-prop {
-    font-size: 0.68rem;
-    font-weight: 800;
-    color: rgba(13,61,43,0.5);
-    font-family: 'DM Mono',monospace;
-  }
+  .dp-dispute-desc { font-size: 10px; font-weight: 500; color: #aaa; line-height: 1.5; }
 
-  /* Empty disputes */
-  .dp-empty {
-    text-align: center;
-    padding: 3.5rem 2rem;
-    border: 2.5px dashed rgba(13,61,43,0.15);
-    border-radius: 14px;
-    background: #fff;
+  .dp-dispute-right {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0;
   }
-  .dp-empty-icon {
-    margin-bottom: 0.75rem;
-    opacity: 0.4;
-    display: flex;
-    justify-content: center;
+  .dp-status-pill {
+    font-size: 9px; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+    display: flex; align-items: center; gap: 4px;
   }
-  .dp-empty-title {
-    font-size: 1rem;
-    font-weight: 800;
-    margin-bottom: 0.3rem;
-  }
-  .dp-empty-sub {
-    font-size: 0.82rem;
-    color: rgba(13,61,43,0.45);
-    margin-bottom: 1rem;
-  }
-  .dp-file-btn {
-    padding: 0.65rem 1.5rem;
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 10px;
-    background: #F07060;
-    color: #fff;
-    font-size: 0.88rem;
-    font-weight: 800;
-    cursor: pointer;
-    font-family: inherit;
-    box-shadow: 0 2px 8px rgba(13,61,43,0.06);
-  }
-
-  /* File form */
-  .dp-card {
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 16px;
-    background: #fff;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(13,61,43,0.08);
-    margin-bottom: 1.5rem;
-    animation: fadeUp 0.4s ease both;
-  }
-  .dp-card-head {
-    border-bottom: 1px solid rgba(13,61,43,0.08);
-    padding: 0.9rem 1.5rem;
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-  }
-  .dp-card-head-coral {
-    background: #F07060;
-    color: #fff;
-  }
-  .dp-card-head-lime {
-    background: #C8F135;
-    color: #0D3D2B;
-  }
-  .dp-card-body { padding: 1.5rem; }
-
-  .dp-type-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.85rem;
-  }
-  .dp-type-opt {
-    border: 2.5px solid rgba(13,61,43,0.18);
-    border-radius: 12px;
-    padding: 1rem;
-    cursor: pointer;
-    transition: all 0.18s;
-    background: #fff;
-  }
-  .dp-type-opt:hover {
-    border-color: #0D3D2B;
-    background: rgba(13,61,43,0.02);
-  }
-  .dp-type-opt-active {
-    border-color: #F07060;
-    background: rgba(240,112,96,0.08);
-    box-shadow: 0 8px 24px rgba(13,61,43,0.15);
-  }
-  .dp-type-icon {
-    margin-bottom: 0.5rem;
-    display: flex;
-  }
-  .dp-type-label {
-    font-size: 0.85rem;
-    font-weight: 800;
-    color: #0D3D2B;
-    margin-bottom: 0.2rem;
-  }
-  .dp-type-desc {
-    font-size: 0.7rem;
-    color: rgba(13,61,43,0.5);
-    line-height: 1.4;
-  }
-
-  .dp-prop-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-  .dp-prop-item {
-    border: 2px solid rgba(13,61,43,0.15);
-    border-radius: 10px;
-    padding: 0.85rem 1rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    transition: all 0.18s;
-  }
-  .dp-prop-item:hover { border-color: #0D3D2B; }
-  .dp-prop-item-active {
-    border-color: #F07060;
-    background: rgba(240,112,96,0.06);
-    box-shadow: 2px 2px 0 #F07060;
-  }
-  .dp-prop-title {
-    font-size: 0.88rem;
-    font-weight: 800;
-    color: #0D3D2B;
-  }
-  .dp-prop-id {
-    font-family: 'DM Mono',monospace;
-    font-size: 0.58rem;
-    color: rgba(13,61,43,0.38);
-    margin-bottom: 0.1rem;
-  }
-  .dp-prop-check {
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(13,61,43,0.2);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.65rem;
-    font-weight: 800;
-    margin-left: auto;
-    flex-shrink: 0;
-  }
-  .dp-prop-check-active {
-    background: #F07060;
-    color: #fff;
-    border-color: #F07060;
-  }
-
-  .dp-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .dp-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-  .dp-label {
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    color: #0D3D2B;
-  }
-  .dp-input {
-    padding: 0.7rem 1rem;
-    border: 2px solid rgba(13,61,43,0.22);
-    border-radius: 10px;
-    background: rgba(13,61,43,0.02);
-    font-size: 0.88rem;
-    font-family: inherit;
-    font-weight: 500;
-    color: #0D3D2B;
-    outline: none;
-    transition: all 0.2s;
-  }
-  .dp-input:focus {
-    border-color: #0D3D2B;
-    background: #fff;
-  }
-  .dp-input::placeholder { color: rgba(13,61,43,0.32); }
-  .dp-textarea {
-    resize: vertical;
-    min-height: 100px;
-  }
-  .dp-error {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: #C0392B;
-  }
-
-  .dp-nav {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-  }
-  .dp-btn-back {
-    padding: 0.8rem 1.5rem;
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 10px;
-    background: transparent;
-    color: #0D3D2B;
-    font-size: 0.88rem;
-    font-weight: 800;
-    cursor: pointer;
-    font-family: inherit;
+  .dp-status-pill .pdot { width: 5px; height: 5px; border-radius: 50%; }
+  .s-orange { color: #b07a00; background: rgba(255,185,0,0.14); }
+  .d-orange  { background: #e0a020; }
+  .s-green   { color: #2a7a55; background: #e6f8ef; }
+  .d-green   { background: #2a7a55; }
+  .s-red     { color: #c0392b; background: rgba(240,80,80,0.12); }
+  .d-red     { background: #c0392b; }
+  .s-purple  { color: #5B4FD4; background: rgba(91,79,212,0.12); }
+  .d-purple  { background: #5B4FD4; }
+  .dp-dispute-meta {
+    font-family: 'DM Mono', monospace; font-size: 8.5px; color: #bbb;
     white-space: nowrap;
   }
+  .dp-dispute-prop {
+    font-family: 'DM Mono', monospace; font-size: 8.5px; color: #5B4FD4;
+  }
+
+  /* ══ EMPTY STATE ══ */
+  .dp-empty {
+    background: rgba(240,240,240,0.4); border: 1.5px dashed #d0d0d0;
+    border-radius: 24px; padding: 48px 32px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    text-align: center;
+  }
+  .dp-empty-icon-wrap {
+    width: 56px; height: 56px; border-radius: 16px;
+    background: #f0f0f0; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 4px;
+  }
+  .dp-empty-icon-wrap .mi { font-size: 26px; color: #ccc; }
+  .dp-empty-title { font-size: 15px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.3px; }
+  .dp-empty-sub   { font-size: 11.5px; color: #aaa; }
+  .dp-empty-btn {
+    background: #1a1a1a; color: #fff; border: none;
+    border-radius: 13px; padding: 10px 20px; margin-top: 6px;
+    font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+    transition: background 0.15s;
+  }
+  .dp-empty-btn:hover { background: #2a2a2a; }
+  .dp-empty-btn .mi { font-size: 15px; }
+
+  /* ══ STEP PROGRESS ══ */
+  .dp-steps { display: flex; gap: 8px; }
+  .dp-step {
+    flex: 1; border-radius: 14px; padding: 12px 14px;
+    display: flex; align-items: center; gap: 9px;
+    background: #f0f0f0; transition: background 0.2s;
+  }
+  .dp-step.active { background: #1a1a1a; }
+  .dp-step.done   { background: #2a1a10; }
+  .dp-step-num {
+    width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800;
+    background: rgba(0,0,0,0.06); color: #aaa;
+  }
+  .dp-step.active .dp-step-num { background: rgba(255,255,255,0.1); color: #fff; }
+  .dp-step.done   .dp-step-num { background: rgba(232,83,58,0.3); color: #ffb380; }
+  .dp-step-label { font-size: 10.5px; font-weight: 600; color: #bbb; }
+  .dp-step.active .dp-step-label { color: #fff; }
+  .dp-step.done   .dp-step-label { color: #e8533a; }
+
+  /* ══ DISPUTE TYPE GRID ══ */
+  .dp-type-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .dp-type-card {
+    background: #f0f0f0; border-radius: 18px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 8px;
+    cursor: pointer; position: relative; overflow: hidden;
+    border: 2px solid transparent;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .dp-type-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .dp-type-card.selected {
+    background: #2a1a10; border-color: #e8533a;
+    box-shadow: 0 8px 24px rgba(232,83,58,0.15);
+  }
+  .dp-type-icon-wrap {
+    width: 32px; height: 32px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(232,83,58,0.1);
+  }
+  .dp-type-icon-wrap .mi { font-size: 16px; color: #e8533a; }
+  .dp-type-card.selected .dp-type-icon-wrap { background: rgba(232,83,58,0.2); }
+  .dp-type-card.selected .dp-type-icon-wrap .mi { color: #ffb380; }
+  .dp-type-check {
+    position: absolute; top: 10px; right: 10px;
+    width: 18px; height: 18px; border-radius: 5px;
+    background: rgba(232,83,58,0.25); color: #ffb380;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .dp-type-card.selected .dp-type-check { opacity: 1; }
+  .dp-type-check .mi { font-size: 12px; }
+  .dp-type-label {
+    font-size: 12.5px; font-weight: 700; color: #1a1a1a;
+    letter-spacing: -0.2px; line-height: 1.3;
+  }
+  .dp-type-card.selected .dp-type-label { color: #fff; }
+  .dp-type-desc { font-size: 10px; font-weight: 500; color: #aaa; line-height: 1.5; }
+  .dp-type-card.selected .dp-type-desc { color: #555; }
+
+  /* ══ PROPERTY LIST ══ */
+  .dp-prop-list { display: flex; flex-direction: column; gap: 8px; }
+  .dp-prop-row {
+    background: #f0f0f0; border-radius: 14px; padding: 12px 14px;
+    display: flex; align-items: center; gap: 12px;
+    border: 2px solid transparent;
+    cursor: pointer; transition: transform 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .dp-prop-row:hover { transform: translateY(-1px); border-color: #ddd; }
+  .dp-prop-row.selected { background: #2a1a10; border-color: #e8533a; }
+  .dp-prop-icon-wrap {
+    width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(232,83,58,0.1);
+  }
+  .dp-prop-icon-wrap .mi { font-size: 15px; color: #e8533a; }
+  .dp-prop-row.selected .dp-prop-icon-wrap { background: rgba(232,83,58,0.2); }
+  .dp-prop-row.selected .dp-prop-icon-wrap .mi { color: #ffb380; }
+  .dp-prop-body { flex: 1; min-width: 0; }
+  .dp-prop-id {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: #aaa; letter-spacing: 0.05em; margin-bottom: 1px;
+  }
+  .dp-prop-row.selected .dp-prop-id { color: #555; }
+  .dp-prop-title { font-size: 11.5px; font-weight: 700; color: #1a1a1a; }
+  .dp-prop-row.selected .dp-prop-title { color: #fff; }
+  .dp-prop-meta { font-size: 9.5px; font-weight: 500; color: #aaa; margin-top: 1px; }
+  .dp-prop-row.selected .dp-prop-meta { color: #555; }
+  .dp-prop-check-box {
+    width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0;
+    border: 2px solid #ddd;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .dp-prop-row.selected .dp-prop-check-box {
+    background: rgba(232,83,58,0.3); border-color: #e8533a; color: #ffb380;
+  }
+  .dp-prop-check-box .mi { font-size: 12px; }
+
+  /* ══ FORM FIELDS ══ */
+  .dp-fields { display: flex; flex-direction: column; gap: 14px; }
+  .dp-field  { display: flex; flex-direction: column; gap: 6px; }
+  .dp-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: #888;
+  }
+  .dp-input {
+    padding: 10px 14px;
+    border: 1.5px solid #e0e0e0; border-radius: 12px;
+    background: #f0f0f0;
+    font-size: 13px; font-family: 'Poppins', sans-serif; font-weight: 500;
+    color: #1a1a1a; outline: none; transition: all 0.15s;
+  }
+  .dp-input:focus { border-color: #e8533a; background: #fff; }
+  .dp-input::placeholder { color: #bbb; }
+  .dp-input.error { border-color: #e05548; }
+  .dp-textarea { resize: vertical; min-height: 110px; }
+  .dp-error-msg {
+    font-size: 10px; font-weight: 700; color: #e05548;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .dp-error-msg .mi { font-size: 12px; }
+
+  /* Evidence drop zone */
+  .dp-evidence-zone {
+    border: 1.5px dashed #d0d0d0; border-radius: 14px;
+    padding: 20px; text-align: center; cursor: pointer;
+    background: #f0f0f0; transition: all 0.18s;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .dp-evidence-zone:hover { border-color: #bbb; background: #ebebeb; }
+  .dp-evidence-zone.uploaded { border-color: #2EC4A0; background: rgba(46,196,160,0.06); }
+  .dp-evidence-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center;
+  }
+  .dp-evidence-icon .mi { font-size: 18px; color: #bbb; }
+  .dp-evidence-zone.uploaded .dp-evidence-icon { background: rgba(46,196,160,0.12); }
+  .dp-evidence-zone.uploaded .dp-evidence-icon .mi { color: #2EC4A0; }
+  .dp-evidence-label { font-size: 11.5px; font-weight: 600; color: #aaa; }
+  .dp-evidence-zone.uploaded .dp-evidence-label { color: #2EC4A0; font-weight: 700; }
+  .dp-evidence-sub { font-size: 9.5px; color: #ccc; }
+
+  /* ══ NAV BUTTONS ══ */
+  .dp-nav { display: flex; gap: 8px; align-items: center; }
+  .dp-btn-back {
+    background: #f0f0f0; color: #555; border: none;
+    border-radius: 13px; padding: 11px 18px;
+    font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 5px;
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .dp-btn-back:hover { background: #e8e8e8; color: #111; }
+  .dp-btn-back .mi { font-size: 15px; }
   .dp-btn-next {
-    flex: 1;
-    padding: 0.88rem;
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 10px;
-    background: #F07060;
-    color: #fff;
-    font-size: 0.95rem;
-    font-weight: 800;
-    cursor: pointer;
-    font-family: inherit;
-    box-shadow: 0 2px 8px rgba(13,61,43,0.06);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: opacity 0.18s;
+    flex: 1; background: #1a1a1a; color: #fff; border: none;
+    border-radius: 13px; padding: 12px;
+    font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background 0.15s;
   }
-  .dp-btn-next:hover { opacity: 0.88; }
-  .dp-btn-next:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  .dp-btn-next:hover { background: #2a2a2a; }
+  .dp-btn-next:disabled { opacity: 0.45; cursor: not-allowed; }
+  .dp-btn-submit {
+    flex: 1; background: #e8533a; color: #fff; border: none;
+    border-radius: 13px; padding: 12px;
+    font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background 0.15s;
   }
+  .dp-btn-submit:hover { background: #d44830; }
+  .dp-btn-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+  .dp-btn-submit .mi, .dp-btn-next .mi, .dp-btn-back .mi { font-size: 15px; }
   .spinner {
-    width: 16px;
-    height: 16px;
-    border: 2.5px solid currentColor;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
+    width: 15px; height: 15px;
+    border: 2.5px solid currentColor; border-top-color: transparent;
+    border-radius: 50%; animation: spin 0.7s linear infinite;
     display: inline-block;
   }
 
-  .dp-success {
-    text-align: center;
-    padding: 3rem 2rem;
+  /* ══ SUCCESS STATE ══ */
+  .dp-success-zone {
+    background: rgba(240,240,240,0.4);
+    border: 1.5px solid #e0e0e0;
+    border-radius: 24px; padding: 48px 32px;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    text-align: center; animation: fadeUp 0.4s ease both;
   }
-  .dp-success-icon {
-    width: 72px;
-    height: 72px;
-    background: #F07060;
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.25rem;
-    box-shadow: 0 4px 12px rgba(13,61,43,0.08);
+  .dp-success-icon-wrap {
+    width: 64px; height: 64px; border-radius: 18px;
+    background: #2a1a10; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 4px;
   }
+  .dp-success-icon-wrap .mi { font-size: 30px; color: #e8533a; }
   .dp-success-title {
-    font-size: 1.5rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    margin-bottom: 0.5rem;
+    font-size: 20px; font-weight: 800; letter-spacing: -0.4px; color: #1a1a1a;
   }
   .dp-success-sub {
-    font-size: 0.88rem;
-    color: rgba(13,61,43,0.55);
-    line-height: 1.6;
-    margin-bottom: 2rem;
+    font-size: 12px; color: #999; line-height: 1.7; max-width: 380px;
   }
-  .dp-success-btn {
-    padding: 0.75rem 1.75rem;
-    border: 1.5px solid rgba(13,61,43,0.1);
-    border-radius: 10px;
-    background: #F07060;
-    color: #fff;
-    font-size: 0.88rem;
-    font-weight: 800;
-    cursor: pointer;
-    font-family: inherit;
-    box-shadow: 0 2px 8px rgba(13,61,43,0.06);
+  .dp-success-ref {
+    font-family: 'DM Mono', monospace; font-size: 11px; color: #e8533a;
+    background: rgba(232,83,58,0.08); border-radius: 9px; padding: 6px 14px;
+    margin: 4px 0;
   }
+  .dp-success-actions {
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 8px;
+  }
+  .dp-success-btn-primary {
+    background: #1a1a1a; color: #fff; border: none;
+    border-radius: 13px; padding: 11px 22px;
+    font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; gap: 5px;
+    transition: background 0.15s;
+  }
+  .dp-success-btn-primary:hover { background: #2a2a2a; }
+  .dp-success-btn-ghost {
+    background: #f0f0f0; color: #555; border: none;
+    border-radius: 13px; padding: 11px 22px;
+    font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 5px;
+    transition: background 0.15s;
+  }
+  .dp-success-btn-ghost:hover { background: #e8e8e8; color: #111; }
+  .dp-success-btn-primary .mi,
+  .dp-success-btn-ghost .mi { font-size: 15px; }
 
-  @media(max-width:768px) {
-    .dp-hero {
-      padding: 1.5rem 1rem 1.5rem;
-      } .dp-content{padding: 1.25rem 1rem 3rem;
-    }
-    .dp-type-grid {
-      grid-template-columns: 1fr;
-      } .dp-nav{flex-direction: column-reverse;
-    }
-    .dp-btn-back {
-      width: 100%;
-      text-align: center;
-    }
-  }
-  /* ══ PAGE CONTAINER — 2rem margin all sides, rounded, shadow ══ */
-  .page-container {
-    margin: 1.5rem 2rem 2rem;
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1.5px solid rgba(13,61,43,0.12);
-    box-shadow: 0 4px 6px rgba(13,61,43,0.04), 0 20px 40px rgba(13,61,43,0.08);
-    background: #f7f7f3;
-    position: relative;
-    z-index: 2;
-  }
-  @media(max-width: 768px) {
-    .page-container {
-      margin: 1rem;
-      border-radius: 12px;
-    }
-  }
-  @media(max-width: 480px) {
-    .page-container {
-      margin: 0.65rem;
-      border-radius: 10px;
-    }
+  /* ══ RESPONSIVE ══ */
+  @media (max-width: 600px) {
+    .dp-main { padding: 10px 10px 48px; }
+    .dp-type-grid { grid-template-columns: 1fr; }
+    .dp-step-label { display: none; }
+    .dp-nav { flex-direction: column-reverse; }
+    .dp-btn-back { width: 100%; justify-content: center; }
   }
 `;
 
+/* ══════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════ */
+const MI = ({ name, style }) => <span className="mi" style={style}>{name}</span>;
+
+const STEPS = ["Type", "Property", "Details"];
+
+function statusMeta(cls) {
+  if (cls === "orange") return { pillCls: "s-orange", dotCls: "d-orange" };
+  if (cls === "green")  return { pillCls: "s-green",  dotCls: "d-green"  };
+  if (cls === "red")    return { pillCls: "s-red",    dotCls: "d-red"    };
+  return { pillCls: "s-purple", dotCls: "d-purple" };
+}
+
+/* ══════════════════════════════════════════════════
+   COMPONENT
+══════════════════════════════════════════════════ */
 export default function Disputes() {
   const { user, logout } = useAuth();
 
-  const [activeTab,  setTab]       = useState("my");
-  const [step,       setStep]      = useState(1);
-  const [loading,    setLoading]   = useState(false);
-  const [submitted,  setSubmitted] = useState(false);
-  const [errors,     setErrors]    = useState({});
-  const [dType,      setDType]     = useState(null);
-  const [selectedProp, setSProp]   = useState(null);
-  const [description, setDesc]     = useState("");
+  const [activeTab,        setTab]      = useState("my");
+  const [step,             setStep]     = useState(1);
+  const [loading,          setLoading]  = useState(false);
+  const [submitted,        setSubmitted]= useState(false);
+  const [errors,           setErrors]   = useState({});
+  const [dType,            setDType]    = useState(null);
+  const [selectedProp,     setSProp]    = useState(null);
+  const [description,      setDesc]     = useState("");
   const [uploadedEvidence, setEvidence] = useState(false);
 
-  const properties = user ? getPropertiesByOwner(user.id) : [];
-  const myDisputes = MOCK_DISPUTES;
+  const [properties, setProperties] = useState([]);
+  const [myDisputes, setMyDisputes] = useState([]);
+
+  useEffect(() => {
+    if (user) {
+      api.get('/properties/my-properties')
+        .then(res => setProperties(res.data))
+        .catch(console.error);
+      api.get('/disputes/my-disputes')
+        .then(res => setMyDisputes(res.data))
+        .catch(console.error);
+    }
+  }, [user]);
 
   const validate = (s) => {
     const e = {};
-    if (s===1 && !dType)          e.type = "Please select a dispute type.";
-    if (s===2 && !selectedProp)   e.prop = "Please select a property.";
-    if (s===3 && !description.trim()) e.desc = "Please describe the dispute.";
+    if (s === 1 && !dType)               e.type = "Please select a dispute type.";
+    if (s === 2 && !selectedProp)        e.prop = "Please select a property.";
+    if (s === 3 && !description.trim())  e.desc = "Please describe the dispute.";
     return e;
   };
 
@@ -548,171 +513,284 @@ export default function Disputes() {
     const e = validate(step);
     if (Object.keys(e).length) { setErrors(e); return; }
     setErrors({});
-    if (step < 3) setStep(s=>s+1); else handleSubmit();
+    if (step < 3) setStep(s => s + 1); else handleSubmit();
   };
 
   const handleSubmit = async () => {
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1200));
-    setLoading(false);
-    setSubmitted(true);
+    try {
+      await api.post('/disputes', {
+        propertyId: selectedProp,
+        caseNumber: dType, // storing type in caseNumber
+        description: description
+      });
+      const res = await api.get('/disputes/my-disputes');
+      setMyDisputes(res.data);
+      setSubmitted(true);
+    } catch (err) {
+      console.error(err);
+      setErrors({ type: "Failed to submit dispute." });
+    } finally {
+      setLoading(false);
+    }
   };
-
 
   return (
     <>
       <style>{styles}</style>
       <div className="dp-page">
-        <Navbar1 user={user} onLogout={logout} />
 
-        <div className="page-container">
+        <div className="dp-main">
 
-        <div className="dp-header">
-          <div className="dp-header-left">
-            <span className="dp-page-title">Disputes</span>
-            <span className="dp-page-sub">File and track property ownership disputes</span>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="dp-tabs">
-          <div className="dp-tabs-inner">
-            <div className={`dp-tab ${activeTab==="my"?"dp-tab-active":""}`} onClick={() => setTab("my")}>
-              My Disputes ({myDisputes.length})
+          {/* ══ TOP BAR ══ */}
+          <div className="dp-topbar">
+            <div className="dp-heading">
+              Property <span>Disputes</span>
             </div>
-            <div className={`dp-tab ${activeTab==="file"?"dp-tab-active":""}`} onClick={() => { setTab("file"); setStep(1); setSubmitted(false); }}>
-              File New Dispute
+            <div className="dp-topbar-right">
+              <div className="dp-meta-chip">
+                <MI name="gavel" /> Dispute Management
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="dp-content">
+          {/* ══ TAB STRIP ══ */}
+          <div className="dp-tab-strip">
+            <button
+              className={`dp-tab-btn${activeTab === "my" ? " active" : ""}`}
+              onClick={() => setTab("my")}
+            >
+              <MI name="folder_open" /> My Disputes
+              <span className="dp-tab-count">{myDisputes.length}</span>
+            </button>
+            <button
+              className={`dp-tab-btn${activeTab === "file" ? " active" : ""}`}
+              onClick={() => { setTab("file"); setStep(1); setSubmitted(false); }}
+            >
+              <MI name="add_circle" /> File New Dispute
+            </button>
+          </div>
 
-          {/* My Disputes tab */}
+          {/* ══ MY DISPUTES TAB ══ */}
           {activeTab === "my" && (
             myDisputes.length === 0 ? (
               <div className="dp-empty">
-                <div className="dp-empty-icon"><span className="material-icons-sharp" style={{ fontSize:40 }}>gavel</span></div>
+                <div className="dp-empty-icon-wrap"><MI name="gavel" /></div>
                 <div className="dp-empty-title">No disputes filed</div>
-                <div className="dp-empty-sub">You haven't filed any disputes yet.</div>
-                <button className="dp-file-btn" style={{ display:"inline-flex", alignItems:"center", gap:"0.4rem" }} onClick={() => setTab("file")}><span className="material-icons-sharp" style={{ fontSize:16 }}>add</span> File a Dispute</button>
+                <div className="dp-empty-sub">You haven't raised any property disputes yet.</div>
+                <button className="dp-empty-btn" onClick={() => setTab("file")}>
+                  <MI name="add" /> File a Dispute
+                </button>
               </div>
             ) : (
-              <div className="dp-disputes-list">
-                {myDisputes.map((d, i) => (
-                  <div key={i} className="dp-dispute-card">
-                    <div className="dp-dispute-top">
-                      <div>
-                        <div className="dp-dispute-id">{d.id}</div>
-                        <div className="dp-dispute-type">{d.type}</div>
-                        <div className="dp-dispute-desc">{d.description}</div>
-                      </div>
-                      <div className="dp-dispute-badge" style={{ background:d.statusColor, color:"#0D3D2B" }}>
-                        {d.status}
-                      </div>
-                    </div>
-                    <div className="dp-dispute-footer">
-                      <span className="dp-dispute-date">Filed {d.filedOn}</span>
-                      <span className="dp-dispute-prop">{d.propertyId}</span>
-                    </div>
+              <div className="dp-zone">
+                <div className="dp-zone-header">
+                  <div className="dp-zone-title-row">
+                    <div className="dp-zone-title">My <span>Disputes</span></div>
+                    <div className="dp-zone-pill">{myDisputes.length} total</div>
                   </div>
-                ))}
+                  <button className="dp-zone-action" onClick={() => { setTab("file"); setStep(1); setSubmitted(false); }}>
+                    File new <MI name="add" />
+                  </button>
+                </div>
+                <div className="dp-disputes-list">
+                  {myDisputes.map((d, i) => {
+                    const statusText = d.status === "ACTIVE" ? "Under Investigation" : d.status;
+                    const statusCls = d.status === "ACTIVE" ? "orange" : (d.status === "RESOLVED" ? "green" : "red");
+                    const { pillCls, dotCls } = statusMeta(statusCls);
+                    const filedOn = d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "Recently";
+                    
+                    return (
+                      <div key={i} className="dp-dispute-row" style={{ animationDelay: `${i * 0.05}s` }}>
+                        <div className="dp-dispute-icon-wrap"><MI name="gavel" /></div>
+                        <div className="dp-dispute-body">
+                          <div className="dp-dispute-id">DSP-{d.id}</div>
+                          <div className="dp-dispute-type">{d.caseNumber || "Dispute"}</div>
+                          <div className="dp-dispute-desc">{d.description}</div>
+                        </div>
+                        <div className="dp-dispute-right">
+                          <div className={`dp-status-pill ${pillCls}`}>
+                            <div className={`pdot ${dotCls}`} />
+                            {statusText}
+                          </div>
+                          <div className="dp-dispute-prop">PROP-{d.propertyId}</div>
+                          <div className="dp-dispute-meta">Filed {filedOn}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )
           )}
 
-          {/* File New Dispute tab */}
+          {/* ══ FILE NEW DISPUTE TAB ══ */}
           {activeTab === "file" && (
             submitted ? (
-              <div className="dp-card">
-                <div className="dp-success">
-                  <div className="dp-success-icon"><span className="material-icons-sharp" style={{ fontSize:36 }}>gavel</span></div>
-                  <div className="dp-success-title">Dispute Filed!</div>
-                  <div className="dp-success-sub">Your dispute has been submitted. The Sub-Registrar will investigate and update the status.</div>
-                  <button className="dp-success-btn" onClick={() => { setTab("my"); setSubmitted(false); }}>View My Disputes</button>
+              <div className="dp-success-zone">
+                <div className="dp-success-icon-wrap"><MI name="gavel" /></div>
+                <div className="dp-success-title">Dispute Filed!</div>
+                <div className="dp-success-sub">
+                  Your dispute has been submitted for investigation.<br />
+                  The Sub-Registrar will review and update the status.
+                </div>
+                <div className="dp-success-ref">
+                  REF: DSP-{Date.now().toString().slice(-8)}
+                </div>
+                <div className="dp-success-actions">
+                  <button className="dp-success-btn-primary" onClick={() => { setTab("my"); setSubmitted(false); }}>
+                    <MI name="folder_open" /> View My Disputes
+                  </button>
+                  <button className="dp-success-btn-ghost" onClick={() => { setStep(1); setSubmitted(false); setDType(null); setSProp(null); setDesc(""); setEvidence(false); }}>
+                    <MI name="add" /> File Another
+                  </button>
                 </div>
               </div>
             ) : (
               <>
+                {/* Step progress */}
+                <div className="dp-steps">
+                  {STEPS.map((label, i) => {
+                    const num = i + 1;
+                    const isActive = num === step;
+                    const isDone   = num < step;
+                    return (
+                      <div key={num} className={`dp-step${isActive ? " active" : isDone ? " done" : ""}`}>
+                        <div className="dp-step-num">
+                          {isDone ? <MI name="check" style={{ fontSize: 11 }} /> : num}
+                        </div>
+                        <div className="dp-step-label">{label}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Step 1 — Dispute Type */}
                 {step === 1 && (
-                  <div className="dp-card">
-                    <div className="dp-card-head dp-card-head-coral" style={{ display:"flex", alignItems:"center", gap:"0.5rem" }}><span className="material-icons-sharp" style={{ fontSize:16 }}>gavel</span> SELECT DISPUTE TYPE</div>
-                    <div className="dp-card-body">
-                      <div className="dp-type-grid">
-                        {DISPUTE_TYPES.map(d => (
-                          <div key={d.id} className={`dp-type-opt ${dType===d.id?"dp-type-opt-active":""}`} onClick={() => { setDType(d.id); setErrors({}); }}>
-                            <div className="dp-type-icon"><span className="material-icons-sharp" style={{ fontSize:22 }}>{d.icon}</span></div>
-                            <div className="dp-type-label">{d.label}</div>
-                            <div className="dp-type-desc">{d.desc}</div>
-                          </div>
-                        ))}
+                  <div className="dp-zone">
+                    <div className="dp-zone-header">
+                      <div className="dp-zone-title-row">
+                        <div className="dp-zone-title">Select <span>Dispute Type</span></div>
                       </div>
-                      {errors.type && <p className="dp-error" style={{ marginTop:"0.75rem" }}>{errors.type}</p>}
+                      <div className="dp-zone-pill accent">Step 1 of 3</div>
                     </div>
+                    <div className="dp-type-grid">
+                      {DISPUTE_TYPES.map((d, i) => (
+                        <div
+                          key={d.id}
+                          className={`dp-type-card${dType === d.id ? " selected" : ""}`}
+                          style={{ animationDelay: `${i * 0.05}s` }}
+                          onClick={() => { setDType(d.id); setErrors({}); }}
+                        >
+                          <div className="dp-type-check"><MI name="check" /></div>
+                          <div className="dp-type-icon-wrap"><MI name={d.icon} /></div>
+                          <div className="dp-type-label">{d.label}</div>
+                          <div className="dp-type-desc">{d.desc}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {errors.type && <div className="dp-error-msg"><MI name="error_outline" />{errors.type}</div>}
                   </div>
                 )}
 
+                {/* Step 2 — Select Property */}
                 {step === 2 && (
-                  <div className="dp-card">
-                    <div className="dp-card-head dp-card-head-coral" style={{ display:"flex", alignItems:"center", gap:"0.5rem" }}><span className="material-icons-sharp" style={{ fontSize:16 }}>home</span> SELECT PROPERTY</div>
-                    <div className="dp-card-body">
-                      <div className="dp-prop-list">
-                        {properties.map(p => (
-                          <div key={p.id} className={`dp-prop-item ${selectedProp===p.id?"dp-prop-item-active":""}`} onClick={() => { setSProp(p.id); setErrors({}); }}>
-                            <div>
-                              <div className="dp-prop-id">{p.id}</div>
-                              <div className="dp-prop-title">{p.title}</div>
-                            </div>
-                            <div className={`dp-prop-check ${selectedProp===p.id?"dp-prop-check-active":""}`}>{selectedProp===p.id ? <span className="material-icons-sharp" style={{ fontSize:14 }}>check</span> : ""}</div>
-                          </div>
-                        ))}
+                  <div className="dp-zone">
+                    <div className="dp-zone-header">
+                      <div className="dp-zone-title-row">
+                        <div className="dp-zone-title">Select <span>Property</span></div>
+                        <div className="dp-zone-pill">{properties.length} total</div>
                       </div>
-                      {errors.prop && <p className="dp-error" style={{ marginTop:"0.75rem" }}>{errors.prop}</p>}
+                      <div className="dp-zone-pill accent">Step 2 of 3</div>
                     </div>
+                    <div className="dp-prop-list">
+                      {properties.map(p => (
+                        <div
+                          key={p.id}
+                          className={`dp-prop-row${selectedProp === p.id ? " selected" : ""}`}
+                          onClick={() => { setSProp(p.id); setErrors({}); }}
+                        >
+                          <div className="dp-prop-icon-wrap"><MI name="home" /></div>
+                          <div className="dp-prop-body">
+                            <div className="dp-prop-id">{p.id}</div>
+                            <div className="dp-prop-title">{p.title}</div>
+                            <div className="dp-prop-meta">{p.area} · {p.district}</div>
+                          </div>
+                          <div className="dp-prop-check-box">
+                            {selectedProp === p.id && <MI name="check" />}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {errors.prop && <div className="dp-error-msg"><MI name="error_outline" />{errors.prop}</div>}
                   </div>
                 )}
 
+                {/* Step 3 — Describe & Evidence */}
                 {step === 3 && (
-                  <div className="dp-card">
-                    <div className="dp-card-head dp-card-head-coral" style={{ display:"flex", alignItems:"center", gap:"0.5rem" }}><span className="material-icons-sharp" style={{ fontSize:16 }}>description</span> DESCRIBE THE DISPUTE</div>
-                    <div className="dp-card-body">
-                      <div className="dp-fields">
-                        <div className="dp-field">
-                          <label className="dp-label">DESCRIPTION OF DISPUTE</label>
-                          <textarea
-                            className="dp-input dp-textarea"
-                            value={description}
-                            onChange={e => { setDesc(e.target.value); setErrors({}); }}
-                            placeholder="Describe the issue in detail — what is incorrect, why you believe it's wrong, and any relevant dates..."
-                          />
-                          {errors.desc && <span className="dp-error">{errors.desc}</span>}
-                        </div>
-                        <div className="dp-field">
-                          <label className="dp-label">SUPPORTING EVIDENCE</label>
-                          <div style={{ border:"2px dashed rgba(13,61,43,0.2)", borderRadius:"10px", padding:"1.25rem", textAlign:"center", cursor:"pointer", background: uploadedEvidence?"rgba(46,196,160,0.06)":"#F8F8F4", transition:"all 0.18s" }} onClick={() => setEvidence(true)}>
-                            {uploadedEvidence
-                              ? <p style={{ fontSize:"0.82rem", fontWeight:700, color:"#2EC4A0", display:"flex", alignItems:"center", justifyContent:"center", gap:"4px" }}><span className="material-icons-sharp" style={{ fontSize:16 }}>check_circle</span> Evidence uploaded</p>
-                              : <p style={{ fontSize:"0.82rem", color:"rgba(13,61,43,0.45)" }}>Click to upload documents, photos, or other evidence</p>
-                            }
+                  <div className="dp-zone">
+                    <div className="dp-zone-header">
+                      <div className="dp-zone-title-row">
+                        <div className="dp-zone-title">Describe the <span>Dispute</span></div>
+                      </div>
+                      <div className="dp-zone-pill accent">Step 3 of 3</div>
+                    </div>
+                    <div className="dp-fields">
+                      <div className="dp-field">
+                        <label className="dp-label">Description of Dispute</label>
+                        <textarea
+                          className={`dp-input dp-textarea${errors.desc ? " error" : ""}`}
+                          value={description}
+                          onChange={e => { setDesc(e.target.value); setErrors({}); }}
+                          placeholder="Describe the issue in detail — what is incorrect, why you believe it's wrong, and any relevant dates..."
+                        />
+                        {errors.desc && <div className="dp-error-msg"><MI name="error_outline" />{errors.desc}</div>}
+                      </div>
+                      <div className="dp-field">
+                        <label className="dp-label">Supporting Evidence <span style={{ fontWeight: 500, opacity: 0.5 }}>(optional)</span></label>
+                        <div
+                          className={`dp-evidence-zone${uploadedEvidence ? " uploaded" : ""}`}
+                          onClick={() => setEvidence(true)}
+                        >
+                          <div className="dp-evidence-icon">
+                            <MI name={uploadedEvidence ? "check_circle" : "upload_file"} />
                           </div>
+                          <div className="dp-evidence-label">
+                            {uploadedEvidence ? "Evidence uploaded" : "Click to upload documents or photos"}
+                          </div>
+                          {!uploadedEvidence && (
+                            <div className="dp-evidence-sub">PDF, JPG, PNG up to 10 MB</div>
+                          )}
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
 
+                {/* Nav */}
                 <div className="dp-nav">
-                  {step > 1 && <button className="dp-btn-back" style={{ display:"flex", alignItems:"center", gap:"0.4rem" }} onClick={() => setStep(s=>s-1)}><span className="material-icons-sharp" style={{ fontSize:18 }}>arrow_back</span> Back</button>}
-                  <button className="dp-btn-next" onClick={next} disabled={loading}>
-                    {loading ? <><span className="spinner"/>Submitting...</> : step<3 ? <>Continue <span className="material-icons-sharp" style={{ fontSize:18 }}>arrow_forward</span></> : <>Submit Dispute <span className="material-icons-sharp" style={{ fontSize:18 }}>send</span></>}
-                  </button>
+                  {step > 1 && (
+                    <button className="dp-btn-back" onClick={() => setStep(s => s - 1)}>
+                      <MI name="arrow_back" /> Back
+                    </button>
+                  )}
+                  {step < 3
+                    ? (
+                      <button className="dp-btn-next" onClick={next}>
+                        Continue <MI name="arrow_forward" />
+                      </button>
+                    ) : (
+                      <button className="dp-btn-submit" onClick={next} disabled={loading}>
+                        {loading ? <><span className="spinner" /> Submitting…</> : <>Submit Dispute <MI name="send" /></>}
+                      </button>
+                    )
+                  }
                 </div>
               </>
             )
           )}
-        </div>
-        </div>
 
+        </div>
       </div>
     </>
   );
