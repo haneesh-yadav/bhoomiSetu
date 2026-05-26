@@ -4,68 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axiosConfig";
 
 /* ══════════════════════════════════════════════════
-   ORIGINAL ILLUSTRATION — sky, clouds, trees, coloured blocks
-   Matches the Login.jsx page layout
-   ══════════════════════════════════════════════════ */
-function IllustrationBlocks() {
-  const blocks = [
-    { x: 0,   y: 60,  w: 90, h: 80,  color: "#e8533a" },
-    { x: 95,  y: 80,  w: 70, h: 60,  color: "#f5c842" },
-    { x: 170, y: 100, w: 80, h: 50,  color: "#6b9e5e" },
-    { x: 255, y: 70,  w: 65, h: 90,  color: "#5b8dd6" },
-    { x: 325, y: 90,  w: 75, h: 70,  color: "#c8d9a0" },
-    { x: 0,   y: 145, w: 60, h: 100, color: "#f5c842" },
-    { x: 65,  y: 155, w: 95, h: 90,  color: "#7b9e57" },
-    { x: 165, y: 135, w: 55, h: 110, color: "#8fafd6" },
-    { x: 225, y: 165, w: 80, h: 80,  color: "#d4a855" },
-    { x: 310, y: 150, w: 90, h: 95,  color: "#e8533a" },
-    { x: 0,   y: 248, w: 110,h: 90,  color: "#5b8dd6" },
-    { x: 115, y: 250, w: 75, h: 88,  color: "#e8533a" },
-    { x: 195, y: 255, w: 85, h: 83,  color: "#c8d9a0" },
-    { x: 285, y: 248, w: 115,h: 90,  color: "#7b5ea7" },
-  ];
-
-  return (
-    <svg viewBox="0 0 400 340" width="100%" height="100%"
-      preserveAspectRatio="xMidYMid slice" style={{ display: "block" }}>
-      <defs>
-        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#4da8d4" />
-          <stop offset="100%" stopColor="#8ecae6" />
-        </linearGradient>
-      </defs>
-      <rect width="400" height="340" fill="url(#skyGrad)" />
-
-      {/* Clouds */}
-      <ellipse cx="80"  cy="35" rx="45" ry="22" fill="white" opacity="0.9" />
-      <ellipse cx="110" cy="28" rx="35" ry="18" fill="white" opacity="0.9" />
-      <ellipse cx="55"  cy="40" rx="30" ry="15" fill="white" opacity="0.9" />
-      <ellipse cx="290" cy="25" rx="50" ry="20" fill="white" opacity="0.85" />
-      <ellipse cx="325" cy="18" rx="38" ry="16" fill="white" opacity="0.85" />
-      <ellipse cx="260" cy="30" rx="30" ry="13" fill="white" opacity="0.85" />
-
-      {/* Trees */}
-      <ellipse cx="155" cy="100" rx="30" ry="40" fill="#3d7a3d" />
-      <ellipse cx="155" cy="88"  rx="22" ry="30" fill="#4a9a4a" />
-      <ellipse cx="245" cy="95"  rx="28" ry="38" fill="#3d7a3d" />
-      <ellipse cx="245" cy="83"  rx="20" ry="28" fill="#4a9a4a" />
-
-      {/* Door frame */}
-      <rect x="162" y="40" width="76" height="130" rx="2" fill="#8B6914" />
-      <rect x="166" y="44" width="68" height="126" rx="1" fill="#e8533a" />
-      <circle cx="228" cy="108" r="4" fill="#c8c8c8" />
-      <rect x="162" y="40" width="8"  height="130" fill="#6b5010" opacity="0.5" />
-
-      {/* Coloured blocks */}
-      {blocks.map((b, i) => (
-        <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} rx="1" fill={b.color} />
-      ))}
-    </svg>
-  );
-}
-
-/* ══════════════════════════════════════════════════
-   CSS — matches Login style system exactly
+   CSS — layout reorganized into clean split screen
    ══════════════════════════════════════════════════ */
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
@@ -96,14 +35,16 @@ const CSS = `
     overflow: hidden;
   }
 
-  /* ── Left panel ── */
+  /* ── Left panel (Form) ── */
   .cp-left {
     width: 50%;
     display: flex;
     flex-direction: column;
-    padding: 30px 64px 40px;
+    justify-content: center;
+    padding: 40px 80px;
     background: #f0ede4;
-    overflow-y: auto;
+    overflow: hidden;
+    height: 100%;
     animation: fadeUp 0.35s ease both;
   }
 
@@ -234,52 +175,77 @@ const CSS = `
     cursor: not-allowed;
   }
 
-  /* ── Password requirements grid (bottom area) ── */
-  .cp-reqs-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: auto;
-    padding-top: 28px;
-  }
-  .cp-reqs-pill {
-    background: #f0f0f0;
-    border-radius: 13px;
-    padding: 12px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    border: 1px solid #e0dbce;
-  }
-  .cp-reqs-val {
-    font-size: 11px;
-    font-weight: 800;
-    color: #1a1a1a;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .cp-reqs-val .mi {
-    font-size: 14px;
-    color: var(--cp-accent);
-  }
-  .cp-reqs-label {
-    font-size: 9.5px;
-    font-weight: 500;
-    color: #777;
-    line-height: 1.35;
-  }
-
-  /* ── Right panel ── */
+  /* ── Right panel (Requirements Card) ── */
   .cp-right {
     width: 50%;
     background: #e8e4d8;
     overflow: hidden;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
   }
-  .cp-right-inner {
-    flex: 1; min-height: 0; overflow: hidden;
+  .cp-reqs-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 36px;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.06);
+    width: 100%;
+    max-width: 480px;
+    animation: fadeUp 0.35s ease both;
+  }
+  .cp-reqs-title {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--cp-accent);
+    letter-spacing: 0.08em;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .cp-reqs-title::after {
+    content: '';
+    flex: 1;
+    height: 1.5px;
+    background: var(--cp-accent-glow);
+  }
+  .cp-reqs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .cp-reqs-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    background: #f8f6f2;
+    border-radius: 12px;
+    padding: 14px 16px;
+    border: 1px solid #ede9e0;
+  }
+  .cp-reqs-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--cp-accent-glow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cp-accent);
+    flex-shrink: 0;
+  }
+  .cp-reqs-text strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+  }
+  .cp-reqs-text p {
+    font-size: 11.5px;
+    color: #666;
+    line-height: 1.4;
   }
 
   /* ════════════════════════════════════════
@@ -296,24 +262,24 @@ const CSS = `
 
     .cp-right {
       width: 100%;
-      height: 160px;
-      flex-shrink: 0;
-      order: -1;
+      padding: 24px 20px;
+      background: #e8e4d8;
     }
-    .cp-right-inner {
-      flex: 1;
-      height: 100%;
+    
+    .cp-reqs-card {
+      max-width: 100%;
     }
 
     .cp-left {
       width: 100%;
-      padding: 24px 20px 32px;
+      padding: 32px 20px;
       overflow-y: visible;
       min-height: 0;
+      height: auto;
     }
 
     .cp-headline {
-      font-size: 26px;
+      font-size: 28px;
       margin-bottom: 24px;
     }
 
@@ -325,10 +291,6 @@ const CSS = `
     .cp-submit-btn {
       padding: 15px 20px;
       font-size: 13px;
-    }
-
-    .cp-reqs-row {
-      display: none; /* Hide on mobile to save vertical space */
     }
   }
 `;
@@ -397,13 +359,13 @@ export default function ChangePassword() {
       <style>{CSS}</style>
       <div className="cp-page">
 
-        {/* ── LEFT PANEL ── */}
+        {/* ── LEFT PANEL (Form) ── */}
         <div className="cp-left" style={{
           "--cp-accent": accentColor,
           "--cp-accent-glow": accentGlow,
         }}>
 
-          {/* Back Arrow navigation */}
+          {/* Back Link */}
           <div className="cp-back-row">
             <Link to={dashboardPath} className="cp-back-link">
               <span className="mi">arrow_back</span> Back to Dashboard
@@ -473,40 +435,58 @@ export default function ChangePassword() {
             </button>
           </form>
 
-          {/* Password Requirements Grid (Replaces Stat Pills area) */}
-          <div className="cp-reqs-row">
-            <div className="cp-reqs-pill">
-              <div className="cp-reqs-val">
-                <span className="mi">straighten</span> Min Length
-              </div>
-              <div className="cp-reqs-label">Password must be at least 8 characters long.</div>
-            </div>
-            <div className="cp-reqs-pill">
-              <div className="cp-reqs-val">
-                <span className="mi">password</span> Complexity
-              </div>
-              <div className="cp-reqs-label">Recommend mix of letters, numbers & symbols.</div>
-            </div>
-            <div className="cp-reqs-pill">
-              <div className="cp-reqs-val">
-                <span className="mi">person_off</span> Unique
-              </div>
-              <div className="cp-reqs-label">Avoid containing your name or email.</div>
-            </div>
-            <div className="cp-reqs-pill">
-              <div className="cp-reqs-val">
-                <span className="mi">history</span> History Limit
-              </div>
-              <div className="cp-reqs-label">Must not match any of your past passwords.</div>
-            </div>
-          </div>
-
         </div>
 
-        {/* ── RIGHT PANEL (Illustration) ── */}
+        {/* ── RIGHT PANEL (Password Requirements Card) ── */}
         <div className="cp-right">
-          <div className="cp-right-inner">
-            <IllustrationBlocks />
+          <div className="cp-reqs-card" style={{
+            "--cp-accent": accentColor,
+            "--cp-accent-glow": accentGlow,
+          }}>
+            <div className="cp-reqs-title">PASSWORD REQUIREMENTS</div>
+            <div className="cp-reqs-list">
+              
+              <div className="cp-reqs-item">
+                <div className="cp-reqs-icon">
+                  <span className="mi" style={{ fontSize: "16px" }}>straighten</span>
+                </div>
+                <div className="cp-reqs-text">
+                  <strong>Min Length</strong>
+                  <p>Password must be at least 8 characters long.</p>
+                </div>
+              </div>
+
+              <div className="cp-reqs-item">
+                <div className="cp-reqs-icon">
+                  <span className="mi" style={{ fontSize: "16px" }}>password</span>
+                </div>
+                <div className="cp-reqs-text">
+                  <strong>Complexity</strong>
+                  <p>We recommend mixing uppercase, lowercase, numbers & symbols.</p>
+                </div>
+              </div>
+
+              <div className="cp-reqs-item">
+                <div className="cp-reqs-icon">
+                  <span className="mi" style={{ fontSize: "16px" }}>person_off</span>
+                </div>
+                <div className="cp-reqs-text">
+                  <strong>Unique</strong>
+                  <p>Do not use obvious words containing your name or email.</p>
+                </div>
+              </div>
+
+              <div className="cp-reqs-item">
+                <div className="cp-reqs-icon">
+                  <span className="mi" style={{ fontSize: "16px" }}>history</span>
+                </div>
+                <div className="cp-reqs-text">
+                  <strong>History Limit</strong>
+                  <p>Do not reuse any of your past passwords.</p>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
 
