@@ -28,8 +28,8 @@ const CSS = `
   .cp-page {
     font-family: 'Poppins', sans-serif;
     display: flex;
-    min-height: calc(100vh - 112px);
-    height: calc(100vh - 112px);
+    min-height: calc(100vh - 52px);
+    height: calc(100vh - 52px);
     background: #f0ede4;
     overflow: hidden;
   }
@@ -156,7 +156,7 @@ const CSS = `
   /* ── Right panel (Requirements Card) ── */
   .cp-right {
     width: 50%;
-    background: #e8e4d8;
+    background: #f0ede4;
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -241,7 +241,7 @@ const CSS = `
     .cp-right {
       width: 100%;
       padding: 24px 20px;
-      background: #e8e4d8;
+      background: #f0ede4;
     }
     
     .cp-reqs-card {
