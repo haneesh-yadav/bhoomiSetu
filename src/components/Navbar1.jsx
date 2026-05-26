@@ -67,8 +67,8 @@ const USER_NAV = [
         {
           heading: "Manage",
           items: [
-            { label: "File Dispute",  icon: "report_problem", path: "/user/account"      },
-            { label: "Active Cases",  icon: "history",        path: "/user/change-password"   },
+            { label: "Profile",  icon: "report_problem", path: "/user/account"      },
+            { label: "Change Password",  icon: "history",        path: "/user/change-password"   },
           ],
         },
       ],
