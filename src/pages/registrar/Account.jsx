@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axiosConfig";
-import Navbar2 from "../../components/Navbar2";
 
 /* ══════════════════════════════════════════════════
-   CSS — mirrors UserAccount design tokens
-══════════════════════════════════════════════════ */
-const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+   CSS — layout matches user Account structure exactly
+   ══════════════════════════════════════════════════ */
+const CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
   @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Sharp');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,251 +19,314 @@ const styles = `
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
+    from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  @keyframes pulse {
-    0%,100% { opacity: 1; } 50% { opacity: 0.3; }
-  }
 
-  /* ── Root ── */
+  /* ── Page shell ── */
   .ac-page {
     font-family: 'Poppins', sans-serif;
-    background: #dcdcdc;
-    min-height: 100vh;
-    color: #1a1a1a;
-    padding-top: 60px;
+    display: flex;
+    min-height: calc(100vh - 50px);
+    height: calc(100vh - 50px);
+    background: #f0ede4;
+    overflow: hidden;
   }
 
-  /* ── Main wrapper ── */
-  .ac-main {
+  /* ── Left panel (Profile details) ── */
+  .ac-left {
+    width: 50%;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 12px 14px 32px;
-    overflow-x: hidden;
+    justify-content: center;
+    padding: 0 80px;
+    background: #f0ede4;
+    overflow: hidden;
+    height: 100%;
+    animation: fadeUp 0.35s ease both;
   }
 
-  /* ══ TOP BAR ══ */
-  .ac-topbar {
+  /* ── Headline ── */
+  .ac-headline {
+    font-size: 38px; font-weight: 800;
+    color: #1a1a1a; letter-spacing: -0.04em;
+    line-height: 1.12; margin-bottom: 28px;
+  }
+  .ac-headline span { color: #5B4FD4; }
+
+  /* ── Profile card ── */
+  .ac-profile-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 32px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .ac-avatar-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .ac-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #5B4FD4 0%, #fabc88 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(91,79,212,0.18);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  .ac-profile-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
+  }
+
+  .ac-profile-role {
+    font-size: 10px;
+    font-weight: 700;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+  }
+
+  /* ── Details list ── */
+  .ac-details-list {
+    display: flex;
+    flex-direction: column;
     gap: 10px;
   }
-  .ac-heading {
-    font-size: 18px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.4px;
-  }
-  .ac-heading span { color: #5B4FD4; }
-  .ac-topbar-sub {
-    font-size: 11px; font-weight: 500; color: #888; margin-top: 2px;
-  }
-  .ac-topbar-right {
-    display: flex; align-items: center; gap: 8px;
-  }
-  .ac-meta-chip {
-    display: flex; align-items: center; gap: 5px;
-    background: #f0f0f0; border-radius: 11px;
-    padding: 6px 12px;
-    font-size: 11px; font-weight: 500; color: #666;
-  }
-  .ac-meta-chip .mi { font-size: 13px; color: #aaa; }
 
-  /* ══ LAYOUT ══ */
-  .ac-content-row {
-    display: flex; gap: 12px; align-items: flex-start;
-  }
-  .ac-col-main  { flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-  .ac-col-side  { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
-
-  /* ══ ZONE (shared card) ══ */
-  .ac-zone {
-    background: rgba(240,240,240,0.4);
-    border: 1.5px solid #e0e0e0;
-    border-radius: 24px;
-    padding: 16px;
-    display: flex; flex-direction: column; gap: 14px;
-    animation: fadeUp 0.3s ease both;
-  }
-  .ac-zone-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #e8e8e8;
-  }
-  .ac-zone-title-row { display: flex; align-items: center; gap: 10px; }
-  .ac-zone-title {
-    font-size: 14px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.3px;
-  }
-  .ac-zone-title span { color: #5B4FD4; }
-  .ac-zone-pill {
-    background: #1a1a1a; color: #fff;
-    border-radius: 20px; padding: 2px 10px;
-    font-size: 9.5px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .ac-zone-sub {
-    font-size: 10.5px; color: #aaa; font-weight: 500;
+  .ac-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: #f8f6f2;
+    border-radius: 10px;
+    border: 1px solid #ede9e0;
   }
 
-  /* ══ FORM ══ */
-  .ac-form { display: flex; flex-direction: column; gap: 14px; }
+  .ac-detail-lbl {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
 
-  .ac-form-group { display: flex; flex-direction: column; gap: 6px; }
+  .ac-detail-val {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .ac-detail-val.green {
+    color: #1B9C85;
+  }
+
+  /* ── Right panel (Update Password Card) ── */
+  .ac-right {
+    width: 50%;
+    background: #f0ede4;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  .ac-form-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 36px;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.06);
+    width: 100%;
+    max-width: 480px;
+    animation: fadeUp 0.35s ease both;
+  }
+
+  .ac-form-title {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #5B4FD4;
+    letter-spacing: 0.08em;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .ac-form-title::after {
+    content: '';
+    flex: 1;
+    height: 1.5px;
+    background: rgba(91,79,212,0.12);
+  }
+
+  /* ── Form components ── */
+  .ac-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .ac-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
   .ac-form-label {
-    font-size: 11px; font-weight: 600; color: #555;
-    text-transform: uppercase; letter-spacing: 0.05em;
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #666;
+    margin-bottom: 4px;
+    letter-spacing: 0.03em;
   }
-  .ac-input-wrap { position: relative; }
-  .ac-input-icon {
-    position: absolute; left: 12px; top: 50%;
-    transform: translateY(-50%);
-    font-size: 16px; color: #bbb; pointer-events: none;
+
+  .ac-input-wrap {
+    position: relative;
   }
+
   .ac-input {
     width: 100%;
-    padding: 11px 14px 11px 38px;
-    border: 1.5px solid #e0e0e0;
-    border-radius: 13px;
+    padding: 14px 18px 14px 42px;
+    border-radius: 12px;
+    border: 1.5px solid #c8c8c8;
     background: #f0f0f0;
-    font-size: 12px;
+    font-size: 13px;
     font-family: 'Poppins', sans-serif;
     color: #1a1a1a;
     outline: none;
-    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
   }
+  .ac-input::placeholder { color: #aaa; }
   .ac-input:focus {
     border-color: #5B4FD4;
+    box-shadow: 0 0 0 3px rgba(91,79,212,0.12);
     background: #fff;
-    box-shadow: 0 0 0 3px rgba(91,79,212,0.08);
   }
   .ac-input:disabled {
-    color: #aaa; cursor: not-allowed;
+    color: #999; cursor: not-allowed; background: #f5f5f5;
   }
-  .ac-input::placeholder { color: #bbb; }
 
-  /* ══ MESSAGES ══ */
+  .ac-input-icon {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: #5B4FD4;
+    pointer-events: none;
+  }
+
+  /* ── Message banners ── */
   .ac-msg {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 14px; border-radius: 12px;
-    font-size: 11.5px; font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 14px;
+    border-radius: 0 8px 8px 0;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 14px;
   }
-  .ac-msg .mi { font-size: 16px; flex-shrink: 0; }
-  .ac-msg-success { background: rgba(46,196,160,0.12); color: #2a7a55; }
-  .ac-msg-error   { background: rgba(240,80,80,0.1);   color: #c0392b; }
+  .ac-msg-success {
+    background: rgba(27,156,133,0.1); color: #1B9C85;
+    border-left: 3px solid #1B9C85;
+  }
+  .ac-msg-error {
+    background: rgba(232,83,58,0.1); color: #c0392b;
+    border-left: 3px solid #e8533a;
+  }
 
-  /* ══ SUBMIT BUTTON ══ */
+  /* ── Submit Button ── */
   .ac-submit-btn {
-    width: 100%; padding: 12px;
-    border: none; border-radius: 13px;
-    background: #1a1a1a; color: #fff;
-    font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 700;
-    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
-    transition: background 0.15s, transform 0.15s;
+    width: 100%;
+    padding: 15px 20px;
+    border-radius: 12px;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 12px; font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: 0.03em;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background 0.15s, transform 0.1s;
+    margin-top: 6px;
   }
-  .ac-submit-btn .mi { font-size: 15px; }
-  .ac-submit-btn:hover:not(:disabled) { background: #2a2a2a; transform: translateY(-1px); }
-  .ac-submit-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+  .ac-submit-btn:hover:not(:disabled) { background: #2a2a2a; }
+  .ac-submit-btn:active:not(:disabled) { transform: scale(0.99); }
+  .ac-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .spinner {
-    width: 14px; height: 14px;
-    border: 2px solid currentColor;
-    border-top-color: transparent;
+    width: 12px; height: 12px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: #fff;
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
     display: inline-block;
   }
   @keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 
-  /* ══ PROFILE SIDE PANEL ══ */
-  .ac-profile-zone {
-    background: #1a1a1a; border-radius: 20px; overflow: hidden;
-  }
-  .ac-profile-head {
-    padding: 14px 16px 10px;
-    display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-  }
-  .ac-profile-head-title {
-    font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
-    color: #555; text-transform: uppercase;
-  }
-  .ac-profile-live {
-    display: flex; align-items: center; gap: 5px;
-    font-size: 10px; font-weight: 700; color: #2EC4A0;
-  }
-  .ac-profile-live-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: #2EC4A0; animation: pulse 2s infinite;
-  }
-  .ac-profile-avatar-row {
-    padding: 18px 16px 14px;
-    display: flex; align-items: center; gap: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-  }
-  .ac-profile-avatar {
-    width: 44px; height: 44px; border-radius: 14px;
-    background: rgba(91,79,212,0.25);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; font-weight: 800; color: #a89fff;
-    flex-shrink: 0;
-  }
-  .ac-profile-name  { font-size: 13px; font-weight: 700; color: #fff; }
-  .ac-profile-role  { font-size: 10px; font-weight: 500; color: #555; margin-top: 2px; }
-  .ac-profile-rows  { padding: 4px 0 8px; }
-  .ac-profile-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 8px 16px; border-bottom: 1px solid rgba(255,255,255,0.03);
-  }
-  .ac-profile-row:last-child { border-bottom: none; }
-  .ac-profile-lbl { font-size: 10.5px; font-weight: 500; color: #555; }
-  .ac-profile-val { font-family: 'DM Mono', monospace; font-size: 10.5px; color: #ccc; }
-  .ac-profile-val.green { color: #2EC4A0; font-weight: 600; }
+  /* ════════════════════════════════════════
+     MOBILE RESPONSIVE — ≤ 768px
+  ════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    .ac-page {
+      flex-direction: column;
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
 
-  /* ══ TIPS PANEL ══ */
-  .ac-tips-zone {
-    background: rgba(240,240,240,0.4);
-    border: 1.5px solid #e0e0e0;
-    border-radius: 20px;
-    padding: 14px 16px;
-    display: flex; flex-direction: column; gap: 10px;
-  }
-  .ac-tips-title {
-    font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
-    color: #aaa; text-transform: uppercase;
-  }
-  .ac-tip-item {
-    display: flex; align-items: flex-start; gap: 8px;
-  }
-  .ac-tip-icon {
-    width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .ac-tip-icon .mi { font-size: 13px; }
-  .ac-tip-text { font-size: 11px; color: #666; line-height: 1.5; }
+    .ac-right {
+      width: 100%;
+      padding: 24px 20px;
+      background: #f0ede4;
+    }
+    
+    .ac-form-card {
+      max-width: 100%;
+    }
 
-  /* ══ RESPONSIVE ══ */
-  @media (max-width: 900px) {
-    .ac-content-row { flex-direction: column; }
-    .ac-col-side { width: 100%; }
-  }
-  @media (max-width: 580px) {
-    .ac-main { padding: 10px 10px 80px; gap: 10px; }
-    .ac-topbar { flex-direction: column; align-items: flex-start; }
+    .ac-left {
+      width: 100%;
+      padding: 32px 20px;
+      overflow-y: visible;
+      min-height: 0;
+      height: auto;
+    }
+
+    .ac-headline {
+      font-size: 28px;
+      margin-bottom: 24px;
+    }
+
+    .ac-submit-btn {
+      padding: 14px 16px;
+      font-size: 13px;
+    }
   }
 `;
 
-/* ══════════════════════════════════════════════════
-   HELPERS
-══════════════════════════════════════════════════ */
-const MI = ({ name, style }) => <span className="mi" style={style}>{name}</span>;
-
-/* ══════════════════════════════════════════════════
-   COMPONENT
-══════════════════════════════════════════════════ */
 export default function Account() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword,     setNewPassword]     = useState("");
@@ -302,166 +364,128 @@ export default function Account() {
 
   return (
     <>
-      <style>{styles}</style>
+      <style>{CSS}</style>
       <div className="ac-page">
-        <Navbar2 user={user} onLogout={logout} />
 
-        <div className="ac-main">
+        {/* ── LEFT PANEL (Profile Card) ── */}
+        <div className="ac-left">
+          
+          {/* Headline */}
+          <h1 className="ac-headline">
+            Account <span>Settings</span>
+          </h1>
 
-          {/* ══ TOP BAR ══ */}
-          <div className="ac-topbar">
-            <div>
-              <div className="ac-heading">
-                Account <span>Settings</span>
-              </div>
-              <div className="ac-topbar-sub">Manage your security preferences and profile details</div>
-            </div>
-            <div className="ac-topbar-right">
-              {user?.district && (
-                <div className="ac-meta-chip">
-                  <MI name="location_on" /> {user.district}
-                </div>
-              )}
-              <div className="ac-meta-chip">
-                <MI name="verified_user" /> Verified
-              </div>
-            </div>
-          </div>
-
-          {/* ══ MAIN CONTENT ══ */}
-          <div className="ac-content-row">
-
-            {/* ── Left: Password form ── */}
-            <div className="ac-col-main">
-              <div className="ac-zone">
-                <div className="ac-zone-header">
-                  <div className="ac-zone-title-row">
-                    <div className="ac-zone-title">Update <span>Password</span></div>
-                    <div className="ac-zone-pill">Security</div>
-                  </div>
-                  <span className="ac-zone-sub">Keep your account secure</span>
-                </div>
-
-                {message && (
-                  <div className="ac-msg ac-msg-success">
-                    <MI name="check_circle" /> {message}
-                  </div>
-                )}
-                {error && (
-                  <div className="ac-msg ac-msg-error">
-                    <MI name="error" /> {error}
-                  </div>
-                )}
-
-                <form className="ac-form" onSubmit={handleUpdate}>
-                  <div className="ac-form-group">
-                    <label className="ac-form-label">Email Address</label>
-                    <div className="ac-input-wrap">
-                      <MI name="mail" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16, color: "#bbb" }} />
-                      <input
-                        className="ac-input"
-                        type="email"
-                        value={user?.email || ""}
-                        disabled
-                      />
-                    </div>
-                  </div>
-
-                  <div className="ac-form-group">
-                    <label className="ac-form-label">Current Password</label>
-                    <div className="ac-input-wrap">
-                      <MI name="lock" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16, color: "#bbb" }} />
-                      <input
-                        className="ac-input"
-                        type="password"
-                        value={currentPassword}
-                        onChange={e => setCurrentPassword(e.target.value)}
-                        placeholder="Enter current password"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="ac-form-group">
-                    <label className="ac-form-label">New Password</label>
-                    <div className="ac-input-wrap">
-                      <MI name="lock_reset" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16, color: "#bbb" }} />
-                      <input
-                        className="ac-input"
-                        type="password"
-                        value={newPassword}
-                        onChange={e => setNewPassword(e.target.value)}
-                        placeholder="Enter new password (min. 6 chars)"
-                        required
-                        minLength={6}
-                      />
-                    </div>
-                  </div>
-
-                  <button className="ac-submit-btn" type="submit" disabled={loading}>
-                    {loading
-                      ? <><span className="spinner" /> Updating…</>
-                      : <><MI name="check_circle" /> Update Password</>
-                    }
-                  </button>
-                </form>
+          {/* Profile details */}
+          <div className="ac-profile-card">
+            
+            <div className="ac-avatar-row">
+              <div className="ac-avatar">{initials}</div>
+              <div>
+                <div className="ac-profile-name">{user?.name || "—"}</div>
+                <div className="ac-profile-role">Registrar Official</div>
               </div>
             </div>
 
-            {/* ── Right: Profile + Tips ── */}
-            <div className="ac-col-side">
-
-              {/* Profile panel */}
-              <div className="ac-profile-zone">
-                <div className="ac-profile-head">
-                  <span className="ac-profile-head-title">Your Profile</span>
-                  <span className="ac-profile-live">
-                    <span className="ac-profile-live-dot" /> ACTIVE
-                  </span>
-                </div>
-                <div className="ac-profile-avatar-row">
-                  <div className="ac-profile-avatar">{initials}</div>
-                  <div>
-                    <div className="ac-profile-name">{user?.name || "—"}</div>
-                    <div className="ac-profile-role">Registrar Official</div>
-                  </div>
-                </div>
-                <div className="ac-profile-rows">
-                  {[
-                    { label: "Email",    val: user?.email    || "—",  green: false },
-                    { label: "District", val: user?.district || "—",  green: false },
-                    { label: "State",    val: user?.state    || "—",  green: false },
-                    { label: "Status",   val: "✓ Verified",           green: true  },
-                  ].map((r, i) => (
-                    <div key={i} className="ac-profile-row">
-                      <span className="ac-profile-lbl">{r.label}</span>
-                      <span className={`ac-profile-val${r.green ? " green" : ""}`}>{r.val}</span>
-                    </div>
-                  ))}
-                </div>
+            <div className="ac-details-list">
+              <div className="ac-detail-item">
+                <span className="ac-detail-lbl">Email</span>
+                <span className="ac-detail-val">{user?.email || "—"}</span>
               </div>
-
-              {/* Security tips */}
-              <div className="ac-tips-zone">
-                <div className="ac-tips-title">Security Tips</div>
-                {[
-                  { icon: "password",   bg: "rgba(91,79,212,0.1)",  color: "#5B4FD4", text: "Use 12+ characters mixing letters, numbers and symbols." },
-                  { icon: "devices",    bg: "rgba(46,196,160,0.1)", color: "#2EC4A0", text: "Avoid reusing passwords across different services." },
-                  { icon: "schedule",   bg: "rgba(255,140,80,0.1)", color: "#e07a5f", text: "Change your password every 3–6 months for best security." },
-                ].map((tip, i) => (
-                  <div key={i} className="ac-tip-item">
-                    <div className="ac-tip-icon" style={{ background: tip.bg }}>
-                      <MI name={tip.icon} style={{ color: tip.color }} />
-                    </div>
-                    <div className="ac-tip-text">{tip.text}</div>
-                  </div>
-                ))}
+              <div className="ac-detail-item">
+                <span className="ac-detail-lbl">District</span>
+                <span className="ac-detail-val">{user?.district || "—"}</span>
               </div>
-
+              <div className="ac-detail-item">
+                <span className="ac-detail-lbl">State</span>
+                <span className="ac-detail-val">{user?.state || "—"}</span>
+              </div>
+              <div className="ac-detail-item">
+                <span className="ac-detail-lbl">Status</span>
+                <span className="ac-detail-val green">✓ Active</span>
+              </div>
             </div>
+
           </div>
 
         </div>
+
+        {/* ── RIGHT PANEL (Update Password Card) ── */}
+        <div className="ac-right">
+          <div className="ac-form-card">
+            
+            <div className="ac-form-title">UPDATE PASSWORD</div>
+
+            {message && (
+              <div className="ac-msg ac-msg-success">
+                <span className="mi" style={{ fontSize: "16px" }}>check_circle</span>
+                {message}
+              </div>
+            )}
+            {error && (
+              <div className="ac-msg ac-msg-error">
+                <span className="mi" style={{ fontSize: "16px" }}>error</span>
+                {error}
+              </div>
+            )}
+
+            <form className="ac-form" onSubmit={handleUpdate}>
+              
+              <div className="ac-form-group">
+                <label className="ac-form-label">Email Address</label>
+                <div className="ac-input-wrap">
+                  <span className="mi ac-input-icon">mail</span>
+                  <input
+                    className="ac-input"
+                    type="email"
+                    value={user?.email || ""}
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <div className="ac-form-group">
+                <label className="ac-form-label">Current Password</label>
+                <div className="ac-input-wrap">
+                  <span className="mi ac-input-icon">lock</span>
+                  <input
+                    className="ac-input"
+                    type="password"
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    placeholder="Enter current password"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="ac-form-group">
+                <label className="ac-form-label">New Password</label>
+                <div className="ac-input-wrap">
+                  <span className="mi ac-input-icon">lock_reset</span>
+                  <input
+                    className="ac-input"
+                    type="password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    placeholder="Enter new password (min. 6 chars)"
+                    required
+                    minLength={6}
+                  />
+                </div>
+              </div>
+
+              <button className="ac-submit-btn" type="submit" disabled={loading}>
+                {loading
+                  ? <><span className="spinner" /> Updating…</>
+                  : <><span className="mi" style={{ fontSize: "15px" }}>check_circle</span> Update Password</>
+                }
+              </button>
+
+            </form>
+
+          </div>
+        </div>
+
       </div>
     </>
   );

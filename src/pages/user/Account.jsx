@@ -2,7 +2,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
 
 /* ══════════════════════════════════════════════════
-   CSS — layout matches ChangePassword structure exactly
+   CSS — visual profile dashboard layout
    ══════════════════════════════════════════════════ */
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
@@ -32,13 +32,13 @@ const CSS = `
     overflow: hidden;
   }
 
-  /* ── Left panel (Profile details) ── */
+  /* ── Left panel (Profile display) ── */
   .ac-left {
-    width: 50%;
+    width: 60%;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 0 80px;
+    padding: 0 60px;
     background: #f0ede4;
     overflow: hidden;
     height: 100%;
@@ -49,7 +49,7 @@ const CSS = `
   .ac-headline {
     font-size: 38px; font-weight: 800;
     color: #1a1a1a; letter-spacing: -0.04em;
-    line-height: 1.12; margin-bottom: 28px;
+    line-height: 1.12; margin-bottom: 24px;
   }
   .ac-headline span { color: var(--ac-accent); }
 
@@ -57,13 +57,13 @@ const CSS = `
   .ac-profile-card {
     background: #fff;
     border-radius: 16px;
-    padding: 28px 32px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    padding: 32px;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.06);
     width: 100%;
-    max-width: 480px;
+    max-width: 640px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
   }
 
   .ac-avatar-row {
@@ -88,7 +88,7 @@ const CSS = `
   }
 
   .ac-profile-name {
-    font-size: 18px;
+    font-size: 19px;
     font-weight: 800;
     color: #1a1a1a;
     letter-spacing: -0.02em;
@@ -103,17 +103,17 @@ const CSS = `
     margin-top: 2px;
   }
 
-  /* ── Details list ── */
-  .ac-details-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  /* ── Two-column details grid ── */
+  .ac-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 
   .ac-detail-item {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 4px;
     padding: 10px 14px;
     background: #f8f6f2;
     border-radius: 10px;
@@ -121,7 +121,7 @@ const CSS = `
   }
 
   .ac-detail-lbl {
-    font-size: 10.5px;
+    font-size: 9px;
     font-weight: 700;
     color: #888;
     text-transform: uppercase;
@@ -132,6 +132,9 @@ const CSS = `
     font-size: 12.5px;
     font-weight: 600;
     color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .ac-detail-val.green {
@@ -140,8 +143,9 @@ const CSS = `
 
   /* ── Action button ── */
   .ac-action-btn {
-    width: 100%;
-    padding: 15px 20px;
+    width: fit-content;
+    min-width: 220px;
+    padding: 14px 20px;
     border-radius: 12px;
     background: #1a1a1a;
     color: #fff;
@@ -164,7 +168,7 @@ const CSS = `
 
   /* ── Right panel (Security tips card) ── */
   .ac-right {
-    width: 50%;
+    width: 40%;
     background: #f0ede4;
     overflow: hidden;
     display: flex;
@@ -179,7 +183,7 @@ const CSS = `
     padding: 36px;
     box-shadow: 0 4px 25px rgba(0,0,0,0.06);
     width: 100%;
-    max-width: 480px;
+    max-width: 440px;
     animation: fadeUp 0.35s ease both;
   }
 
@@ -276,7 +280,13 @@ const CSS = `
       margin-bottom: 24px;
     }
 
+    .ac-details-grid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
     .ac-action-btn {
+      width: 100%;
       padding: 14px 16px;
       font-size: 13px;
     }
@@ -314,7 +324,7 @@ export default function Account() {
 
           {/* Headline */}
           <h1 className="ac-headline">
-            My <span>account.</span>
+            My <span>profile.</span>
           </h1>
 
           {/* Profile Card */}
@@ -324,27 +334,48 @@ export default function Account() {
               <div className="ac-avatar">{initials}</div>
               <div>
                 <div className="ac-profile-name">{user?.name || "User"}</div>
-                <div className="ac-profile-role">{user?.role || "Citizen"} Account</div>
+                <div className="ac-profile-role">{user?.role || "Citizen"} Profile</div>
               </div>
             </div>
 
-            <div className="ac-details-list">
+            {/* Double column grid for all database profile fields */}
+            <div className="ac-details-grid">
+              
               <div className="ac-detail-item">
-                <span className="ac-detail-lbl">Email</span>
-                <span className="ac-detail-val">{user?.email || "—"}</span>
+                <span className="ac-detail-lbl">Email Address</span>
+                <span className="ac-detail-val" title={user?.email}>{user?.email || "—"}</span>
               </div>
+
               <div className="ac-detail-item">
-                <span className="ac-detail-lbl">State</span>
-                <span className="ac-detail-val">{user?.state || "—"}</span>
+                <span className="ac-detail-lbl">Phone Number</span>
+                <span className="ac-detail-val">{user?.phone || "—"}</span>
               </div>
+
               <div className="ac-detail-item">
-                <span className="ac-detail-lbl">Aadhaar</span>
+                <span className="ac-detail-lbl">Aadhaar Number</span>
                 <span className="ac-detail-val">{maskedAadhaar}</span>
               </div>
+
               <div className="ac-detail-item">
-                <span className="ac-detail-lbl">Status</span>
-                <span className="ac-detail-val green">✓ Verified</span>
+                <span className="ac-detail-lbl">Date of Birth</span>
+                <span className="ac-detail-val">{user?.dob || "—"}</span>
               </div>
+
+              <div className="ac-detail-item" style={{ gridColumn: "span 2" }}>
+                <span className="ac-detail-lbl">Residential Address</span>
+                <span className="ac-detail-val" title={user?.address}>{user?.address || "—"}</span>
+              </div>
+
+              <div className="ac-detail-item">
+                <span className="ac-detail-lbl">City / District</span>
+                <span className="ac-detail-val">{user?.city || user?.district || "—"}</span>
+              </div>
+
+              <div className="ac-detail-item">
+                <span className="ac-detail-lbl">State / Pincode</span>
+                <span className="ac-detail-val">{user?.state ? `${user.state} - ${user?.pincode || ""}` : "—"}</span>
+              </div>
+
             </div>
 
             <Link to="/user/change-password" className="ac-action-btn">

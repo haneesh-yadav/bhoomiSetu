@@ -24,4 +24,13 @@ public class AuthResponse {
     private String district;
     private String employeeId;
     private String since;
+
+    // Citizen profile details
+    private String phone;
+    private String aadhaar;
+    private String dob;
+    private String address;
+    private String city;
+    private String state;
+    private String pincode;
 }

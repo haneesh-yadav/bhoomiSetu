@@ -122,6 +122,16 @@ public class AuthService {
                        .employeeId(r.getEmployeeId())
                        .since(account.getCreatedAt() != null ? String.valueOf(account.getCreatedAt().getYear()) : "2024");
             });
+        } else if (account.getRole() == Role.USER) {
+            citizenDetailsRepository.findByAccount(account).ifPresent(c -> {
+                builder.phone(c.getPhone())
+                       .aadhaar(c.getAadhaar())
+                       .dob(c.getDob())
+                       .address(c.getAddress())
+                       .city(c.getCity())
+                       .state(c.getState())
+                       .pincode(c.getPincode());
+            });
         }
         
         return builder.build();
