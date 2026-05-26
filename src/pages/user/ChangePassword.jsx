@@ -28,9 +28,8 @@ const CSS = `
   .cp-page {
     font-family: 'Poppins', sans-serif;
     display: flex;
-    min-height: 100vh;
-    height: 100vh;
-    padding-top: 60px;
+    min-height: calc(100vh - 112px);
+    height: calc(100vh - 112px);
     background: #f0ede4;
     overflow: hidden;
   }
@@ -41,39 +40,18 @@ const CSS = `
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 40px 80px;
+    padding: 0 80px;
     background: #f0ede4;
     overflow: hidden;
     height: 100%;
     animation: fadeUp 0.35s ease both;
   }
 
-  /* ── Back arrow link ── */
-  .cp-back-row {
-    margin-bottom: 24px;
-  }
-  .cp-back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12.5px;
-    font-weight: 700;
-    color: #666;
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-  .cp-back-link:hover {
-    color: var(--cp-accent);
-  }
-  .cp-back-link .mi {
-    font-size: 18px;
-  }
-
   /* ── Headline ── */
   .cp-headline {
     font-size: 38px; font-weight: 800;
     color: #1a1a1a; letter-spacing: -0.04em;
-    line-height: 1.12; margin-bottom: 32px;
+    line-height: 1.12; margin-bottom: 24px;
   }
   .cp-headline span { color: var(--cp-accent); }
 
@@ -365,17 +343,9 @@ export default function ChangePassword() {
           "--cp-accent-glow": accentGlow,
         }}>
 
-          {/* Back Link */}
-          <div className="cp-back-row">
-            <Link to={dashboardPath} className="cp-back-link">
-              <span className="mi">arrow_back</span> Back to Dashboard
-            </Link>
-          </div>
-
           {/* Headline */}
           <h1 className="cp-headline">
-            Change your<br />
-            <span>password.</span>
+            Change your <span>password.</span>
           </h1>
 
           {/* Banners */}
