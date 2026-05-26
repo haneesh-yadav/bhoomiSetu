@@ -20,7 +20,7 @@ const USER_NAV = [
         {
           heading: "Initiate",
           items: [
-            { label: "New Transfer",   icon: "add_circle_outline", path: "/user/transfers/new"      },
+            { label: "Transfers",   icon: "add_circle_outline", path: "/user/transfers"      },
           ],
         },
       ],
@@ -36,15 +36,7 @@ const USER_NAV = [
         {
           heading: "Requests",
           items: [
-            { label: "New Mutation",  icon: "post_add",        path: "/user/mutation/new"      },
-            { label: "My Requests",  icon: "list_alt",        path: "/user/mutation/list"     },
-          ],
-        },
-        {
-          heading: "Status",
-          items: [
-            { label: "Under Review", icon: "manage_search",   path: "/user/mutation/review"   },
-            { label: "Approved",     icon: "verified",        path: "/user/mutation/approved" },
+            { label: "Mutation",  icon: "post_add",        path: "/user/mutation"      },
           ],
         },
       ],
@@ -60,9 +52,7 @@ const USER_NAV = [
         {
           heading: "Manage",
           items: [
-            { label: "File Dispute",  icon: "report_problem", path: "/user/disputes/new"      },
-            { label: "Active Cases",  icon: "history",        path: "/user/disputes/active"   },
-            { label: "Resolved",      icon: "gavel",          path: "/user/disputes/resolved" },
+            { label: "Dispute",  icon: "report_problem", path: "/user/disputes"      },
           ],
         },
       ],
