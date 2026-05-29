@@ -1,6 +1,42 @@
-# BhoomiSetu 🏡
+# BhoomiSetu 🏡 — Unified Land Record Management System
 
-A full-stack land record management system built with React and Spring Boot.
+BhoomiSetu is a state-of-the-art, secure, and responsive full-stack land record management system. It digitizes property registries, mutation requests (succession, survey correction, partition, name change), land transfers, and legal dispute tracking, offering transparent tools for both citizens and registry officials.
+
+---
+
+## 👨‍💻 Developer
+* **Developer:** **Haneesh Yadav**
+* **GitHub Profile:** [@haneesh-yadav](https://github.com/haneesh-yadav)
+* **Project Repository:** [haneesh-yadav/bhoomiSetu](https://github.com/haneesh-yadav/bhoomiSetu)
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technology | Description |
+|---|---|---|
+| **Frontend** | React 19, React Router 7, Axios | Premium UI built with DM Sans and Poppins typography, fully responsive hamburger menus, and state-of-the-art dashboard interfaces. |
+| **Backend** | Spring Boot 3, Spring Security, JWT | Secured REST APIs using JWT tokens, stateless filters, and structured DTO mapping. |
+| **Database** | TiDB Serverless (Cloud MySQL) | Serverless MySQL-compatible cloud database for scalable persistent records. |
+| **Hosting** | Vercel (Frontend) + Render (Backend) | Dockerized backend microservice deployed on Render and frontend SPA routing deployed on Vercel. |
+
+---
+
+## ✨ Key Features
+
+### 👤 Citizen (User) Portal
+* **Dashboard Widgets**: View active properties, pending mutation applications, and ongoing disputes.
+* **Property Ownership**: Check registered properties, view event timeline audits, and initiate transfers.
+* **Mutation Submissions**: Digitally apply for land record updates:
+  * *Inheritance/Succession*: Automatic record transfer to heirs.
+  * *Survey Corrections*: Adjust survey boundaries.
+  * *Partitions & Name Changes*: Direct revenue account corrections.
+* **Legal Disputes**: File boundary, fraudulent registry, or ownership disputes and track investigation remarks.
+
+### 🏛️ Registrar (Officer) Portal
+* **Approvals Queue**: Process pending land transfers with deep audit trails.
+* **Mutation & Dispute Reviews**: Approve or reject citizen requests with custom remarks.
+* **Audit Trail**: Real-time logging of property lifecycle changes, including block hashes, seller/buyer history, and official approval logs.
 
 ---
 
@@ -9,9 +45,9 @@ A full-stack land record management system built with React and Spring Boot.
 ```
 bhoomisetu/
 ├── src/              ← React frontend
-├── backend/          ← Spring Boot backend
-├── public/
-└── vercel.json       ← Vercel SPA routing config
+├── backend/          ← Spring Boot backend (REST API, Security, JPA)
+├── public/           ← Static frontend assets (illustrations, logos)
+└── vercel.json       ← Vercel Single Page App (SPA) routing configuration
 ```
 
 ---
@@ -21,13 +57,18 @@ bhoomisetu/
 ### Prerequisites
 - Node.js 18+
 - Java 17+
-- MySQL 8+
+- MySQL 8+ (or TiDB local connection)
 - Maven
 
 ### 1. MySQL Setup
-Create a database named `bhoomi_setu` in MySQL Workbench or via CLI:
+Create a local database named `bhoomi_setu` in MySQL Workbench or via CLI:
 ```sql
 CREATE DATABASE bhoomi_setu;
+```
+
+If you have a SQL backup file (`bhoomi_setu_backup.sql`), you can restore it using:
+```bash
+mysql -u root -p bhoomi_setu < bhoomi_setu_backup.sql
 ```
 
 ### 2. Backend Setup
@@ -37,7 +78,7 @@ cd backend
 # Copy the example config and fill in your credentials
 cp src/main/resources/application.properties.example src/main/resources/application.properties
 
-# Edit application.properties with your MySQL username/password
+# Edit application.properties with your MySQL/TiDB username and password
 
 # Run the backend
 ./mvnw spring-boot:run
@@ -46,7 +87,7 @@ Backend will start at `http://localhost:8080`
 
 ### 3. Frontend Setup
 ```bash
-# In the root directory
+# In the root directory (bhoomisetu/)
 cp .env.example .env.local
 
 # .env.local is pre-configured for localhost — no changes needed for local dev
@@ -60,40 +101,29 @@ Frontend will start at `http://localhost:3000`
 
 ## 🌐 Production Deployment
 
-### Frontend → Vercel
-1. Connect this GitHub repo to Vercel
-2. Set the **Build Command** to: `npm run build`
-3. Set the **Output Directory** to: `build`
+### Frontend (Vercel)
+1. Import repository on Vercel.
+2. Build Command: `npm run build`
+3. Output Directory: `build`
 4. Add Environment Variable in Vercel dashboard:
-   - `REACT_APP_API_URL` = your deployed backend URL (e.g. `https://your-backend.up.railway.app/api`)
+   - `REACT_APP_API_URL` = Your backend URL (e.g. `https://bhoomisetu-backend.onrender.com/api`)
 
-### Backend → Railway / Render / Heroku
-Deploy the `/backend` folder as a Spring Boot app. Set these environment variables on your hosting platform:
-- `DB_URL` = your cloud MySQL JDBC URL
-- `DB_USERNAME` = your DB user
-- `DB_PASSWORD` = your DB password
-- `JWT_SECRET` = a long random secret string
+### Backend (Render / Railway / Docker)
+Deploy the `/backend` folder using the provided Docker settings or Spring boot runner. Set these environment variables:
+- `DB_URL` = cloud JDBC URL (e.g., `jdbc:mysql://<host>:<port>/<db>?sslMode=VERIFY_IDENTITY`)
+- `DB_USERNAME` = Database user
+- `DB_PASSWORD` = Database password
+- `JWT_SECRET` = Random signing key
 - `PORT` = 8080
 
 ---
 
 ## 🔑 Environment Variables
 
-| Variable | Where | Description |
+| Variable | Scope | Description |
 |---|---|---|
-| `REACT_APP_API_URL` | Vercel / `.env.local` | Backend API base URL |
-| `DB_URL` | Backend hosting | MySQL JDBC connection string |
-| `DB_USERNAME` | Backend hosting | MySQL username |
-| `DB_PASSWORD` | Backend hosting | MySQL password |
-| `JWT_SECRET` | Backend hosting | JWT signing secret |
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | React 19, React Router 7, Axios |
-| Backend | Spring Boot 3, Spring Security, JWT |
-| Database | MySQL 8 (JPA/Hibernate) |
-| Hosting | Vercel (frontend) + Railway (backend) |
+| `REACT_APP_API_URL` | Frontend (`.env.local` / Vercel) | Backend API base URL |
+| `DB_URL` | Backend (`application.properties` / Cloud) | Database connection string |
+| `DB_USERNAME` | Backend | Database username |
+| `DB_PASSWORD` | Backend | Database password |
+| `JWT_SECRET` | Backend | JWT token signature secret |
