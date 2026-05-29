@@ -1623,7 +1623,7 @@ export default function BhoomiSetuLanding() {
                     <a
                       className="mp-footer-social-btn"
                       title="GitHub"
-                      href="https://github.com/haneesh-yadav"
+                      href="https://github.com/haneesh-yadav/bhoomiSetu"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
