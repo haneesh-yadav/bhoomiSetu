@@ -334,7 +334,7 @@ function MI({ name, style }) {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
 
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -348,7 +348,20 @@ export default function Login() {
     setError("");
     const result = await login(email, password);
     if (result.success) {
-      navigate(result.user.role === "registrar" ? "/registrar/dashboard" : "/user/dashboard");
+      const userRole = result.user.role?.toLowerCase();
+      const selectedRole = role?.toLowerCase();
+      
+      if (userRole !== selectedRole) {
+        logout();
+        if (selectedRole === "user") {
+          setError("This account is registered as a Registrar. Please use the Registrar Login tab.");
+        } else {
+          setError("This account is registered as a Citizen. Please use the Citizen Login tab.");
+        }
+        return;
+      }
+      
+      navigate(userRole === "registrar" ? "/registrar/dashboard" : "/user/dashboard");
     } else {
       setError(result.error || "Invalid credentials");
     }
