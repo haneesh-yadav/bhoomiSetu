@@ -316,7 +316,7 @@ const CSS = `
     gap: 10px; height: 100%; cursor: default; flex-shrink: 0;
   }
   .bh-logo-text {
-    color: #fff; font-family: 'Poppins', sans-serif;
+    color: #fff; font-family: 'DM Sans', sans-serif;
     font-size: 20px; font-weight: 800; letter-spacing: 0.5px; line-height: 1;
   }
 
