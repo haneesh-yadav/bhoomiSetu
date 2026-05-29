@@ -261,6 +261,30 @@ const CSS = `
   .bh-ham-open span:nth-child(3) { width: 20px; transform: translateY(-7px) rotate(-45deg); }
 
   /* ── Guest buttons ── */
+  .bh-guest-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-right: 1.2rem;
+    margin-left: auto;
+  }
+  .bh-back-home-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 100px;
+    padding: 8px 16px;
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    white-space: nowrap;
+  }
   .rh-btn-outline {
     padding: 8px 16px; border-radius: 100px;
     border: 1px solid rgba(255,255,255,0.35); background: transparent;
@@ -564,9 +588,22 @@ const CSS = `
     .bh-hamburger     { display: flex !important; }
   }
   @media (max-width: 640px) {
-    .bh-header-content { padding-left: 16px !important; gap: 8px !important; }
-    .bh-logo-text      { font-size: 17px !important; }
+    .bh-header-content { padding-left: 10px !important; gap: 6px !important; }
+    .bh-logo-text      { font-size: 15px !important; }
     .bh-logo-img       { height: 28px !important; }
+    .bh-guest-nav      { gap: 6px !important; padding-right: 0.6rem !important; }
+    .rh-btn-outline, .rh-btn-filled, .bh-back-home-btn {
+      padding: 6px 11px !important;
+      font-size: 11px !important;
+    }
+  }
+  @media (max-width: 480px) {
+    .bh-logo-text      { display: none !important; }
+    .bh-guest-nav      { gap: 5px !important; padding-right: 0.4rem !important; }
+    .rh-btn-outline, .rh-btn-filled, .bh-back-home-btn {
+      padding: 5px 8px !important;
+      font-size: 10.5px !important;
+    }
   }
 `;
 
@@ -964,17 +1001,10 @@ export default function Header({ user, onLogout }) {
           </>
         ) : (
           /* Guest */
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", paddingRight: "1.2rem", marginLeft: "auto" }}>
+          <div className="bh-guest-nav">
             {(path === "/signin" || path === "/signup") && (
               <button
-                style={{
-                  display: "flex", alignItems: "center", gap: "6px",
-                  background: "none", border: "1px solid rgba(255,255,255,0.3)",
-                  borderRadius: "100px", padding: "8px 16px", color: "#fff",
-                  fontFamily: "'Poppins', sans-serif", fontSize: "0.78rem",
-                  fontWeight: 600, letterSpacing: "0.04em", cursor: "pointer",
-                  transition: "border-color 0.2s, background 0.2s", whiteSpace: "nowrap",
-                }}
+                className="bh-back-home-btn"
                 onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.7)"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; e.currentTarget.style.background = "none"; }}
                 onClick={() => navigate("/")}
