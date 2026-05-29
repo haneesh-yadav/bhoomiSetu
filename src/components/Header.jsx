@@ -588,22 +588,9 @@ const CSS = `
     .bh-hamburger     { display: flex !important; }
   }
   @media (max-width: 640px) {
-    .bh-header-content { padding-left: 10px !important; gap: 6px !important; }
-    .bh-logo-text      { font-size: 15px !important; }
+    .bh-header-content { padding-left: 16px !important; gap: 8px !important; }
+    .bh-logo-text      { font-size: 17px !important; }
     .bh-logo-img       { height: 28px !important; }
-    .bh-guest-nav      { gap: 6px !important; padding-right: 0.6rem !important; }
-    .rh-btn-outline, .rh-btn-filled, .bh-back-home-btn {
-      padding: 6px 11px !important;
-      font-size: 11px !important;
-    }
-  }
-  @media (max-width: 480px) {
-    .bh-logo-text      { display: none !important; }
-    .bh-guest-nav      { gap: 5px !important; padding-right: 0.4rem !important; }
-    .rh-btn-outline, .rh-btn-filled, .bh-back-home-btn {
-      padding: 5px 8px !important;
-      font-size: 10.5px !important;
-    }
   }
 `;
 
@@ -1001,23 +988,79 @@ export default function Header({ user, onLogout }) {
           </>
         ) : (
           /* Guest */
-          <div className="bh-guest-nav">
-            {(path === "/signin" || path === "/signup") && (
+          <>
+            {/* Desktop Guest Buttons */}
+            <div className="bh-right-section" style={{ gap: "12px", marginLeft: "auto", marginRight: "1.2rem" }}>
+              {(path === "/signin" || path === "/signup") && (
+                <button
+                  className="bh-back-home-btn"
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.7)"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; e.currentTarget.style.background = "none"; }}
+                  onClick={() => navigate("/")}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                  </svg>
+                  Back to Home
+                </button>
+              )}
+              <button className="rh-btn-outline" onClick={() => navigate("/signin")}>Sign in</button>
+              <button className="rh-btn-filled" onClick={() => navigate("/signup")}>Join Us</button>
+            </div>
+
+            {/* Mobile Guest Hamburger */}
+            <div ref={menuRef}>
               <button
-                className="bh-back-home-btn"
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.7)"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; e.currentTarget.style.background = "none"; }}
-                onClick={() => navigate("/")}
+                className="bh-hamburger"
+                onClick={() => setMobileOpen((p) => !p)}
+                aria-label="Toggle menu"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="15 18 9 12 15 6"/>
-                </svg>
-                Back to Home
+                <div className={`bh-ham-icon${mobileOpen ? " bh-ham-open" : ""}`}>
+                  <span /><span /><span />
+                </div>
               </button>
-            )}
-            <button className="rh-btn-outline" onClick={() => navigate("/signin")}>Sign in</button>
-            <button className="rh-btn-filled" onClick={() => navigate("/signup")}>Join Us</button>
-          </div>
+
+              {mobileOpen && (
+                <div className="bh-mobile-menu" style={{ borderTopColor: accent }}>
+                  {(path === "/signin" || path === "/signup") && (
+                    <button
+                      className="bh-mobile-item"
+                      onClick={() => { navigate("/"); setMobileOpen(false); }}
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6"/>
+                      </svg>
+                      Back to Home
+                    </button>
+                  )}
+                  <button
+                    className="bh-mobile-item"
+                    onClick={() => { navigate("/signin"); setMobileOpen(false); }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                      <polyline points="10 17 15 12 10 7"/>
+                      <line x1="15" y1="12" x2="3" y2="12"/>
+                    </svg>
+                    Sign in
+                  </button>
+                  <button
+                    className="bh-mobile-item"
+                    onClick={() => { navigate("/signup"); setMobileOpen(false); }}
+                    style={{ borderBottom: "none" }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="8.5" cy="7" r="4"/>
+                      <line x1="20" y1="8" x2="20" y2="14"/>
+                      <line x1="23" y1="11" x2="17" y2="11"/>
+                    </svg>
+                    Join Us
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </nav>
     </>
