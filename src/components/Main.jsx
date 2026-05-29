@@ -1223,8 +1223,8 @@ export default function BhoomiSetuLanding() {
                   onChange={e => setSearchVal(e.target.value)}
                   placeholder="Enter Property ID, Survey No. or Owner Name..."
                 />
-                <button className="mp-search-btn" onClick={() => navigate("/login")}>
-                  Login →
+                <button className="mp-search-btn" onClick={() => navigate("/signin")}>
+                  Sign in →
                 </button>
               </div>
             </div>
