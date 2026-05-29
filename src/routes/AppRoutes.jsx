@@ -41,7 +41,7 @@ export default function AppRoutes() {
     <>
       <Header user={user} onLogout={logout} />
       <Routes>
-        <Route path="/"        element={<Main />} />
+        <Route path="/"        element={user ? <Navigate to={userDash} replace /> : <Main />} />
         <Route path="/signin"   element={user ? <Navigate to={userDash} replace /> : <Signin />} />
         <Route path="/signup"  element={user ? <Navigate to="/user/dashboard" replace /> : <Signup />} />
 
