@@ -5,51 +5,57 @@ import { useAuth } from "../context/AuthContext";
 /* ══════════════════════════════════════════════════
    ILLUSTRATION — same as Login
 ══════════════════════════════════════════════════ */
+const INDIAN_STATES = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry"
+];
+
 function IllustrationBlocks() {
-  const blocks = [
-    { x: 0,   y: 60,  w: 90,  h: 80,  color: "#e8533a" },
-    { x: 95,  y: 80,  w: 70,  h: 60,  color: "#f5c842" },
-    { x: 170, y: 100, w: 80,  h: 50,  color: "#6b9e5e" },
-    { x: 255, y: 70,  w: 65,  h: 90,  color: "#5b8dd6" },
-    { x: 325, y: 90,  w: 75,  h: 70,  color: "#c8d9a0" },
-    { x: 0,   y: 145, w: 60,  h: 100, color: "#f5c842" },
-    { x: 65,  y: 155, w: 95,  h: 90,  color: "#7b9e57" },
-    { x: 165, y: 135, w: 55,  h: 110, color: "#8fafd6" },
-    { x: 225, y: 165, w: 80,  h: 80,  color: "#d4a855" },
-    { x: 310, y: 150, w: 90,  h: 95,  color: "#e8533a" },
-    { x: 0,   y: 248, w: 110, h: 90,  color: "#5b8dd6" },
-    { x: 115, y: 250, w: 75,  h: 88,  color: "#e8533a" },
-    { x: 195, y: 255, w: 85,  h: 83,  color: "#c8d9a0" },
-    { x: 285, y: 248, w: 115, h: 90,  color: "#7b5ea7" },
-  ];
   return (
-    <svg viewBox="0 0 400 340" width="100%" height="100%"
-      preserveAspectRatio="xMidYMid slice" style={{ display: "block" }}>
-      <defs>
-        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#4da8d4" />
-          <stop offset="100%" stopColor="#8ecae6" />
-        </linearGradient>
-      </defs>
-      <rect width="400" height="340" fill="url(#skyGrad)" />
-      <ellipse cx="80"  cy="35" rx="45" ry="22" fill="white" opacity="0.9" />
-      <ellipse cx="110" cy="28" rx="35" ry="18" fill="white" opacity="0.9" />
-      <ellipse cx="55"  cy="40" rx="30" ry="15" fill="white" opacity="0.9" />
-      <ellipse cx="290" cy="25" rx="50" ry="20" fill="white" opacity="0.85" />
-      <ellipse cx="325" cy="18" rx="38" ry="16" fill="white" opacity="0.85" />
-      <ellipse cx="260" cy="30" rx="30" ry="13" fill="white" opacity="0.85" />
-      <ellipse cx="155" cy="100" rx="30" ry="40" fill="#3d7a3d" />
-      <ellipse cx="155" cy="88"  rx="22" ry="30" fill="#4a9a4a" />
-      <ellipse cx="245" cy="95"  rx="28" ry="38" fill="#3d7a3d" />
-      <ellipse cx="245" cy="83"  rx="20" ry="28" fill="#4a9a4a" />
-      <rect x="162" y="40" width="76" height="130" rx="2" fill="#8B6914" />
-      <rect x="166" y="44" width="68" height="126" rx="1" fill="#e8533a" />
-      <circle cx="228" cy="108" r="4" fill="#c8c8c8" />
-      <rect x="162" y="40" width="8" height="130" fill="#6b5010" opacity="0.5" />
-      {blocks.map((b, i) => (
-        <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} rx="1" fill={b.color} />
-      ))}
-    </svg>
+    <img 
+      src="/assets/signIn-Join.jpg" 
+      alt="BhoomiSetu Portal Illustration"
+      style={{ 
+        width: "100%", 
+        height: "100%", 
+        objectFit: "cover", 
+        display: "block" 
+      }} 
+    />
   );
 }
 
@@ -512,7 +518,7 @@ export default function Signup() {
                     <label className="sg-label">Mobile Number</label>
                     <input className="sg-input" value={form.phone}
                       onChange={e => set("phone", maskPhone(e.target.value))}
-                      placeholder="91234 56789" />
+                      placeholder="9XXXX XXXXX" />
                   </div>
                 </div>
                 <div className="sg-row">
@@ -540,13 +546,21 @@ export default function Signup() {
                 <div className="sg-row">
                   <div>
                     <label className="sg-label">State</label>
-                    <input className="sg-input" value={form.state}
-                      onChange={e => set("state", e.target.value)} placeholder="E.g. Tamil Nadu" />
+                    <select 
+                      className="sg-input" 
+                      value={form.state}
+                      onChange={e => set("state", e.target.value)}
+                    >
+                      <option value="" disabled>Choose State</option>
+                      {INDIAN_STATES.map((s, idx) => (
+                        <option key={idx} value={s}>{s}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="sg-label">City</label>
                     <input className="sg-input" value={form.city}
-                      onChange={e => set("city", e.target.value)} placeholder="E.g. Chennai" />
+                      onChange={e => set("city", e.target.value)} placeholder="E.g. Delhi" />
                   </div>
                 </div>
                 <div className="sg-row">
@@ -554,7 +568,7 @@ export default function Signup() {
                     <label className="sg-label">Pincode</label>
                     <input className="sg-input" value={form.pincode}
                       onChange={e => set("pincode", maskPincode(e.target.value))}
-                      placeholder="600001" />
+                      placeholder="XXXXXX" />
                   </div>
                 </div>
               </div>

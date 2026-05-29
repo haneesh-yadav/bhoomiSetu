@@ -4,9 +4,11 @@ import com.bhoomisetu.backend.dto.DisputeRequest;
 import com.bhoomisetu.backend.dto.DisputeResponse;
 import com.bhoomisetu.backend.models.Dispute;
 import com.bhoomisetu.backend.models.Property;
+import com.bhoomisetu.backend.models.PropertyEvent;
 import com.bhoomisetu.backend.models.Account;
 import com.bhoomisetu.backend.repositories.DisputeRepository;
 import com.bhoomisetu.backend.repositories.PropertyRepository;
+import com.bhoomisetu.backend.repositories.PropertyEventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,7 @@ public class DisputeService {
 
     private final DisputeRepository disputeRepository;
     private final PropertyRepository propertyRepository;
+    private final PropertyEventRepository propertyEventRepository;
 
     public DisputeResponse fileDispute(DisputeRequest request, Account filer) {
         Property property = propertyRepository.findById(request.getPropertyId())
@@ -36,7 +39,13 @@ public class DisputeService {
                 .status("ACTIVE")
                 .build();
 
-        return toResponse(disputeRepository.save(dispute));
+        Dispute savedDispute = disputeRepository.save(dispute);
+
+        // Log timeline event
+        String formattedDate = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy"));
+        logEvent(property, "Dispute Filed: " + request.getCaseNumber(), filer.getName(), "Sub-Registrar", "DISPUTED", null, formattedDate);
+
+        return toResponse(savedDispute);
     }
 
     public List<DisputeResponse> getMyDisputes(Account filer) {
@@ -61,6 +70,11 @@ public class DisputeService {
             Property property = dispute.getProperty();
             property.setStatus("VERIFIED");
             propertyRepository.save(property);
+            
+            // Log timeline event
+            String formattedDate = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy"));
+            String eventName = "RESOLVED".equals(status) ? "Dispute Resolved" : "Dispute Dismissed";
+            logEvent(property, eventName, "Sub-Registrar", dispute.getFiler().getName(), "VERIFIED", null, formattedDate);
         }
 
         return toResponse(disputeRepository.save(dispute));
@@ -78,5 +92,20 @@ public class DisputeService {
                 .remarks(d.getRemarks())
                 .createdAt(d.getCreatedAt())
                 .build();
+    }
+
+    private void logEvent(Property property, String eventName, String from, String to, String status, String customHash, String formattedDate) {
+        String eventHash = customHash != null ? customHash : "0x" + (java.util.UUID.randomUUID().toString() + java.util.UUID.randomUUID().toString()).replace("-", "");
+        
+        PropertyEvent event = PropertyEvent.builder()
+                .property(property)
+                .event(eventName)
+                .from(from)
+                .to(to)
+                .date(formattedDate)
+                .hash(eventHash)
+                .status(status)
+                .build();
+        propertyEventRepository.save(event);
     }
 }

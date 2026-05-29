@@ -36,6 +36,8 @@ public class Transfer {
     @Builder.Default
     private String status = "PENDING";
 
+    private String saleValue;
+
     private String remarks; // Registrar can add remarks on approval/rejection
 
     @CreationTimestamp

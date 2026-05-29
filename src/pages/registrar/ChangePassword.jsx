@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axiosConfig";
 
@@ -296,10 +296,8 @@ export default function ChangePassword() {
   const [success, setSuccess]                 = useState("");
 
   const email = user?.email;
-  const isRegistrar = user?.role === "registrar";
-  const accentColor = isRegistrar ? "#5B4FD4" : "#e07a5f";
-  const accentGlow = isRegistrar ? "rgba(91,79,212,0.18)" : "rgba(224,122,95,0.18)";
-  const dashboardPath = isRegistrar ? "/registrar/dashboard" : "/user/dashboard";
+  const accentColor = "#5B4FD4";
+  const accentGlow = "rgba(91,79,212,0.18)";
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
@@ -333,6 +331,9 @@ export default function ChangePassword() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      setTimeout(() => {
+        navigate("/registrar/dashboard");
+      }, 1500);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update password. Verify current password.");
     } finally {

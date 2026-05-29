@@ -30,6 +30,7 @@ public class PropertyResponse {
     private String lastTransfer;
     private List<PropertyEventDto> timeline;
     private LocalDateTime createdAt;
+    private String registeredOn;
     private Long ownerId;
     private String ownerName;
     private String ownerEmail;

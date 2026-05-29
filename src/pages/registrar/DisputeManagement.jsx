@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axiosConfig";
-import Navbar2 from "../../components/Navbar2";
 
 /* ══════════════════════════════════════════════════
    CSS  — mirrors RegistrarDashboard design tokens
@@ -111,11 +110,12 @@ const styles = `
 
   /* ══ SECTION ZONE ══ */
   .dm-zone {
-    background: rgba(240,240,240,0.4);
+    background: #fff;
     border: 1.5px solid #e0e0e0;
     border-radius: 24px;
     padding: 16px;
     display: flex; flex-direction: column; gap: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   }
   .dm-zone-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -138,11 +138,12 @@ const styles = `
   .dm-card-list { display: flex; flex-direction: column; gap: 8px; }
 
   .dm-card {
-    background: #f0f0f0; border-radius: 18px; padding: 14px 16px;
+    background: #fff; border: 1.5px solid #e0e0e0; border-radius: 18px; padding: 14px 16px;
     display: flex; flex-direction: column; gap: 8px;
     cursor: pointer; position: relative; overflow: hidden;
     transition: transform 0.15s, box-shadow 0.15s;
     animation: fadeUp 0.3s ease both;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   }
   .dm-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
 
@@ -204,9 +205,10 @@ const styles = `
   .dm-back-btn .mi { font-size: 14px; }
 
   .dm-detail-zone {
-    background: rgba(240,240,240,0.4);
+    background: #fff;
     border: 1.5px solid #e0e0e0;
     border-radius: 24px; overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   }
   .dm-detail-zone-head {
     display: flex; align-items: center; justify-content: space-between;
@@ -393,7 +395,6 @@ export default function DisputeManagement() {
     <>
       <style>{styles}</style>
       <div className="dm-page">
-        <Navbar2 user={user} onLogout={logout} />
 
         <div className="dm-main">
 

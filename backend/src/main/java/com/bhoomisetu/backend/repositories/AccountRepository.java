@@ -12,4 +12,5 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     // Spring Data JPA is magic! Just by naming this method, 
     // it automatically writes the SQL: SELECT * FROM users WHERE email = ?
     Optional<Account> findByEmail(String email);
+    Optional<Account> findByName(String name);
 }

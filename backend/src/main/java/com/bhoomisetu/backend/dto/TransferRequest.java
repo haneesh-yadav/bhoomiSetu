@@ -6,5 +6,6 @@ import lombok.Data;
 public class TransferRequest {
     private Long propertyId;
     private String buyerEmail; // Identify buyer by their registered email
+    private String saleValue;
     private String remarks;
 }

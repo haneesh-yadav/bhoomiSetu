@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PropertyEventDto {
     private Long id;
+    private Long propertyId;
+    private String propertyTitle;
     private String event;
     private String from;
     private String to;

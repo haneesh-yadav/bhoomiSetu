@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axiosConfig";
-import Navbar2 from "../../components/Navbar2";
 
 const FILTERS    = ["All", "High Priority", "Normal", "Completed"];
 const TYPE_ICONS = { Residential: "home", Agricultural: "grass", Commercial: "store" };
@@ -141,11 +140,12 @@ const styles = `
 
   /* ══ TOOLBAR ══ */
   .aq-toolbar {
-    background: rgba(240,240,240,0.4);
+    background: #fff;
     border: 1.5px solid #e0e0e0;
     border-radius: 16px;
     padding: 10px 14px;
     display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   }
   .aq-search-wrap {
     flex: 1; min-width: 200px; position: relative;
@@ -180,13 +180,14 @@ const styles = `
 
   /* ══ APPROVAL CARDS ══ */
   .aq-card {
-    background: rgba(240,240,240,0.4);
+    background: #fff;
     border: 1.5px solid #e0e0e0;
     border-radius: 20px;
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.15s, box-shadow 0.15s;
     animation: fadeUp 0.3s ease both;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   }
   .aq-card:hover {
     transform: translateY(-2px);
@@ -259,11 +260,12 @@ const styles = `
 
   /* detail zone */
   .aq-detail-zone {
-    background: rgba(240,240,240,0.4);
+    background: #fff;
     border: 1.5px solid #e0e0e0;
     border-radius: 24px;
     padding: 16px;
     display: flex; flex-direction: column; gap: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   }
   .aq-detail-zone-head {
     display: flex; align-items: flex-start; justify-content: space-between;
@@ -496,7 +498,6 @@ export default function ApprovalsQueue() {
     <>
       <style>{styles}</style>
       <div className="aq-page">
-        <Navbar2 user={user} onLogout={logout} />
 
         <div className="aq-main">
 

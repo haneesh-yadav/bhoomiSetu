@@ -14,8 +14,8 @@ export default function ProtectedRoute({ children, role }) {
   }
 
   /* Role mismatch — redirect to their correct dashboard */
-  if (role && user.role !== role) {
-    const fallback = user.role === "registrar" ? "/registrar/dashboard" : "/user/dashboard";
+  if (role && user.role?.toLowerCase() !== role.toLowerCase()) {
+    const fallback = user.role?.toLowerCase() === "registrar" ? "/registrar/dashboard" : "/user/dashboard";
     return <Navigate to={fallback} replace />;
   }
 

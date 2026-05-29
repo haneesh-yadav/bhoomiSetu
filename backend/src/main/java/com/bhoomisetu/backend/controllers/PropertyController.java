@@ -2,6 +2,7 @@ package com.bhoomisetu.backend.controllers;
 
 import com.bhoomisetu.backend.dto.PropertyRequest;
 import com.bhoomisetu.backend.dto.PropertyResponse;
+import com.bhoomisetu.backend.dto.PropertyEventDto;
 import com.bhoomisetu.backend.models.Account;
 import com.bhoomisetu.backend.services.PropertyService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,11 @@ public class PropertyController {
     @GetMapping
     public ResponseEntity<List<PropertyResponse>> getAllProperties() {
         return ResponseEntity.ok(propertyService.getAllProperties());
+    }
+
+    @GetMapping("/events")
+    public ResponseEntity<List<PropertyEventDto>> getAllEvents() {
+        return ResponseEntity.ok(propertyService.getAllEvents());
     }
 
     @GetMapping("/{id}")

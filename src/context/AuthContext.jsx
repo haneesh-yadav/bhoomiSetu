@@ -83,8 +83,8 @@ export function AuthProvider({ children }) {
 
   /* ── Convenience flags ── */
   const isLoggedIn   = !!user;
-  const isUser       = user?.role === "user";
-  const isRegistrar  = user?.role === "registrar";
+  const isUser       = user?.role?.toLowerCase() === "user";
+  const isRegistrar  = user?.role?.toLowerCase() === "registrar";
 
   return (
     <AuthContext.Provider value={{ user, loading, login, signup, logout, isLoggedIn, isUser, isRegistrar }}>

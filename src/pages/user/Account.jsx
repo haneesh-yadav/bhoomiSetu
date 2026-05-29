@@ -1,11 +1,8 @@
 import { useAuth } from "../../context/AuthContext";
-import { Link } from "react-router-dom";
+import React from "react";
 
-/* ══════════════════════════════════════════════════
-   CSS — visual profile dashboard layout
-   ══════════════════════════════════════════════════ */
 const CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
   @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Sharp');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -15,431 +12,340 @@ const CSS = `
     font-style: normal; font-weight: normal; line-height: 1;
     display: inline-flex; align-items: center; justify-content: center;
     user-select: none;
+    font-feature-settings: 'liga';
+    -webkit-font-feature-settings: 'liga';
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(14px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* ── Page shell ── */
+  /* ── Page ── */
   .ac-page {
     font-family: 'Poppins', sans-serif;
-    display: flex;
-    min-height: calc(100vh - 52px);
-    height: calc(100vh - 52px);
-    background: #f0ede4;
-    overflow: hidden;
+    background: #dcdcdc;
+    min-height: 100vh;
+    color: #1a1a1a;
+    padding-top: 60px;
+    user-select: none;
+    overflow-x: hidden;
   }
 
-  /* ── Left panel (Profile display) ── */
-  .ac-left {
-    width: 60%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 60px;
-    background: #f0ede4;
-    overflow: hidden;
-    height: 100%;
-    animation: fadeUp 0.35s ease both;
+  .ac-main {
+    display: flex; flex-direction: column; gap: 16px;
+    padding: 16px 14px 56px;
+    overflow-x: hidden; min-width: 0;
   }
 
-  /* ── Headline ── */
-  .ac-headline {
-    font-size: 38px; font-weight: 800;
-    color: #1a1a1a; letter-spacing: -0.04em;
-    line-height: 1.12; margin-bottom: 24px;
+  /* ── Top bar ── */
+  .ac-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
+    animation: fadeUp 0.3s ease both;
   }
-  .ac-headline span { color: var(--ac-accent); }
+  .ac-heading {
+    font-size: 19px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.5px;
+  }
+  .ac-heading span { color: #e07a5f; }
+
+  .ac-meta-chip {
+    display: flex; align-items: center; gap: 5px;
+    background: #fff; border: 1.5px solid #e0e0e0; border-radius: 100px;
+    padding: 6px 13px; font-size: 10.5px; font-weight: 600; color: #888;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .ac-meta-chip .mi { font-size: 13px; color: #e07a5f; }
 
   /* ── Profile card ── */
   .ac-profile-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 32px;
-    box-shadow: 0 4px 25px rgba(0,0,0,0.06);
-    width: 100%;
-    max-width: 640px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+    background: #fff; border: 1.5px solid #e0e0e0; border-radius: 20px;
+    overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    animation: fadeUp 0.3s ease both;
   }
 
-  .ac-avatar-row {
-    display: flex;
-    align-items: center;
-    gap: 20px;
+  .ac-profile-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 20px; background: #1a1a1a;
+  }
+  .ac-profile-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13.5px; font-weight: 700; color: #fff; letter-spacing: -0.2px;
+  }
+  .ac-profile-title .mi { font-size: 17px; color: #e07a5f; }
+  .ac-profile-title span { color: #e07a5f; }
+  .ac-profile-pill {
+    background: rgba(224,122,95,0.15); color: #e07a5f;
+    border-radius: 8px; padding: 2px 9px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+    border: 1px solid rgba(224,122,95,0.25);
   }
 
-  .ac-avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, var(--ac-accent) 0%, #fabc88 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    font-weight: 800;
-    color: #fff;
-    box-shadow: 0 4px 14px var(--ac-accent-glow);
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  .ac-profile-body {
+    padding: 20px;
+    display: flex; align-items: center; gap: 24px;
   }
 
-  .ac-profile-name {
-    font-size: 19px;
-    font-weight: 800;
-    color: #1a1a1a;
-    letter-spacing: -0.02em;
-  }
-
-  .ac-profile-role {
-    font-size: 10px;
-    font-weight: 700;
-    color: #999;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-top: 2px;
-  }
-
-  /* ── Two-column details grid ── */
-  .ac-details-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .ac-detail-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 10px 14px;
-    background: #f8f6f2;
-    border-radius: 10px;
-    border: 1px solid #ede9e0;
-  }
-
-  .ac-detail-lbl {
-    font-size: 9px;
-    font-weight: 700;
-    color: #888;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .ac-detail-val {
-    font-size: 12.5px;
-    font-weight: 600;
-    color: #1a1a1a;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .ac-detail-val.green {
-    color: #1B9C85;
-  }
-
-  /* ── Action button ── */
-  .ac-action-btn {
-    width: fit-content;
-    min-width: 220px;
-    padding: 14px 20px;
-    border-radius: 12px;
-    background: #1a1a1a;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 700;
-    font-family: 'Poppins', sans-serif;
-    letter-spacing: 0.03em;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: background 0.15s, transform 0.1s;
-  }
-  .ac-action-btn:hover { background: #2a2a2a; }
-  .ac-action-btn:active { transform: scale(0.99); }
-  .ac-action-btn .mi { font-size: 16px; }
-
-  /* ── Right panel (Security tips card) ── */
-  .ac-right {
-    width: 40%;
-    background: #f0ede4;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-  }
-
-  .ac-tips-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 36px;
-    box-shadow: 0 4px 25px rgba(0,0,0,0.06);
-    width: 100%;
-    max-width: 440px;
-    animation: fadeUp 0.35s ease both;
-  }
-
-  .ac-tips-title {
-    font-size: 11.5px;
-    font-weight: 800;
-    color: var(--ac-accent);
-    letter-spacing: 0.08em;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-  .ac-tips-title::after {
-    content: '';
-    flex: 1;
-    height: 1.5px;
-    background: var(--ac-accent-glow);
-  }
-
-  .ac-tips-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .ac-tip-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    background: #f8f6f2;
-    border-radius: 12px;
-    padding: 14px 16px;
-    border: 1px solid #ede9e0;
-  }
-
-  .ac-tip-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: var(--ac-accent-glow);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--ac-accent);
+  /* Avatar */
+  .ac-avatar-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
     flex-shrink: 0;
   }
-
-  .ac-tip-text strong {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin-bottom: 2px;
+  .ac-avatar-wrap img,
+  .ac-avatar-initials {
+    width: 86px; height: 104px;
+    border-radius: 14px;
+    object-fit: cover;
   }
-  .ac-tip-text p {
-    font-size: 11.5px;
-    color: #666;
-    line-height: 1.4;
+  .ac-avatar-initials {
+    background: linear-gradient(135deg, #1a1a1a, #333);
+    border: 2px solid #e07a5f;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: 800; color: #e07a5f; letter-spacing: -1px;
+  }
+  .ac-avatar-wrap img { border: 2px solid #e07a5f; }
+  .ac-avatar-name {
+    font-size: 11px; font-weight: 700; color: #1a1a1a;
+    text-transform: uppercase; text-align: center;
   }
 
-  /* ════════════════════════════════════════
-     MOBILE RESPONSIVE — ≤ 768px
-  ════════════════════════════════════════ */
-  @media (max-width: 768px) {
-    .ac-page {
-      flex-direction: column;
-      height: auto;
-      min-height: 100vh;
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
+  /* Quick facts grid */
+  .ac-quick-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; flex: 1;
+  }
+  .ac-quick-item {
+    background: #fafaf8; border: 1.5px solid #ebebeb; border-radius: 12px;
+    padding: 10px 14px; display: flex; flex-direction: column; gap: 3px;
+  }
+  .ac-quick-label {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    color: #e07a5f; letter-spacing: 0.06em;
+  }
+  .ac-quick-value {
+    font-size: 12px; font-weight: 600; color: #1a1a1a;
+  }
 
-    .ac-right {
-      width: 100%;
-      padding: 24px 20px;
-      background: #f0ede4;
-    }
-    
-    .ac-tips-card {
-      max-width: 100%;
-    }
+  /* ── Section zone (accordion replacement) ── */
+  .ac-zone {
+    background: #fff; border: 1.5px solid #e0e0e0;
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    animation: fadeUp 0.3s ease both;
+  }
 
-    .ac-left {
-      width: 100%;
-      padding: 32px 20px;
-      overflow-y: visible;
-      min-height: 0;
-      height: auto;
-    }
+  .ac-zone-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 20px; background: #1a1a1a; cursor: pointer;
+    user-select: none;
+  }
+  .ac-zone-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13.5px; font-weight: 700; color: #fff; letter-spacing: -0.2px;
+  }
+  .ac-zone-title .mi { font-size: 17px; color: #e07a5f; }
+  .ac-zone-title span { color: #e07a5f; }
 
-    .ac-headline {
-      font-size: 28px;
-      margin-bottom: 24px;
-    }
+  .ac-zone-arrow {
+    font-family: 'Material Icons Sharp'; font-style: normal; font-weight: normal;
+    font-size: 18px; color: #888;
+    transition: transform 0.25s ease;
+    line-height: 1;
+  }
+  .ac-zone-arrow.open { transform: rotate(180deg); color: #e07a5f; }
 
-    .ac-details-grid {
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
+  .ac-zone-body {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.25s ease-out;
+  }
+  .ac-zone-body.open { max-height: 600px; }
 
-    .ac-action-btn {
-      width: 100%;
-      padding: 14px 16px;
-      font-size: 13px;
-    }
+  /* ── Row list inside zone ── */
+  .ac-rows { display: flex; flex-direction: column; }
+
+  .ac-row {
+    display: flex; align-items: stretch;
+    border-bottom: 1.5px solid #f0f0f0;
+  }
+  .ac-row:last-child { border-bottom: none; }
+
+  .ac-row-label {
+    background: #f5f5f5; color: #555;
+    font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+    width: 32%; min-width: 110px;
+    padding: 11px 16px; display: flex; align-items: center;
+    letter-spacing: 0.04em; border-right: 1.5px solid #ebebeb;
+  }
+
+  .ac-row-value {
+    background: #fff; color: #1a1a1a;
+    font-size: 12px; font-weight: 500;
+    padding: 11px 16px; display: flex; align-items: center; gap: 6px;
+    flex: 1;
+  }
+
+  .ac-row-value.verified {
+    color: #2d9e6b; font-weight: 700;
+  }
+  .ac-row-value.verified .mi { font-size: 14px; color: #2d9e6b; }
+
+  /* ── Mobile ── */
+  @media (max-width: 680px) {
+    .ac-main { padding: 12px 14px 40px; }
+    .ac-profile-body { flex-direction: column; align-items: center; }
+    .ac-quick-grid { grid-template-columns: 1fr 1fr; width: 100%; }
+    .ac-row { flex-direction: column; }
+    .ac-row-label, .ac-row-value { width: 100%; border-right: none; }
+    .ac-row-label { border-bottom: 1px solid #ebebeb; }
   }
 `;
+
+function MI({ name, size = 15 }) {
+  return (
+    <span
+      className="mi"
+      style={{ fontSize: size }}
+    >
+      {name}
+    </span>
+  );
+}
+
+function ZoneSection({ icon, title, accent, pill, items, defaultOpen = false }) {
+  const [open, setOpen] = React.useState(defaultOpen);
+
+  return (
+    <div className="ac-zone">
+      <div className="ac-zone-header" onClick={() => setOpen((o) => !o)}>
+        <div className="ac-zone-title">
+          <MI name={icon} size={17} />
+          {title} <span>{accent}</span>
+        </div>
+        <span className={`ac-zone-arrow${open ? " open" : ""}`}>expand_more</span>
+      </div>
+      <div className={`ac-zone-body${open ? " open" : ""}`}>
+        <div className="ac-rows">
+          {items.map((item, i) => (
+            <div className="ac-row" key={i}>
+              <span className="ac-row-label">{item.label}</span>
+              <span className={`ac-row-value${item.verified ? " verified" : ""}`}>
+                {item.verified && <MI name="verified" size={14} />}
+                {item.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Account() {
   const { user } = useAuth();
 
-  const isRegistrar = user?.role === "registrar";
-  const accentColor = isRegistrar ? "#5B4FD4" : "#e07a5f";
-  const accentGlow = isRegistrar ? "rgba(91,79,212,0.12)" : "rgba(224,122,95,0.12)";
-
   const initials = user?.name
-    ?.split(" ")
-    .map(w => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase() || "R";
+    ?.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "U";
 
   const maskedAadhaar = user?.aadhaar
-    ? `•••• •••• ${user.aadhaar.replace(/\s/g, "").slice(-4)}`
+    ? `•••• •••• ${user.aadhaar.slice(-4)}`
     : "—";
+
+  const quickFacts = [
+    { label: "Role",    value: user?.role  || "—" },
+    { label: "State",   value: user?.state || "—" },
+    { label: "Email",   value: user?.email || "—" },
+    { label: "Aadhaar", value: maskedAadhaar },
+  ];
+
+  const sections = [
+    {
+      icon: "person",
+      title: "Personal",
+      accent: "information",
+      items: [
+        { label: "Full Name", value: user?.name  || "—" },
+        { label: "Email",     value: user?.email || "—" },
+        { label: "Phone",     value: user?.phone || "—" },
+        { label: "State",     value: user?.state || "—" },
+        { label: "Aadhaar",   value: maskedAadhaar },
+        { label: "Role",      value: user?.role  || "—" },
+        { label: "Status",    value: "Verified", verified: true },
+      ],
+    },
+    {
+      icon: "verified_user",
+      title: "Verification &",
+      accent: "security",
+      items: [
+        { label: "Account Status", value: "Active & Verified", verified: true },
+        { label: "KYC Status",     value: "Completed" },
+        { label: "Aadhaar Linked", value: "Yes" },
+        { label: "2FA Enabled",    value: "Yes" },
+        { label: "Last Login",     value: "Today" },
+      ],
+    },
+  ];
 
   return (
     <>
       <style>{CSS}</style>
       <div className="ac-page">
+        <div className="ac-main">
 
-        {/* ── LEFT PANEL (Profile Card) ── */}
-        <div className="ac-left" style={{
-          "--ac-accent": accentColor,
-          "--ac-accent-glow": accentGlow,
-        }}>
+          {/* ── Top bar ── */}
+          <div className="ac-topbar">
+            <h1 className="ac-heading">My <span>Account</span></h1>
+            <div className="ac-meta-chip">
+              <MI name="shield" size={13} />
+              {user?.role || "User"}
+            </div>
+          </div>
 
-          {/* Headline */}
-          <h1 className="ac-headline">
-            My <span>profile.</span>
-          </h1>
-
-          {/* Profile Card */}
+          {/* ── Profile card ── */}
           <div className="ac-profile-card">
-            
-            <div className="ac-avatar-row">
-              <div className="ac-avatar">{initials}</div>
-              <div>
-                <div className="ac-profile-name">{user?.name || "User"}</div>
-                <div className="ac-profile-role">{user?.role || "Citizen"} Profile</div>
+            <div className="ac-profile-header">
+              <div className="ac-profile-title">
+                <MI name="account_circle" size={17} />
+                Account <span>overview</span>
               </div>
+              <div className="ac-profile-pill">ACTIVE</div>
             </div>
-
-            {/* Double column grid for all database profile fields */}
-            <div className="ac-details-grid">
-              
-              <div className="ac-detail-item">
-                <span className="ac-detail-lbl">Email Address</span>
-                <span className="ac-detail-val" title={user?.email}>{user?.email || "—"}</span>
+            <div className="ac-profile-body">
+              <div className="ac-avatar-wrap">
+                {user?.photo ? (
+                  <img src={user.photo} alt={user?.name || "User"} />
+                ) : (
+                  <div className="ac-avatar-initials">{initials}</div>
+                )}
+                <span className="ac-avatar-name">{user?.name || "User"}</span>
               </div>
-
-              <div className="ac-detail-item">
-                <span className="ac-detail-lbl">Phone Number</span>
-                <span className="ac-detail-val">{user?.phone || "—"}</span>
+              <div className="ac-quick-grid">
+                {quickFacts.map((f) => (
+                  <div className="ac-quick-item" key={f.label}>
+                    <span className="ac-quick-label">{f.label}</span>
+                    <span className="ac-quick-value">{f.value}</span>
+                  </div>
+                ))}
               </div>
-
-              <div className="ac-detail-item">
-                <span className="ac-detail-lbl">Aadhaar Number</span>
-                <span className="ac-detail-val">{maskedAadhaar}</span>
-              </div>
-
-              <div className="ac-detail-item">
-                <span className="ac-detail-lbl">Date of Birth</span>
-                <span className="ac-detail-val">{user?.dob || "—"}</span>
-              </div>
-
-              <div className="ac-detail-item" style={{ gridColumn: "span 2" }}>
-                <span className="ac-detail-lbl">Residential Address</span>
-                <span className="ac-detail-val" title={user?.address}>{user?.address || "—"}</span>
-              </div>
-
-              <div className="ac-detail-item">
-                <span className="ac-detail-lbl">City / District</span>
-                <span className="ac-detail-val">{user?.city || user?.district || "—"}</span>
-              </div>
-
-              <div className="ac-detail-item">
-                <span className="ac-detail-lbl">State / Pincode</span>
-                <span className="ac-detail-val">{user?.state ? `${user.state} - ${user?.pincode || ""}` : "—"}</span>
-              </div>
-
-            </div>
-
-            <Link to="/user/change-password" className="ac-action-btn">
-              <span className="mi">lock_reset</span>
-              Change Account Password
-            </Link>
-
-          </div>
-
-        </div>
-
-        {/* ── RIGHT PANEL (Security Tips Card) ── */}
-        <div className="ac-right">
-          <div className="ac-tips-card" style={{
-            "--ac-accent": accentColor,
-            "--ac-accent-glow": accentGlow,
-          }}>
-            <div className="ac-tips-title">SECURITY TIPS</div>
-            <div className="ac-tips-list">
-
-              <div className="ac-tip-item">
-                <div className="ac-tip-icon">
-                  <span className="mi" style={{ fontSize: "16px" }}>password</span>
-                </div>
-                <div className="ac-tip-text">
-                  <strong>Password Length</strong>
-                  <p>Use 12+ characters mixing uppercase, lowercase, numbers, and symbols.</p>
-                </div>
-              </div>
-
-              <div className="ac-tip-item">
-                <div className="ac-tip-icon">
-                  <span className="mi" style={{ fontSize: "16px" }}>block</span>
-                </div>
-                <div className="ac-tip-text">
-                  <strong>Avoid Reuse</strong>
-                  <p>Never reuse passwords across different apps or websites.</p>
-                </div>
-              </div>
-
-              <div className="ac-tip-item">
-                <div className="ac-tip-icon">
-                  <span className="mi" style={{ fontSize: "16px" }}>history</span>
-                </div>
-                <div className="ac-tip-text">
-                  <strong>Regular Rotation</strong>
-                  <p>Change your password every 3–6 months to maximize security.</p>
-                </div>
-              </div>
-
-              <div className="ac-tip-item">
-                <div className="ac-tip-icon">
-                  <span className="mi" style={{ fontSize: "16px" }}>phonelink_lock</span>
-                </div>
-                <div className="ac-tip-text">
-                  <strong>Two-Factor Auth</strong>
-                  <p>Enable Multi-Factor authentication where available for extra protection.</p>
-                </div>
-              </div>
-
             </div>
           </div>
-        </div>
 
+          {/* ── Accordion zones ── */}
+          {sections.map((s, i) => (
+            <ZoneSection
+              key={s.title}
+              icon={s.icon}
+              title={s.title}
+              accent={s.accent}
+              items={s.items}
+              defaultOpen={i === 0}
+            />
+          ))}
+
+        </div>
       </div>
     </>
   );

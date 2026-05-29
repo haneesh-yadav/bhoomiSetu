@@ -1,12 +1,8 @@
-import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import api from "../../api/axiosConfig";
+import React from "react";
 
-/* ══════════════════════════════════════════════════
-   CSS — layout matches user Account structure exactly
-   ══════════════════════════════════════════════════ */
 const CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
   @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Sharp');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,476 +12,334 @@ const CSS = `
     font-style: normal; font-weight: normal; line-height: 1;
     display: inline-flex; align-items: center; justify-content: center;
     user-select: none;
+    font-feature-settings: 'liga';
+    -webkit-font-feature-settings: 'liga';
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(14px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* ── Page shell ── */
+  /* ── Page ── */
   .ac-page {
     font-family: 'Poppins', sans-serif;
-    display: flex;
-    min-height: calc(100vh - 50px);
-    height: calc(100vh - 50px);
-    background: #f0ede4;
-    overflow: hidden;
+    background: #dcdcdc;
+    min-height: 100vh;
+    color: #1a1a1a;
+    padding-top: 60px;
+    user-select: none;
+    overflow-x: hidden;
   }
 
-  /* ── Left panel (Profile details) ── */
-  .ac-left {
-    width: 50%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 80px;
-    background: #f0ede4;
-    overflow: hidden;
-    height: 100%;
-    animation: fadeUp 0.35s ease both;
+  .ac-main {
+    display: flex; flex-direction: column; gap: 16px;
+    padding: 16px 14px 56px;
+    overflow-x: hidden; min-width: 0;
   }
 
-  /* ── Headline ── */
-  .ac-headline {
-    font-size: 38px; font-weight: 800;
-    color: #1a1a1a; letter-spacing: -0.04em;
-    line-height: 1.12; margin-bottom: 28px;
+  /* ── Top bar ── */
+  .ac-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
+    animation: fadeUp 0.3s ease both;
   }
-  .ac-headline span { color: #5B4FD4; }
+  .ac-heading {
+    font-size: 19px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.5px;
+  }
+  .ac-heading span { color: #7C6EF5; }
+
+  .ac-meta-chip {
+    display: flex; align-items: center; gap: 5px;
+    background: #fff; border: 1.5px solid #e0e0e0; border-radius: 100px;
+    padding: 6px 13px; font-size: 10.5px; font-weight: 600; color: #888;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .ac-meta-chip .mi { font-size: 13px; color: #7C6EF5; }
 
   /* ── Profile card ── */
   .ac-profile-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 28px 32px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    width: 100%;
-    max-width: 480px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    background: #fff; border: 1.5px solid #e0e0e0; border-radius: 20px;
+    overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    animation: fadeUp 0.3s ease both;
   }
 
-  .ac-avatar-row {
-    display: flex;
-    align-items: center;
-    gap: 20px;
+  .ac-profile-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 20px; background: #1a1a1a;
+  }
+  .ac-profile-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13.5px; font-weight: 700; color: #fff; letter-spacing: -0.2px;
+  }
+  .ac-profile-title .mi { font-size: 17px; color: #7C6EF5; }
+  .ac-profile-title span { color: #7C6EF5; }
+  .ac-profile-pill {
+    background: rgba(124,110,245,0.15); color: #7C6EF5;
+    border-radius: 8px; padding: 2px 9px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+    border: 1px solid rgba(124,110,245,0.25);
   }
 
-  .ac-avatar {
-    width: 64px;
-    height: 64px;
+  .ac-profile-body {
+    padding: 20px;
+    display: flex; align-items: center; gap: 24px;
+  }
+
+  /* Avatar */
+  .ac-avatar-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    flex-shrink: 0;
+  }
+  .ac-avatar-wrap img,
+  .ac-avatar-initials {
+    width: 86px; height: 104px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #5B4FD4 0%, #fabc88 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    font-weight: 800;
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(91,79,212,0.18);
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    object-fit: cover;
+  }
+  .ac-avatar-initials {
+    background: linear-gradient(135deg, #1a1a1a, #333);
+    border: 2px solid #7C6EF5;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: 800; color: #7C6EF5; letter-spacing: -1px;
+  }
+  .ac-avatar-wrap img { border: 2px solid #7C6EF5; }
+  .ac-avatar-name {
+    font-size: 11px; font-weight: 700; color: #1a1a1a;
+    text-transform: uppercase; text-align: center;
   }
 
-  .ac-profile-name {
-    font-size: 18px;
-    font-weight: 800;
-    color: #1a1a1a;
-    letter-spacing: -0.02em;
+  /* Quick facts grid */
+  .ac-quick-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; flex: 1;
+  }
+  .ac-quick-item {
+    background: #fafaf8; border: 1.5px solid #ebebeb; border-radius: 12px;
+    padding: 10px 14px; display: flex; flex-direction: column; gap: 3px;
+  }
+  .ac-quick-label {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    color: #7C6EF5; letter-spacing: 0.06em;
+  }
+  .ac-quick-value {
+    font-size: 12px; font-weight: 600; color: #1a1a1a;
   }
 
-  .ac-profile-role {
-    font-size: 10px;
-    font-weight: 700;
-    color: #999;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-top: 2px;
+  /* ── Section zone (accordion replacement) ── */
+  .ac-zone {
+    background: #fff; border: 1.5px solid #e0e0e0;
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    animation: fadeUp 0.3s ease both;
   }
 
-  /* ── Details list ── */
-  .ac-details-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  .ac-zone-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 20px; background: #1a1a1a; cursor: pointer;
+    user-select: none;
   }
-
-  .ac-detail-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 14px;
-    background: #f8f6f2;
-    border-radius: 10px;
-    border: 1px solid #ede9e0;
+  .ac-zone-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13.5px; font-weight: 700; color: #fff; letter-spacing: -0.2px;
   }
+  .ac-zone-title .mi { font-size: 17px; color: #7C6EF5; }
+  .ac-zone-title span { color: #7C6EF5; }
 
-  .ac-detail-lbl {
-    font-size: 10.5px;
-    font-weight: 700;
-    color: #888;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+  .ac-zone-arrow {
+    font-family: 'Material Icons Sharp'; font-style: normal; font-weight: normal;
+    font-size: 18px; color: #888;
+    transition: transform 0.25s ease;
+    line-height: 1;
   }
+  .ac-zone-arrow.open { transform: rotate(180deg); color: #7C6EF5; }
 
-  .ac-detail-val {
-    font-size: 12.5px;
-    font-weight: 600;
-    color: #1a1a1a;
-  }
-
-  .ac-detail-val.green {
-    color: #1B9C85;
-  }
-
-  /* ── Right panel (Update Password Card) ── */
-  .ac-right {
-    width: 50%;
-    background: #f0ede4;
+  .ac-zone-body {
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
+    max-height: 0;
+    transition: max-height 0.25s ease-out;
+  }
+  .ac-zone-body.open { max-height: 600px; }
+
+  /* ── Row list inside zone ── */
+  .ac-rows { display: flex; flex-direction: column; }
+
+  .ac-row {
+    display: flex; align-items: stretch;
+    border-bottom: 1.5px solid #f0f0f0;
+  }
+  .ac-row:last-child { border-bottom: none; }
+
+  .ac-row-label {
+    background: #f5f5f5; color: #555;
+    font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+    width: 32%; min-width: 110px;
+    padding: 11px 16px; display: flex; align-items: center;
+    letter-spacing: 0.04em; border-right: 1.5px solid #ebebeb;
   }
 
-  .ac-form-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 36px;
-    box-shadow: 0 4px 25px rgba(0,0,0,0.06);
-    width: 100%;
-    max-width: 480px;
-    animation: fadeUp 0.35s ease both;
-  }
-
-  .ac-form-title {
-    font-size: 11.5px;
-    font-weight: 800;
-    color: #5B4FD4;
-    letter-spacing: 0.08em;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-  .ac-form-title::after {
-    content: '';
+  .ac-row-value {
+    background: #fff; color: #1a1a1a;
+    font-size: 12px; font-weight: 500;
+    padding: 11px 16px; display: flex; align-items: center; gap: 6px;
     flex: 1;
-    height: 1.5px;
-    background: rgba(91,79,212,0.12);
   }
 
-  /* ── Form components ── */
-  .ac-form {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
+  .ac-row-value.verified {
+    color: #2d9e6b; font-weight: 700;
   }
+  .ac-row-value.verified .mi { font-size: 14px; color: #2d9e6b; }
 
-  .ac-form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .ac-form-label {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    color: #666;
-    margin-bottom: 4px;
-    letter-spacing: 0.03em;
-  }
-
-  .ac-input-wrap {
-    position: relative;
-  }
-
-  .ac-input {
-    width: 100%;
-    padding: 14px 18px 14px 42px;
-    border-radius: 12px;
-    border: 1.5px solid #c8c8c8;
-    background: #f0f0f0;
-    font-size: 13px;
-    font-family: 'Poppins', sans-serif;
-    color: #1a1a1a;
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .ac-input::placeholder { color: #aaa; }
-  .ac-input:focus {
-    border-color: #5B4FD4;
-    box-shadow: 0 0 0 3px rgba(91,79,212,0.12);
-    background: #fff;
-  }
-  .ac-input:disabled {
-    color: #999; cursor: not-allowed; background: #f5f5f5;
-  }
-
-  .ac-input-icon {
-    position: absolute;
-    left: 14px; top: 50%;
-    transform: translateY(-50%);
-    color: #5B4FD4;
-    pointer-events: none;
-  }
-
-  /* ── Message banners ── */
-  .ac-msg {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 11px 14px;
-    border-radius: 0 8px 8px 0;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 14px;
-  }
-  .ac-msg-success {
-    background: rgba(27,156,133,0.1); color: #1B9C85;
-    border-left: 3px solid #1B9C85;
-  }
-  .ac-msg-error {
-    background: rgba(232,83,58,0.1); color: #c0392b;
-    border-left: 3px solid #e8533a;
-  }
-
-  /* ── Submit Button ── */
-  .ac-submit-btn {
-    width: 100%;
-    padding: 15px 20px;
-    border-radius: 12px;
-    background: #1a1a1a;
-    color: #fff;
-    font-size: 12px; font-weight: 700;
-    font-family: 'Poppins', sans-serif;
-    letter-spacing: 0.03em;
-    border: none;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    transition: background 0.15s, transform 0.1s;
-    margin-top: 6px;
-  }
-  .ac-submit-btn:hover:not(:disabled) { background: #2a2a2a; }
-  .ac-submit-btn:active:not(:disabled) { transform: scale(0.99); }
-  .ac-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .spinner {
-    width: 12px; height: 12px;
-    border: 2px solid rgba(255,255,255,0.35);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    display: inline-block;
-  }
-  @keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
-
-  /* ════════════════════════════════════════
-     MOBILE RESPONSIVE — ≤ 768px
-  ════════════════════════════════════════ */
-  @media (max-width: 768px) {
-    .ac-page {
-      flex-direction: column;
-      height: auto;
-      min-height: 100vh;
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
-
-    .ac-right {
-      width: 100%;
-      padding: 24px 20px;
-      background: #f0ede4;
-    }
-    
-    .ac-form-card {
-      max-width: 100%;
-    }
-
-    .ac-left {
-      width: 100%;
-      padding: 32px 20px;
-      overflow-y: visible;
-      min-height: 0;
-      height: auto;
-    }
-
-    .ac-headline {
-      font-size: 28px;
-      margin-bottom: 24px;
-    }
-
-    .ac-submit-btn {
-      padding: 14px 16px;
-      font-size: 13px;
-    }
+  /* ── Mobile ── */
+  @media (max-width: 680px) {
+    .ac-main { padding: 12px 14px 40px; }
+    .ac-profile-body { flex-direction: column; align-items: center; }
+    .ac-quick-grid { grid-template-columns: 1fr 1fr; width: 100%; }
+    .ac-row { flex-direction: column; }
+    .ac-row-label, .ac-row-value { width: 100%; border-right: none; }
+    .ac-row-label { border-bottom: 1px solid #ebebeb; }
   }
 `;
+
+function MI({ name, size = 15 }) {
+  return (
+    <span
+      className="mi"
+      style={{ fontSize: size }}
+    >
+      {name}
+    </span>
+  );
+}
+
+function ZoneSection({ icon, title, accent, items, defaultOpen = false }) {
+  const [open, setOpen] = React.useState(defaultOpen);
+
+  return (
+    <div className="ac-zone">
+      <div className="ac-zone-header" onClick={() => setOpen((o) => !o)}>
+        <div className="ac-zone-title">
+          <MI name={icon} size={17} />
+          {title} <span>{accent}</span>
+        </div>
+        <span className={`ac-zone-arrow${open ? " open" : ""}`}>expand_more</span>
+      </div>
+      <div className={`ac-zone-body${open ? " open" : ""}`}>
+        <div className="ac-rows">
+          {items.map((item, i) => (
+            <div className="ac-row" key={i}>
+              <span className="ac-row-label">{item.label}</span>
+              <span className={`ac-row-value${item.verified ? " verified" : ""}`}>
+                {item.verified && <MI name="verified" size={14} />}
+                {item.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Account() {
   const { user } = useAuth();
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword,     setNewPassword]     = useState("");
-  const [loading,         setLoading]         = useState(false);
-  const [message,         setMessage]         = useState("");
-  const [error,           setError]           = useState("");
-
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-    setError("");
-    try {
-      const res = await api.put("/auth/update-password", {
-        email: user.email,
-        currentPassword,
-        newPassword,
-      });
-      setMessage(res.data.message || "Password updated successfully!");
-      setCurrentPassword("");
-      setNewPassword("");
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to update password.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const initials = user?.name
-    ?.split(" ")
-    .map(w => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase() || "R";
+    ?.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "R";
+
+  const quickFacts = [
+    { label: "Role",       value: "Registrar Official" },
+    { label: "District",   value: user?.district || "—" },
+    { label: "Email",      value: user?.email || "—" },
+    { label: "Office",     value: user?.office || "—" },
+  ];
+
+  const sections = [
+    {
+      icon: "person",
+      title: "Officer",
+      accent: "credentials",
+      items: [
+        { label: "Full Name",   value: user?.name  || "—" },
+        { label: "Email",       value: user?.email || "—" },
+        { label: "District",    value: user?.district || "—" },
+        { label: "Office",      value: user?.office || "—" },
+        { label: "Employee ID", value: user?.employeeId || "REG-1001" },
+        { label: "Role",        value: "REGISTRAR" },
+        { label: "Department",  value: user?.department || "Revenue Department" },
+        { label: "Since",       value: user?.since || "2019" },
+        { label: "Status",      value: "Official Verified", verified: true },
+      ],
+    },
+    {
+      icon: "verified_user",
+      title: "Verification &",
+      accent: "security",
+      items: [
+        { label: "Account Status", value: "Active & Verified", verified: true },
+        { label: "KYC Status",     value: "Completed" },
+        { label: "Linked Database", value: "Yes" },
+        { label: "2FA Enabled",    value: "Yes" },
+        { label: "Last Login",     value: "Today" },
+      ],
+    },
+  ];
 
   return (
     <>
       <style>{CSS}</style>
       <div className="ac-page">
+        <div className="ac-main">
 
-        {/* ── LEFT PANEL (Profile Card) ── */}
-        <div className="ac-left">
-          
-          {/* Headline */}
-          <h1 className="ac-headline">
-            Account <span>Settings</span>
-          </h1>
+          {/* ── Top bar ── */}
+          <div className="ac-topbar">
+            <h1 className="ac-heading">Officer <span>Account</span></h1>
+            <div className="ac-meta-chip">
+              <MI name="shield" size={13} />
+              Registrar Official
+            </div>
+          </div>
 
-          {/* Profile details */}
+          {/* ── Profile card ── */}
           <div className="ac-profile-card">
-            
-            <div className="ac-avatar-row">
-              <div className="ac-avatar">{initials}</div>
-              <div>
-                <div className="ac-profile-name">{user?.name || "—"}</div>
-                <div className="ac-profile-role">Registrar Official</div>
+            <div className="ac-profile-header">
+              <div className="ac-profile-title">
+                <MI name="account_circle" size={17} />
+                Officer <span>overview</span>
+              </div>
+              <div className="ac-profile-pill">ACTIVE</div>
+            </div>
+            <div className="ac-profile-body">
+              <div className="ac-avatar-wrap">
+                <div className="ac-avatar-initials">{initials}</div>
+                <span className="ac-avatar-name">{user?.name || "Officer"}</span>
+              </div>
+              <div className="ac-quick-grid">
+                {quickFacts.map((f) => (
+                  <div className="ac-quick-item" key={f.label}>
+                    <span className="ac-quick-label">{f.label}</span>
+                    <span className="ac-quick-value">{f.value}</span>
+                  </div>
+                ))}
               </div>
             </div>
-
-            <div className="ac-details-list">
-              <div className="ac-detail-item">
-                <span className="ac-detail-lbl">Email</span>
-                <span className="ac-detail-val">{user?.email || "—"}</span>
-              </div>
-              <div className="ac-detail-item">
-                <span className="ac-detail-lbl">District</span>
-                <span className="ac-detail-val">{user?.district || "—"}</span>
-              </div>
-              <div className="ac-detail-item">
-                <span className="ac-detail-lbl">State</span>
-                <span className="ac-detail-val">{user?.state || "—"}</span>
-              </div>
-              <div className="ac-detail-item">
-                <span className="ac-detail-lbl">Status</span>
-                <span className="ac-detail-val green">✓ Active</span>
-              </div>
-            </div>
-
           </div>
 
+          {/* ── Accordion zones ── */}
+          {sections.map((s, i) => (
+            <ZoneSection
+              key={s.title}
+              icon={s.icon}
+              title={s.title}
+              accent={s.accent}
+              items={s.items}
+              defaultOpen={i === 0}
+            />
+          ))}
+
         </div>
-
-        {/* ── RIGHT PANEL (Update Password Card) ── */}
-        <div className="ac-right">
-          <div className="ac-form-card">
-            
-            <div className="ac-form-title">UPDATE PASSWORD</div>
-
-            {message && (
-              <div className="ac-msg ac-msg-success">
-                <span className="mi" style={{ fontSize: "16px" }}>check_circle</span>
-                {message}
-              </div>
-            )}
-            {error && (
-              <div className="ac-msg ac-msg-error">
-                <span className="mi" style={{ fontSize: "16px" }}>error</span>
-                {error}
-              </div>
-            )}
-
-            <form className="ac-form" onSubmit={handleUpdate}>
-              
-              <div className="ac-form-group">
-                <label className="ac-form-label">Email Address</label>
-                <div className="ac-input-wrap">
-                  <span className="mi ac-input-icon">mail</span>
-                  <input
-                    className="ac-input"
-                    type="email"
-                    value={user?.email || ""}
-                    disabled
-                  />
-                </div>
-              </div>
-
-              <div className="ac-form-group">
-                <label className="ac-form-label">Current Password</label>
-                <div className="ac-input-wrap">
-                  <span className="mi ac-input-icon">lock</span>
-                  <input
-                    className="ac-input"
-                    type="password"
-                    value={currentPassword}
-                    onChange={e => setCurrentPassword(e.target.value)}
-                    placeholder="Enter current password"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="ac-form-group">
-                <label className="ac-form-label">New Password</label>
-                <div className="ac-input-wrap">
-                  <span className="mi ac-input-icon">lock_reset</span>
-                  <input
-                    className="ac-input"
-                    type="password"
-                    value={newPassword}
-                    onChange={e => setNewPassword(e.target.value)}
-                    placeholder="Enter new password (min. 6 chars)"
-                    required
-                    minLength={6}
-                  />
-                </div>
-              </div>
-
-              <button className="ac-submit-btn" type="submit" disabled={loading}>
-                {loading
-                  ? <><span className="spinner" /> Updating…</>
-                  : <><span className="mi" style={{ fontSize: "15px" }}>check_circle</span> Update Password</>
-                }
-              </button>
-
-            </form>
-
-          </div>
-        </div>
-
       </div>
     </>
   );

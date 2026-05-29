@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import Navbar2 from "../../components/Navbar2";
+import api from "../../api/axiosConfig";
 
 /* ══════════════════════════════════════════════════
    CATEGORY META
@@ -39,6 +39,7 @@ const styles = `
   @keyframes pulse {
     0%,100% { opacity: 1; } 50% { opacity: 0.3; }
   }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
   /* ── Root ── */
   .al-page {
@@ -116,12 +117,13 @@ const styles = `
 
   /* ══ FILTER + SEARCH ZONE ══ */
   .al-controls-zone {
-    background: rgba(240,240,240,0.4);
+    background: #fff;
     border: 1.5px solid #e0e0e0;
     border-radius: 20px;
     padding: 12px 16px;
     display: flex; align-items: center;
     gap: 12px; flex-wrap: wrap;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   }
   .al-filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
   .al-filter-tab {
@@ -167,11 +169,12 @@ const styles = `
 
   /* ══ TIMELINE ZONE ══ */
   .al-zone {
-    background: rgba(240,240,240,0.4);
+    background: #fff;
     border: 1.5px solid #e0e0e0;
     border-radius: 24px;
     padding: 16px;
     display: flex; flex-direction: column; gap: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   }
   .al-zone-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -303,12 +306,44 @@ const MI = ({ name, style }) => <span className="mi" style={style}>{name}</span>
    COMPONENT
 ══════════════════════════════════════════════════ */
 export default function AuditLog() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const [activeFilter, setFilter] = useState("All");
   const [search, setSearch]       = useState("");
+  const [allEntries, setAllEntries] = useState([]);
+  const [loading, setLoading]       = useState(true);
 
-  const allEntries = [];
+  useEffect(() => {
+    api.get("/properties/events")
+      .then(res => {
+        setAllEntries((res.data || []).map(e => {
+          let category = "approval";
+          const eventLower = e.event.toLowerCase();
+          if (eventLower.includes("dispute")) {
+            category = "dispute";
+          } else if (eventLower.includes("mutation")) {
+            category = "mutation";
+          } else if (eventLower.includes("reject") || eventLower.includes("dismiss")) {
+            category = "rejection";
+          }
+
+          return {
+            id: e.id,
+            action: e.event,
+            txnId: "TXN-" + String(e.id).padStart(4, '0'),
+            propertyId: "PROP-" + e.propertyId,
+            propertyTitle: e.propertyTitle,
+            notes: e.status === "GENESIS" ? "Genesis record registered." : "Integrity verified on-chain.",
+            timestamp: e.date,
+            category: category,
+            actor: e.from && e.from !== "N/A" ? `${e.from} → ${e.to}` : e.to,
+            hash: e.hash ? e.hash.slice(0, 16) + "..." : "0x—"
+          };
+        }));
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = allEntries.filter(entry => {
     const matchFilter =
@@ -336,7 +371,6 @@ export default function AuditLog() {
     <>
       <style>{styles}</style>
       <div className="al-page">
-        <Navbar2 user={user} onLogout={logout} />
 
         <div className="al-main">
 
@@ -424,9 +458,14 @@ export default function AuditLog() {
               </div>
             </div>
 
-            {filtered.length === 0 ? (
+            {loading ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: "72px 20px" }}>
+                <div style={{ width: 28, height: 28, border: "2.5px solid #e0e0e0", borderTopColor: "#5B4FD4", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#bbb" }}>Loading audit log entries…</div>
+              </div>
+            ) : filtered.length === 0 ? (
               <div className="al-empty">
-                <MI name="history" />
+                <MI name="history_toggle_off" />
                 <div className="al-empty-title">No entries found</div>
                 <div className="al-empty-sub">Try adjusting your search or filter.</div>
               </div>

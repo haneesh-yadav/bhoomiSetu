@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axiosConfig";
-import Navbar2 from "../../components/Navbar2";
 
 const CHECKLIST = [
   { id: "identity", label: "Seller & buyer identity verified (Aadhaar)"  },
@@ -152,12 +151,13 @@ const styles = `
 
   /* ══ ZONE (shared card) ══ */
   .tr-zone {
-    background: rgba(240,240,240,0.4);
+    background: #fff;
     border: 1.5px solid #e0e0e0;
     border-radius: 24px;
     padding: 16px;
     display: flex; flex-direction: column; gap: 12px;
     margin-bottom: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   }
   .tr-zone-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -268,11 +268,12 @@ const styles = `
 
   /* ══ DECISION ZONE ══ */
   .tr-decision-zone {
-    background: rgba(240,240,240,0.4);
+    background: #fff;
     border: 1.5px solid #e0e0e0;
     border-radius: 24px;
     padding: 16px;
     display: flex; flex-direction: column; gap: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   }
   .tr-notes-lbl {
     font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em;
@@ -332,12 +333,13 @@ const styles = `
   /* ══ LIST CARDS ══ */
   .tr-list { display: flex; flex-direction: column; gap: 10px; }
   .tr-card {
-    background: rgba(240,240,240,0.4);
+    background: #fff;
     border: 1.5px solid #e0e0e0;
     border-radius: 20px; overflow: hidden;
     cursor: pointer;
     transition: transform 0.15s, box-shadow 0.15s;
     animation: fadeUp 0.3s ease both;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   }
   .tr-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
 
@@ -468,7 +470,6 @@ export default function TransferReview() {
     <>
       <style>{styles}</style>
       <div className="tr-page">
-        <Navbar2 user={user} onLogout={logout} />
 
         <div className="tr-main">
 

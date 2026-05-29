@@ -1,5 +1,3 @@
-import { useAuth } from "../../context/AuthContext";
-import Navbar1 from "../Navbar1";
 import { Outlet } from "react-router-dom";
 
 /**
@@ -13,12 +11,9 @@ import { Outlet } from "react-router-dom";
  * Total visual offset from top of viewport = 112px ✓
  */
 export default function UserLayout() {
-  const { user, logout } = useAuth();
-
   return (
     <>
-      <Navbar1 user={user} onLogout={logout} />
-      <div style={{ paddingTop: "52px" }}>
+      <div style={{ paddingTop: "0px" }}>
         <Outlet />
       </div>
     </>

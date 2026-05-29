@@ -14,6 +14,8 @@ public class TransferResponse {
     private String buyerName;
     private String buyerEmail;
     private String status;
+    private String saleValue;
+    private String initiatedOn;
     private String remarks;
     private LocalDateTime createdAt;
 }
