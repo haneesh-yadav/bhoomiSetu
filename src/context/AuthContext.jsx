@@ -29,6 +29,11 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  /* ── Pre-warm Render backend on mount ── */
+  useEffect(() => {
+    api.get("/auth/health").catch(() => {});
+  }, []);
+
   /* ── Persist whenever user changes ── */
   useEffect(() => {
     if (user) localStorage.setItem(STORAGE_KEY, JSON.stringify(user));

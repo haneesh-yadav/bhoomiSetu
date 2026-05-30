@@ -116,6 +116,14 @@ Deploy the `/backend` folder using the provided Docker settings or Spring boot r
 - `JWT_SECRET` = Random signing key
 - `PORT` = 8080
 
+#### ⚡ Render Free Tier Keep-Alive & Pre-Warm
+Render's free tier spins down backend services after 15 minutes of inactivity, causing cold start delays up to 50 seconds on the next request. We've resolved this using two methods:
+1. **Frontend Pre-Warming**: The React app triggers a non-blocking background fetch to the `/api/auth/health` endpoint immediately when any user lands on the website (Main, Signin, or Signup). This initiates the spin-up sequence in the background before the user attempts login.
+2. **24/7 Keep-Alive (Recommended)**: To completely prevent Render from sleeping, set up a free uptime monitor (e.g., [UptimeRobot](https://uptimerobot.com) or [cron-job.org](https://cron-job.org)) to ping your backend's health check endpoint every 10–14 minutes:
+   * **Target URL**: `https://<your-render-app-url>.onrender.com/api/auth/health`
+   * **Method**: `GET`
+   * **Interval**: Every 10 minutes
+
 ---
 
 ## 🔑 Environment Variables
