@@ -9,6 +9,6 @@ export default defineConfig({
     open: true, // opens the app in browser on start
   },
   build: {
-    outDir: 'dist',
+    outDir: 'build',
   },
 });
