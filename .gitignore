@@ -11,6 +11,8 @@
 
 # Production build
 /build
+/dist
+.vite
 
 # Env files (contains secrets — never commit real ones)
 .env

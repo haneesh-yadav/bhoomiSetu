@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Base API URL — uses REACT_APP_API_URL env var in production, falls back to localhost for development
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+// Base API URL — uses VITE_API_URL env var in production, falls back to localhost for development
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 const api = axios.create({
   baseURL: API_URL,
