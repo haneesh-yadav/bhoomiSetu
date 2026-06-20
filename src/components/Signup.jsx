@@ -658,7 +658,7 @@ export default function Signup() {
           {/* Log in link */}
           <div className="sg-login-row">
             Already have an account?{" "}
-            <Link to="/login" className="sg-login-link">Log in</Link>
+            <Link to="/signin" className="sg-login-link">Log in</Link>
           </div>
 
         </div>
