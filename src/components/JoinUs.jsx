@@ -417,7 +417,7 @@ const CSS = `
 ══════════════════════════════════════════════════ */
 export default function JoinUs() {
   const navigate = useNavigate();
-  const { signup } = useAuth();
+  const { joinus } = useAuth();
 
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
