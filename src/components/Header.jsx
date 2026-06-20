@@ -991,7 +991,7 @@ export default function Header({ user, onLogout }) {
           <>
             {/* Desktop Guest Buttons */}
             <div className="bh-right-section" style={{ gap: "12px", marginLeft: "auto", marginRight: "1.2rem" }}>
-              {(path === "/signin" || path === "/signup") && (
+              {(path === "/signin" || path === "joinus") && (
                 <button
                   className="bh-back-home-btn"
                   onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.7)"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
@@ -1005,7 +1005,7 @@ export default function Header({ user, onLogout }) {
                 </button>
               )}
               <button className="rh-btn-outline" onClick={() => navigate("/signin")}>Sign in</button>
-              <button className="rh-btn-filled" onClick={() => navigate("/signup")}>Join Us</button>
+              <button className="rh-btn-filled" onClick={() => navigate("joinus")}>Join Us</button>
             </div>
 
             {/* Mobile Guest Hamburger */}
@@ -1022,7 +1022,7 @@ export default function Header({ user, onLogout }) {
 
               {mobileOpen && (
                 <div className="bh-mobile-menu" style={{ borderTopColor: accent }}>
-                  {(path === "/signin" || path === "/signup") && (
+                  {(path === "/signin" || path === "joinus") && (
                     <button
                       className="bh-mobile-item"
                       onClick={() => { navigate("/"); setMobileOpen(false); }}
@@ -1046,7 +1046,7 @@ export default function Header({ user, onLogout }) {
                   </button>
                   <button
                     className="bh-mobile-item"
-                    onClick={() => { navigate("/signup"); setMobileOpen(false); }}
+                    onClick={() => { navigate("joinus"); setMobileOpen(false); }}
                     style={{ borderBottom: "none" }}
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

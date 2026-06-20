@@ -415,7 +415,7 @@ const CSS = `
 /* ══════════════════════════════════════════════════
    COMPONENT
 ══════════════════════════════════════════════════ */
-export default function Signup() {
+export default function JoinUs() {
   const navigate = useNavigate();
   const { signup } = useAuth();
 

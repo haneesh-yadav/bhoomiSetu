@@ -8,7 +8,7 @@ import RegistrarLayout from "../components/layouts/RegistrarLayout";
 /* Public */
 import Main   from "../components/Main";
 import Signin  from "../components/Signin";
-import Signup from "../components/Signup";
+import JoinUs from "../components/JoinUs";
 
 /* User */
 import UserDashboard   from "../pages/user/UserDashboard";
@@ -43,7 +43,7 @@ export default function AppRoutes() {
       <Routes>
         <Route path="/"        element={user ? <Navigate to={userDash} replace /> : <Main />} />
         <Route path="/signin"   element={user ? <Navigate to={userDash} replace /> : <Signin />} />
-        <Route path="/signup"  element={user ? <Navigate to="/user/dashboard" replace /> : <Signup />} />
+        <Route path="/joinus"  element={user ? <Navigate to="/user/dashboard" replace /> : <JoinUs />} />
 
         <Route element={<ProtectedRoute role="user"><UserLayout /></ProtectedRoute>}>
           <Route path="/user/dashboard"       element={<UserDashboard />} />
