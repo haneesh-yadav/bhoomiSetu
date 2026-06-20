@@ -50,26 +50,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 5. If user email is present and they are not already authenticated
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             
-            // Load user from database
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            try {
+                // Load user from database
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
-            // Check if token is valid
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                
-                // Create the authentication token
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                
-                // Set the details
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                
-                // Update the security context
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                // Check if token is valid
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    
+                    // Create the authentication token
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    
+                    // Set the details
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+                    
+                    // Update the security context
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (org.springframework.security.core.userdetails.UsernameNotFoundException e) {
+                // If the user is not found, we simply ignore the token and don't authenticate.
+                // This allows the request to continue (e.g., to reach /login or return 401).
             }
         }
         
