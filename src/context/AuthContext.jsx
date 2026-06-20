@@ -50,7 +50,7 @@ export function AuthProvider({ children }) {
       setUser(userData);
       return { success: true, user: userData };
     } catch (error) {
-      return { success: false, error: error.response?.data?.message || "Login failed" };
+      return { success: false, error: error.response?.data?.message || "Invalid Credentials" };
     }
   };
 
