@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Operations Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #161616;
+    --panel: #1c1c1c;
+    --panel-2: #212121;
+    --panel-3: #262626;
+    --border: rgba(255,255,255,0.07);
+    --border-2: rgba(255,255,255,0.10);
+    --text: #f3f3f1;
+    --text-dim: #9a9a96;
+    --text-dimmer: #6c6c69;
+    --accent: #e3f25f;
+    --accent-dim: rgba(227,242,95,0.14);
+    --green: #74e08a;
+    --green-bg: rgba(116,224,138,0.14);
+    --orange: #f0a13c;
+    --orange-bg: rgba(240,161,60,0.14);
+    --red: #ef6a5f;
+    --red-bg: rgba(239,106,95,0.16);
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --radius-sm: 10px;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+
+  html, body{
+    height:100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root{ height:100%; }
+
+  button{ font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+  input{ font-family:inherit; }
+
+  .app{
+    display:flex;
+    height:100vh;
+    width:100vw;
+    padding:14px;
+    gap:14px;
+    overflow:hidden;
+  }
+
+  /* ---------------- SIDEBAR ---------------- */
+  .sidebar{
+    width:64px;
+    flex-shrink:0;
+    background: var(--panel);
+    border:1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:16px 0;
+  }
+  .sidebar-logo{
+    width:34px;
+    height:34px;
+    border-radius:9px;
+    background: var(--accent-dim);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:22px;
+  }
+  .sidebar-logo svg{ width:18px; height:18px; }
+
+  .sidebar-nav{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    flex:1;
+  }
+  .sb-btn{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color: var(--text-dim);
+    transition: background .15s ease, color .15s ease;
+  }
+  .sb-btn:hover{ background: var(--panel-3); color: var(--text); }
+  .sb-btn.active{ background: var(--text); color:#111; }
+  .sb-btn svg{ width:17px; height:17px; }
+
+  .sidebar-bottom{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    align-items:center;
+    border-top:1px solid var(--border);
+    padding-top:14px;
+    width:100%;
+  }
+
+  /* ---------------- MAIN ---------------- */
+  .main{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    overflow:hidden;
+  }
+
+  /* topbar */
+  .topbar{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap: nowrap;
+  }
+  .stat-pills{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background: var(--panel);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:6px;
+    flex-shrink:1;
+    overflow:hidden;
+  }
+  .stat-pill{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12.5px;
+    color: var(--text-dim);
+    padding:6px 11px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .stat-pill svg{ width:13px; height:13px; flex-shrink:0; opacity:.8; }
+  .stat-pill b{ color: var(--text); font-weight:600; }
+  .stat-divider{ width:1px; height:14px; background:var(--border-2); }
+
+  .search-bar{
+    flex:1;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background: var(--panel);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:9px 14px;
+    color: var(--text-dimmer);
+    min-width:140px;
+  }
+  .search-bar svg{ width:15px; height:15px; flex-shrink:0; }
+  .search-bar span.ph{ font-size:13px; color: var(--text-dimmer); flex:1; }
+  .kbd{
+    font-size:11px;
+    color: var(--text-dimmer);
+    border:1px solid var(--border-2);
+    border-radius:6px;
+    padding:2px 6px;
+  }
+
+  .topbar-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-shrink:0;
+  }
+  .icon-btn{
+    width:38px;
+    height:38px;
+    border-radius:999px;
+    background: var(--panel);
+    border:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    color: var(--text-dim);
+  }
+  .icon-btn svg{ width:16px; height:16px; }
+  .badge-dot{
+    position:absolute;
+    top:-4px; right:-4px;
+    background:#e8543f;
+    color:white;
+    font-size:9.5px;
+    font-weight:700;
+    border-radius:999px;
+    padding:2px 5px;
+    border:2px solid var(--bg);
+    line-height:1;
+  }
+  .user-chip{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    background: var(--panel);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:5px 12px 5px 6px;
+  }
+  .avatar{
+    width:28px; height:28px;
+    border-radius:999px;
+    background:#46493a;
+    color: var(--accent);
+    font-size:11px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .user-meta{ line-height:1.2; }
+  .user-name{ font-size:12.5px; font-weight:600; }
+  .user-role{ font-size:11px; color: var(--text-dimmer); }
+  .user-chip svg{ width:12px; height:12px; color: var(--text-dimmer); margin-left:2px; }
+
+  /* page header */
+  .page-header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+  }
+  .page-title{ font-size:26px; font-weight:700; letter-spacing:-0.02em; }
+  .page-sub{ font-size:13px; color: var(--text-dimmer); margin-top:5px; }
+  .range-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background: var(--panel);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:9px 14px;
+    font-size:13px;
+    color: var(--text-dim);
+  }
+  .range-btn svg{ width:13px; height:13px; }
+
+  /* filter row */
+  .filter-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+  }
+  .tabs{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    background: var(--panel);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:5px;
+  }
+  .tab{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:7px 12px;
+    border-radius:999px;
+    font-size:13px;
+    color: var(--text-dim);
+  }
+  .tab.active{ background: var(--panel-3); color: var(--text); }
+  .tab b{
+    background: rgba(255,255,255,0.10);
+    color: var(--text);
+    font-size:11px;
+    font-weight:600;
+    padding:1px 7px;
+    border-radius:999px;
+  }
+  .tab.active b{ background:#111; color:var(--text);}
+  .filter-icon-btn{
+    width:34px; height:34px;
+    border-radius:999px;
+    background: var(--panel);
+    border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--text-dim);
+    margin-left:4px;
+  }
+  .filter-icon-btn svg{ width:14px; height:14px; }
+
+  .toggles{ display:flex; align-items:center; gap:18px; flex-shrink:0; }
+  .toggle-row{ display:flex; align-items:center; gap:9px; }
+  .toggle-row span{ font-size:13px; color: var(--text-dim); }
+  .switch{
+    width:38px; height:22px;
+    border-radius:999px;
+    background:#3a4327;
+    position:relative;
+    flex-shrink:0;
+    transition: background .15s ease;
+  }
+  .switch.on{ background:#6fbf3f; }
+  .switch i{
+    position:absolute;
+    top:3px; left:3px;
+    width:16px; height:16px;
+    border-radius:999px;
+    background:#fff;
+    transition: left .15s ease;
+  }
+  .switch.on i{ left:19px; }
+
+  /* content area */
+  .content-area{
+    position:relative;
+    flex:1;
+    min-height:0;
+    border-radius: var(--radius-lg);
+    overflow:hidden;
+    border:1px solid var(--border);
+  }
+  .map-bg{
+    position:absolute;
+    inset:0;
+    background-color:#1b1d1a;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.045) 0px, rgba(255,255,255,0.045) 1px, transparent 1px, transparent 64px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0px, rgba(255,255,255,0.045) 1px, transparent 1px, transparent 64px),
+      radial-gradient(circle at 30% 65%, rgba(227,242,95,0.07), transparent 45%);
+  }
+  .map-bg::before{
+    content:'';
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.035) 39%, rgba(255,255,255,0.035) 40%, transparent 41%),
+      linear-gradient(25deg, transparent 60%, rgba(255,255,255,0.03) 61%, rgba(255,255,255,0.03) 62%, transparent 63%),
+      linear-gradient(160deg, transparent 20%, rgba(255,255,255,0.03) 21%, rgba(255,255,255,0.03) 21.6%, transparent 22%);
+  }
+
+  .truck-marker{
+    position:absolute;
+    color: rgba(255,255,255,0.5);
+    transform: rotate(var(--rot, 0deg));
+  }
+  .truck-marker svg{ width:26px; height:26px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+
+  .focus-marker{
+    position:absolute;
+    width:64px; height:64px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .focus-marker .pulse{
+    position:absolute;
+    width:64px; height:64px;
+    border-radius:999px;
+    background: radial-gradient(circle, rgba(227,242,95,0.30), rgba(227,242,95,0) 70%);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%{ transform:scale(0.6); opacity:.9; }
+    70%{ transform:scale(1.5); opacity:0; }
+    100%{ transform:scale(1.5); opacity:0; }
+  }
+  .focus-marker .truck-icon{
+    position:relative;
+    width:30px; height:30px;
+    border-radius:999px;
+    background:#d9d9d4;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 10px rgba(0,0,0,0.5);
+    transform: rotate(-35deg);
+  }
+  .focus-marker .truck-icon svg{ width:16px; height:16px; color:#1a1a1a; transform: rotate(35deg); }
+
+  .map-footer-text{
+    position:absolute;
+    bottom:16px;
+    font-size:11.5px;
+    color: rgba(255,255,255,0.45);
+  }
+  .map-footer-text.left{ left:18px; }
+  .map-footer-text.right{ right:18px; }
+
+  /* compass */
+  .compass{
+    position:absolute;
+    top:18px; right:18px;
+    width:118px; height:118px;
+    border-radius:999px;
+    background: rgba(20,20,18,0.78);
+    border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(6px);
+  }
+  .compass-dial{
+    position:absolute;
+    inset:9px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,0.10);
+    background: radial-gradient(circle at 50% 35%, #2a2a26, #101010 75%);
+  }
+  .compass-ticks{ position:absolute; inset:0; }
+  .compass-label{
+    position:absolute;
+    font-size:9px;
+    font-weight:600;
+    color: rgba(255,255,255,0.55);
+    transform: translate(-50%,-50%);
+  }
+  .compass-label.main{ font-size:15px; font-weight:700; color: var(--text); top:50%; left:50%; transform:translate(-50%,-130%); }
+  .compass-needle{
+    position:absolute;
+    top:50%; left:50%;
+    width:0; height:0;
+    border-left:5px solid transparent;
+    border-right:5px solid transparent;
+    border-bottom:16px solid #e2543f;
+    transform-origin: 50% 100%;
+    transform: translate(-50%,-100%) rotate(8deg);
+    filter: drop-shadow(0 0 4px rgba(226,84,63,0.6));
+  }
+  .compass-core{
+    position:absolute;
+    top:50%; left:50%;
+    width:36px; height:36px;
+    border-radius:999px;
+    background:#0c0c0c;
+    transform: translate(-50%,-50%);
+    border:1px solid rgba(255,255,255,0.08);
+  }
+
+  /* map controls */
+  .map-controls{
+    position:absolute;
+    right:16px;
+    top:150px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .map-ctl-btn{
+    width:34px; height:34px;
+    border-radius:999px;
+    background: rgba(28,28,26,0.85);
+    border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(4px);
+    display:flex; align-items:center; justify-content:center;
+    color: rgba(255,255,255,0.75);
+  }
+  .map-ctl-btn svg{ width:15px; height:15px; }
+
+  /* vehicle card */
+  .vehicle-card{
+    position:absolute;
+    top:18px; left:18px;
+    width:340px;
+    background: rgba(24,24,22,0.92);
+    backdrop-filter: blur(10px);
+    border:1px solid var(--border-2);
+    border-radius: var(--radius-md);
+    padding:16px;
+    box-shadow: 0 24px 48px rgba(0,0,0,0.45);
+  }
+  .vc-head{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .vc-thumb{
+    width:42px; height:42px;
+    border-radius:11px;
+    background: var(--panel-3);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .vc-thumb svg{ width:24px; height:24px; color:#cfcfca; }
+  .vc-title-row{ flex:1; min-width:0; }
+  .vc-title-line{ display:flex; align-items:center; gap:8px; }
+  .vc-title{ font-size:15px; font-weight:700; }
+  .vc-status{
+    font-size:10.5px;
+    font-weight:600;
+    color: var(--green);
+    background: var(--green-bg);
+    padding:2px 8px;
+    border-radius:999px;
+  }
+  .vc-sub{ font-size:12px; color: var(--text-dimmer); margin-top:3px; }
+  .vc-close{ color: var(--text-dimmer); width:16px; height:16px; flex-shrink:0; margin-top:2px; }
+
+  .vc-divider{ height:1px; background: var(--border); margin:14px 0; }
+
+  .vc-row{ display:flex; align-items:center; justify-content:space-between; font-size:12.5px; }
+  .vc-route{ font-weight:600; color: var(--text); }
+  .vc-route-meta{ display:flex; gap:8px; align-items:baseline; color: var(--text-dimmer); }
+  .vc-route-meta b{ color: var(--text); font-weight:600; }
+
+  .progress-track{
+    height:6px;
+    border-radius:999px;
+    background: rgba(255,255,255,0.08);
+    margin-top:9px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    border-radius:999px;
+    background: linear-gradient(90deg, #c97c2c, var(--orange));
+  }
+
+  .vc-eta-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:12px;
+    font-size:12px;
+    color: var(--text-dim);
+  }
+  .vc-eta-row .left{ display:flex; align-items:center; gap:6px; }
+  .vc-eta-row svg{ width:13px; height:13px; }
+  .vc-eta-row b{ color: var(--text); font-weight:600; }
+  .vc-eta-row .right{ display:flex; gap:6px; align-items:baseline; }
+  .vc-eta-row .right b{ color:var(--text); }
+  .vc-eta-row .right span{ color: var(--text-dimmer); }
+
+  .vc-stats{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+    margin-top:14px;
+  }
+  .stat-box{
+    background: var(--panel-3);
+    border-radius: 14px;
+    padding:12px;
+  }
+  .stat-box-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:11.5px;
+    color: var(--text-dim);
+    margin-bottom:8px;
+  }
+  .pill-sm{
+    font-size:10px;
+    font-weight:700;
+    padding:2px 7px;
+    border-radius:999px;
+  }
+  .pill-sm.red{ background: var(--red-bg); color: var(--red); }
+  .pill-sm.orange{ background: var(--orange-bg); color: var(--orange); }
+
+  .gauge-wrap{ display:flex; flex-direction:column; align-items:center; }
+  .gauge-val{
+    font-size:16px;
+    font-weight:700;
+    margin-top:2px;
+    text-align:center;
+  }
+  .fuel-icon-row{
+    display:flex; align-items:center; justify-content:center; gap:5px;
+    margin-bottom:2px;
+  }
+  .fuel-icon-row svg{ width:13px; height:13px; color: var(--text-dimmer); }
+  .fuel-sub{
+    display:flex; align-items:center; justify-content:center; gap:4px;
+    font-size:10.5px; color: var(--text-dimmer);
+    margin-top:4px;
+  }
+  .fuel-sub svg{ width:10px; height:10px; }
+  .fuel-arc-track{
+    width:100%;
+    height:7px;
+    border-radius:999px;
+    background: rgba(255,255,255,0.08);
+    margin-top:10px;
+    overflow:hidden;
+  }
+  .fuel-arc-fill{
+    height:100%;
+    width:31%;
+    border-radius:999px;
+    background: linear-gradient(90deg, #c97c2c, var(--orange));
+  }
+
+  .warning-banner{
+    margin-top:12px;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    background: var(--orange-bg);
+    border:1px solid rgba(240,161,60,0.25);
+    border-radius:12px;
+    padding:10px 12px;
+    font-size:12px;
+    color: #e8c08a;
+  }
+  .warning-banner svg{ width:15px; height:15px; color: var(--orange); flex-shrink:0; }
+  .warning-banner b{ color: var(--orange); font-weight:700; }
+
+  ::selection{ background: var(--accent-dim); }
+
+  @media (max-width: 880px){
+    .stat-pills{ display:none; }
+    .vehicle-card{ width: calc(100% - 36px); }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+  // Load React + ReactDOM with a CDN fallback, so the page still works
+  // if the primary CDN is blocked by a network/firewall.
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  function loadWithFallback(urls) {
+    return urls.reduce(function (p, url) {
+      return p.catch(function () { return loadScript(url); });
+    }, Promise.reject());
+  }
+  window.__reactReady = loadWithFallback([
+    'https://unpkg.com/react@18.3.1/umd/react.production.min.js',
+    'https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js'
+  ]).then(function () {
+    return loadWithFallback([
+      'https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js',
+      'https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js'
+    ]);
+  });
+</script>
+
+<script>
+window.__reactReady.then(function () {
+  try {
+const {
+  useState
+} = React;
+
+/* ---------- tiny icon set ---------- */
+const Icon = {
+  Grid: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("rect", {
+    x: "3",
+    y: "3",
+    width: "8",
+    height: "8",
+    rx: "2",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "13",
+    y: "3",
+    width: "8",
+    height: "8",
+    rx: "2",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "3",
+    y: "13",
+    width: "8",
+    height: "8",
+    rx: "2",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "13",
+    y: "13",
+    width: "8",
+    height: "8",
+    rx: "2",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  })),
+  Columns: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("rect", {
+    x: "3",
+    y: "4",
+    width: "18",
+    height: "16",
+    rx: "2",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "9",
+    y1: "4",
+    x2: "9",
+    y2: "20",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "15",
+    y1: "4",
+    x2: "15",
+    y2: "20",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  })),
+  Truck: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("rect", {
+    x: "2",
+    y: "7",
+    width: "12",
+    height: "9",
+    rx: "1.4",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M14 10h4l3 3v3h-7v-6Z",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinejoin: "round"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "7",
+    cy: "18",
+    r: "1.7",
+    stroke: "currentColor",
+    strokeWidth: "1.6"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "17.5",
+    cy: "18",
+    r: "1.7",
+    stroke: "currentColor",
+    strokeWidth: "1.6"
+  })),
+  Users: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "9",
+    cy: "8",
+    r: "3.2",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "17",
+    cy: "9",
+    r: "2.6",
+    stroke: "currentColor",
+    strokeWidth: "1.6"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M15.5 14a5 5 0 0 1 6 4.6",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinecap: "round"
+  })),
+  Route: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "6",
+    cy: "6",
+    r: "2.2",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "18",
+    cy: "18",
+    r: "2.2",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M6 8.2V13a3 3 0 0 0 3 3h4a3 3 0 0 1 3 3v-1",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  })),
+  Flag: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M5 3v18",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M5 4h11l-2.5 3.5L16 11H5",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinejoin: "round"
+  })),
+  Help: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "9",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M9.5 9.3a2.5 2.5 0 1 1 3.8 2.1c-.9.6-1.3 1-1.3 2",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "16.6",
+    r: "0.9",
+    fill: "currentColor"
+  })),
+  Gear: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "3",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M19.4 13.5a7.6 7.6 0 0 0 0-3l1.9-1.3-2-3.4-2.2.8a7.7 7.7 0 0 0-2.6-1.5L14 2.8h-4l-.5 2.3a7.7 7.7 0 0 0-2.6 1.5l-2.2-.8-2 3.4L4.6 10.5a7.6 7.6 0 0 0 0 3L2.7 14.8l2 3.4 2.2-.8c.76.66 1.64 1.18 2.6 1.5l.5 2.3h4l.5-2.3a7.7 7.7 0 0 0 2.6-1.5l2.2.8 2-3.4-1.9-1.3Z",
+    stroke: "currentColor",
+    strokeWidth: "1.4",
+    strokeLinejoin: "round"
+  })),
+  PanelRight: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("rect", {
+    x: "3",
+    y: "4",
+    width: "18",
+    height: "16",
+    rx: "2",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "15",
+    y1: "4",
+    x2: "15",
+    y2: "20",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  })),
+  Search: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "11",
+    cy: "11",
+    r: "7",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "21",
+    y1: "21",
+    x2: "16.3",
+    y2: "16.3",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  })),
+  Bell: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M6 10a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 14 6 10Z",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinejoin: "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M9.5 18.5a2.5 2.5 0 0 0 5 0",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  })),
+  Chevron: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M6 9l6 6 6-6",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })),
+  Calendar: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("rect", {
+    x: "3",
+    y: "5",
+    width: "18",
+    height: "16",
+    rx: "2",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "3",
+    y1: "10",
+    x2: "21",
+    y2: "10",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "8",
+    y1: "3",
+    x2: "8",
+    y2: "7",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "16",
+    y1: "3",
+    x2: "16",
+    y2: "7",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  })),
+  Filter: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M4 5h16l-6 7.5V19l-4 2v-8.5L4 5Z",
+    stroke: "currentColor",
+    strokeWidth: "1.7",
+    strokeLinejoin: "round"
+  })),
+  X: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("line", {
+    x1: "5",
+    y1: "5",
+    x2: "19",
+    y2: "19",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "19",
+    y1: "5",
+    x2: "5",
+    y2: "19",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  })),
+  Clock: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "9",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M12 7v5l3.5 2",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  })),
+  Fuel: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15",
+    stroke: "currentColor",
+    strokeWidth: "1.7",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "4",
+    y1: "21",
+    x2: "14",
+    y2: "21",
+    stroke: "currentColor",
+    strokeWidth: "1.7",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M14 9h2l3 3v5.5a1.5 1.5 0 0 1-3 0V15a1.5 1.5 0 0 0-1.5-1.5H14",
+    stroke: "currentColor",
+    strokeWidth: "1.7",
+    strokeLinejoin: "round"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "6.5",
+    y1: "9",
+    x2: "11.5",
+    y2: "9",
+    stroke: "currentColor",
+    strokeWidth: "1.7",
+    strokeLinecap: "round"
+  })),
+  Thermo: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M12 14.5V5a2 2 0 1 0-4 0v9.5a4 4 0 1 0 4 0Z",
+    stroke: "currentColor",
+    strokeWidth: "1.7",
+    strokeLinejoin: "round"
+  })),
+  Alert: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M12 3 1 21h22L12 3Z",
+    stroke: "currentColor",
+    strokeWidth: "1.7",
+    strokeLinejoin: "round"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "12",
+    y1: "9.5",
+    x2: "12",
+    y2: "14",
+    stroke: "currentColor",
+    strokeWidth: "1.7",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "17",
+    r: "1",
+    fill: "currentColor"
+  })),
+  List: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("line", {
+    x1: "4",
+    y1: "6",
+    x2: "20",
+    y2: "6",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "4",
+    y1: "12",
+    x2: "20",
+    y2: "12",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "4",
+    y1: "18",
+    x2: "20",
+    y2: "18",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  })),
+  ZoomIn: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "11",
+    cy: "11",
+    r: "7",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "21",
+    y1: "21",
+    x2: "16.3",
+    y2: "16.3",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "8",
+    y1: "11",
+    x2: "14",
+    y2: "11",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "11",
+    y1: "8",
+    x2: "11",
+    y2: "14",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinecap: "round"
+  })),
+  ZoomOut: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "11",
+    cy: "11",
+    r: "7",
+    stroke: "currentColor",
+    strokeWidth: "1.8"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "21",
+    y1: "21",
+    x2: "16.3",
+    y2: "16.3",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "8",
+    y1: "11",
+    x2: "14",
+    y2: "11",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinecap: "round"
+  })),
+  Refresh: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M20 11A8 8 0 1 0 18.5 16",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M20 5v6h-6",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })),
+  Expand: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M9 3H3v6M15 3h6v6M9 21H3v-6M15 21h6v-6",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })),
+  Layers: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    ...p
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M12 3 2 8l10 5 10-5-10-5Z",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinejoin: "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M2 13l10 5 10-5",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinejoin: "round"
+  })),
+  Plus: p => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "currentColor",
+    ...p
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M13 4a1 1 0 0 0-2 0v3a4 4 0 0 1-4 4H4a1 1 0 0 0 0 2h3a4 4 0 0 1 4 4v3a1 1 0 0 0 2 0v-3a4 4 0 0 1 4-4h3a1 1 0 0 0 0-2h-3a4 4 0 0 1-4-4V4Z"
+  }))
+};
+
+/* ---------- speed gauge (SVG arc) ---------- */
+function SpeedGauge({
+  value,
+  max = 150
+}) {
+  const startAngle = 180,
+    endAngle = 0;
+  const r = 38,
+    cx = 50,
+    cy = 50;
+  const toXY = deg => {
+    const rad = deg * Math.PI / 180;
+    return [cx + r * Math.cos(rad), cy - r * Math.sin(rad)];
+  };
+  const arcPath = (a1, a2) => {
+    const [x1, y1] = toXY(a1);
+    const [x2, y2] = toXY(a2);
+    const large = a1 - a2 > 180 ? 1 : 0;
+    return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
+  };
+  const frac = Math.min(value / max, 1);
+  const needleAngle = startAngle - frac * (startAngle - endAngle);
+  const [nx, ny] = toXY(needleAngle);
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 100 58",
+    width: "100%",
+    height: "86"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: arcPath(180, 0),
+    stroke: "rgba(255,255,255,0.08)",
+    strokeWidth: "7",
+    fill: "none",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: arcPath(180, 120),
+    stroke: "#7fd45a",
+    strokeWidth: "7",
+    fill: "none",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: arcPath(120, 55),
+    stroke: "#e3d65a",
+    strokeWidth: "7",
+    fill: "none",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: arcPath(55, 0),
+    stroke: "#e0625a",
+    strokeWidth: "7",
+    fill: "none",
+    strokeLinecap: "round"
+  }), [0, 25, 50, 75, 100, 125, 150].map(t => {
+    const ang = startAngle - t / max * (startAngle - endAngle);
+    const [tx, ty] = toXY(ang);
+    return /*#__PURE__*/React.createElement("text", {
+      key: t,
+      x: tx,
+      y: ty + 1,
+      fontSize: "5.5",
+      fill: "rgba(255,255,255,0.35)",
+      textAnchor: "middle"
+    }, t);
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: cx,
+    y1: cy,
+    x2: nx,
+    y2: ny * 1,
+    stroke: "#f3f3f1",
+    strokeWidth: "2",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: cx,
+    cy: cy,
+    r: "3.4",
+    fill: "#f3f3f1"
+  }));
+}
+
+/* ---------- fuel gauge arc (circular partial) ---------- */
+function FuelRing({
+  pct
+}) {
+  const r = 34,
+    cx = 40,
+    cy = 40;
+  const circ = 2 * Math.PI * r;
+  const offset = circ * (1 - pct / 100);
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 80 80",
+    width: "78",
+    height: "78"
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: cx,
+    cy: cy,
+    r: r,
+    stroke: "rgba(255,255,255,0.08)",
+    strokeWidth: "7",
+    fill: "none"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: cx,
+    cy: cy,
+    r: r,
+    stroke: "url(#fuelGrad)",
+    strokeWidth: "7",
+    fill: "none",
+    strokeDasharray: circ,
+    strokeDashoffset: offset,
+    strokeLinecap: "round",
+    transform: `rotate(-90 ${cx} ${cy})`
+  }), /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
+    id: "fuelGrad",
+    x1: "0",
+    y1: "0",
+    x2: "1",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0%",
+    stopColor: "#c97c2c"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "100%",
+    stopColor: "#f0a13c"
+  }))));
+}
+
+/* ---------- sidebar ---------- */
+function Sidebar() {
+  const items = [{
+    Icon: Icon.Grid,
+    label: "Dashboard"
+  }, {
+    Icon: Icon.Columns,
+    label: "Fleet"
+  }, {
+    Icon: Icon.Truck,
+    label: "Vehicles",
+    active: true
+  }, {
+    Icon: Icon.Users,
+    label: "Drivers"
+  }, {
+    Icon: Icon.Route,
+    label: "Routes"
+  }, {
+    Icon: Icon.Flag,
+    label: "Reports"
+  }];
+  return /*#__PURE__*/React.createElement("aside", {
+    className: "sidebar"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "sidebar-logo"
+  }, /*#__PURE__*/React.createElement(Icon.Plus, {
+    style: {
+      color: "var(--accent)"
+    }
+  })), /*#__PURE__*/React.createElement("nav", {
+    className: "sidebar-nav"
+  }, items.map(({
+    Icon: I,
+    label,
+    active
+  }) => /*#__PURE__*/React.createElement("button", {
+    key: label,
+    className: "sb-btn" + (active ? " active" : ""),
+    title: label
+  }, /*#__PURE__*/React.createElement(I, null)))), /*#__PURE__*/React.createElement("div", {
+    className: "sidebar-bottom"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "sb-btn",
+    title: "Help"
+  }, /*#__PURE__*/React.createElement(Icon.Help, null)), /*#__PURE__*/React.createElement("button", {
+    className: "sb-btn",
+    title: "Settings"
+  }, /*#__PURE__*/React.createElement(Icon.Gear, null)), /*#__PURE__*/React.createElement("button", {
+    className: "sb-btn",
+    title: "Collapse"
+  }, /*#__PURE__*/React.createElement(Icon.PanelRight, null))));
+}
+
+/* ---------- topbar ---------- */
+function Topbar() {
+  const stats = [{
+    Icon: Icon.Truck,
+    label: "Active",
+    value: "6/10"
+  }, {
+    Icon: Icon.Users,
+    label: "Drivers",
+    value: "6/8"
+  }, {
+    Icon: Icon.Route,
+    label: "Trips",
+    value: "5"
+  }, {
+    Icon: Icon.Fuel,
+    label: "Avg. Fuel",
+    value: "56.2%"
+  }, {
+    Icon: Icon.Clock,
+    label: "On-time",
+    value: "94.2%"
+  }];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "topbar"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-pills"
+  }, stats.map((s, i) => /*#__PURE__*/React.createElement(React.Fragment, {
+    key: s.label
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-pill"
+  }, /*#__PURE__*/React.createElement(s.Icon, null), " ", s.label, ": ", /*#__PURE__*/React.createElement("b", null, s.value)), i < stats.length - 1 && /*#__PURE__*/React.createElement("div", {
+    className: "stat-divider"
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "search-bar"
+  }, /*#__PURE__*/React.createElement(Icon.Search, {
+    style: {
+      color: "var(--text-dimmer)"
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "ph"
+  }, "Search vehicles, trips, or more..."), /*#__PURE__*/React.createElement("span", {
+    className: "kbd"
+  }, "⌘K")), /*#__PURE__*/React.createElement("div", {
+    className: "topbar-right"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "icon-btn"
+  }, /*#__PURE__*/React.createElement(Icon.Bell, null), /*#__PURE__*/React.createElement("span", {
+    className: "badge-dot"
+  }, "+8")), /*#__PURE__*/React.createElement("div", {
+    className: "user-chip"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "avatar"
+  }, "LN"), /*#__PURE__*/React.createElement("div", {
+    className: "user-meta"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "user-name"
+  }, "Lisa Nguyen"), /*#__PURE__*/React.createElement("div", {
+    className: "user-role"
+  }, "Manager")), /*#__PURE__*/React.createElement(Icon.Chevron, null))));
+}
+
+/* ---------- page header ---------- */
+function PageHeader() {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "page-header"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "page-title"
+  }, "Operations Dashboard"), /*#__PURE__*/React.createElement("div", {
+    className: "page-sub"
+  }, "Monday, April 8, 2026 · Real-time overview")), /*#__PURE__*/React.createElement("button", {
+    className: "range-btn"
+  }, /*#__PURE__*/React.createElement(Icon.Calendar, null), " Last 7 days ", /*#__PURE__*/React.createElement(Icon.Chevron, null)));
+}
+
+/* ---------- filter row ---------- */
+function FilterRow() {
+  const [routes, setRoutes] = useState(true);
+  const [alerts, setAlerts] = useState(true);
+  const tabs = [{
+    label: "All",
+    count: 10,
+    active: true
+  }, {
+    label: "Active",
+    count: 6
+  }, {
+    label: "Idle",
+    count: 2
+  }, {
+    label: "Maintenance",
+    count: 1
+  }, {
+    label: "Offline",
+    count: 1
+  }];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "filter-row"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "tabs"
+  }, tabs.map(t => /*#__PURE__*/React.createElement("div", {
+    key: t.label,
+    className: "tab" + (t.active ? " active" : "")
+  }, t.label, " ", /*#__PURE__*/React.createElement("b", null, t.count)))), /*#__PURE__*/React.createElement("button", {
+    className: "filter-icon-btn"
+  }, /*#__PURE__*/React.createElement(Icon.Filter, null))), /*#__PURE__*/React.createElement("div", {
+    className: "toggles"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "toggle-row"
+  }, /*#__PURE__*/React.createElement("span", null, "Show routes"), /*#__PURE__*/React.createElement("div", {
+    className: "switch" + (routes ? " on" : ""),
+    onClick: () => setRoutes(!routes)
+  }, /*#__PURE__*/React.createElement("i", null))), /*#__PURE__*/React.createElement("div", {
+    className: "toggle-row"
+  }, /*#__PURE__*/React.createElement("span", null, "Show alerts"), /*#__PURE__*/React.createElement("div", {
+    className: "switch" + (alerts ? " on" : ""),
+    onClick: () => setAlerts(!alerts)
+  }, /*#__PURE__*/React.createElement("i", null)))));
+}
+
+/* ---------- vehicle card ---------- */
+function VehicleCard() {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "vehicle-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "vc-head"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "vc-thumb"
+  }, /*#__PURE__*/React.createElement(Icon.Truck, null)), /*#__PURE__*/React.createElement("div", {
+    className: "vc-title-row"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "vc-title-line"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "vc-title"
+  }, "TX-4821-HX"), /*#__PURE__*/React.createElement("span", {
+    className: "vc-status"
+  }, "Active")), /*#__PURE__*/React.createElement("div", {
+    className: "vc-sub"
+  }, "Volvo FH16 · 2023 · V001")), /*#__PURE__*/React.createElement(Icon.X, {
+    className: "vc-close"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "vc-divider"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "vc-row"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "vc-route"
+  }, "Dallas, TX → Memphis, TN"), /*#__PURE__*/React.createElement("span", {
+    className: "vc-route-meta"
+  }, /*#__PURE__*/React.createElement("b", null, "282.1 mi"), /*#__PURE__*/React.createElement("span", null, "72%"))), /*#__PURE__*/React.createElement("div", {
+    className: "progress-track"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "progress-fill",
+    style: {
+      width: "72%"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "vc-eta-row"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "left"
+  }, /*#__PURE__*/React.createElement(Icon.Clock, null), " Est. Time to Arrival (ETA): ", /*#__PURE__*/React.createElement("b", null, "~1h 8m")), /*#__PURE__*/React.createElement("span", {
+    className: "right"
+  }, /*#__PURE__*/React.createElement("b", null, "72.9 mi"), /*#__PURE__*/React.createElement("span", null, "Distance remaining"))), /*#__PURE__*/React.createElement("div", {
+    className: "vc-stats"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-box"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-head"
+  }, /*#__PURE__*/React.createElement("span", null, "Speed"), /*#__PURE__*/React.createElement("span", {
+    className: "pill-sm red"
+  }, "High")), /*#__PURE__*/React.createElement("div", {
+    className: "gauge-wrap"
+  }, /*#__PURE__*/React.createElement(SpeedGauge, {
+    value: 78,
+    max: 150
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "gauge-val"
+  }, "78 mph"))), /*#__PURE__*/React.createElement("div", {
+    className: "stat-box"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "stat-box-head"
+  }, /*#__PURE__*/React.createElement("span", null, "Fuel level"), /*#__PURE__*/React.createElement("span", {
+    className: "pill-sm orange"
+  }, "31%")), /*#__PURE__*/React.createElement("div", {
+    className: "gauge-wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fuel-icon-row"
+  }, /*#__PURE__*/React.createElement(Icon.Fuel, null)), /*#__PURE__*/React.createElement("div", {
+    className: "gauge-val"
+  }, "2.13 gal"), /*#__PURE__*/React.createElement("div", {
+    className: "fuel-sub"
+  }, /*#__PURE__*/React.createElement(Icon.Thermo, null), " 56°F"), /*#__PURE__*/React.createElement("div", {
+    className: "fuel-arc-track"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fuel-arc-fill"
+  }))))), /*#__PURE__*/React.createElement("div", {
+    className: "warning-banner"
+  }, /*#__PURE__*/React.createElement(Icon.Alert, null), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("b", null, "Required Break:"), " 30 min (After 8h of driving)")));
+}
+
+/* ---------- compass ---------- */
+function Compass() {
+  const ticks = [{
+    l: "N",
+    a: 0
+  }, {
+    l: "NE",
+    a: 45
+  }, {
+    l: "E",
+    a: 90
+  }, {
+    l: "SE",
+    a: 135
+  }, {
+    l: "S",
+    a: 180
+  }, {
+    l: "SW",
+    a: 225
+  }, {
+    l: "W",
+    a: 270
+  }, {
+    l: "NW",
+    a: 315
+  }];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "compass"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "compass-dial"
+  }, ticks.map(t => {
+    const rad = t.a * Math.PI / 180;
+    const x = 50 + 41 * Math.sin(rad);
+    const y = 50 - 41 * Math.cos(rad);
+    return /*#__PURE__*/React.createElement("div", {
+      key: t.l,
+      className: "compass-label",
+      style: {
+        top: `${y}%`,
+        left: `${x}%`
+      }
+    }, t.l);
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "compass-label main"
+  }, "NW"), /*#__PURE__*/React.createElement("div", {
+    className: "compass-needle"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "compass-core"
+  })));
+}
+
+/* ---------- map ---------- */
+function MapPanel() {
+  const trucks = [{
+    top: "14%",
+    left: "60%",
+    rot: -20
+  }, {
+    top: "68%",
+    left: "16%",
+    rot: 15
+  }, {
+    top: "72%",
+    left: "78%",
+    rot: -40
+  }, {
+    top: "28%",
+    left: "30%",
+    rot: 60
+  }];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "content-area"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "map-bg"
+  }), trucks.map((t, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    className: "truck-marker",
+    style: {
+      top: t.top,
+      left: t.left,
+      ["--rot"]: `${t.rot}deg`
+    }
+  }, /*#__PURE__*/React.createElement(Icon.Truck, null))), /*#__PURE__*/React.createElement("div", {
+    className: "focus-marker",
+    style: {
+      top: "46%",
+      left: "44%"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "pulse"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "truck-icon"
+  }, /*#__PURE__*/React.createElement(Icon.Truck, null))), /*#__PURE__*/React.createElement(VehicleCard, null), /*#__PURE__*/React.createElement(Compass, null), /*#__PURE__*/React.createElement("div", {
+    className: "map-controls"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "map-ctl-btn"
+  }, /*#__PURE__*/React.createElement(Icon.List, null)), /*#__PURE__*/React.createElement("button", {
+    className: "map-ctl-btn"
+  }, /*#__PURE__*/React.createElement(Icon.ZoomIn, null)), /*#__PURE__*/React.createElement("button", {
+    className: "map-ctl-btn"
+  }, /*#__PURE__*/React.createElement(Icon.ZoomOut, null)), /*#__PURE__*/React.createElement("button", {
+    className: "map-ctl-btn"
+  }, /*#__PURE__*/React.createElement(Icon.Refresh, null)), /*#__PURE__*/React.createElement("button", {
+    className: "map-ctl-btn"
+  }, /*#__PURE__*/React.createElement(Icon.Expand, null)), /*#__PURE__*/React.createElement("button", {
+    className: "map-ctl-btn"
+  }, /*#__PURE__*/React.createElement(Icon.Layers, null))), /*#__PURE__*/React.createElement("div", {
+    className: "map-footer-text left"
+  }, "Space + Drag to pan · Scroll to zoom"), /*#__PURE__*/React.createElement("div", {
+    className: "map-footer-text right"
+  }, "Map updates every 3 minutes"));
+}
+
+/* ---------- app ---------- */
+function App() {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "app"
+  }, /*#__PURE__*/React.createElement(Sidebar, null), /*#__PURE__*/React.createElement("main", {
+    className: "main"
+  }, /*#__PURE__*/React.createElement(Topbar, null), /*#__PURE__*/React.createElement(PageHeader, null), /*#__PURE__*/React.createElement(FilterRow, null), /*#__PURE__*/React.createElement(MapPanel, null)));
+}
+ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));
+  } catch (err) {
+    showError(err);
+  }
+}).catch(function () {
+  showError(new Error('Could not load React from the CDN. Check your internet connection or network/firewall settings.'));
+});
+
+function showError(err) {
+  console.error(err);
+  document.getElementById('root').innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:center;height:100vh;padding:24px;">' +
+    '<div style="max-width:480px;background:#1c1c1c;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:28px;color:#f3f3f1;font-family:Inter,sans-serif;">' +
+    '<div style="font-size:15px;font-weight:700;margin-bottom:8px;">Couldn\'t load the dashboard</div>' +
+    '<div style="font-size:13px;color:#9a9a96;line-height:1.5;">This page needs to load React from a CDN. If you\'re offline or on a restricted network, that request may be getting blocked.</div>' +
+    '<div style="font-size:12px;color:#6c6c69;margin-top:12px;">Error: ' + (err && err.message ? err.message : String(err)) + '</div>' +
+    '</div></div>';
+}
+</script>
+</body>
+</html>
